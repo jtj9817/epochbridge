@@ -42,3 +42,4 @@ Thumbs.db
 .env.example
 .gitattributes
 .github/
+.claude/
