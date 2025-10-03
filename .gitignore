@@ -36,3 +36,9 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+
+.editorconfig
+.env.example
+.gitattributes
+.github/
