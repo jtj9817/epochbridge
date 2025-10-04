@@ -1,11 +1,16 @@
 <?php
 
 use App\Services\DateTimeConverterService;
+use Livewire\Attributes\Validate;
 use function Livewire\Volt\{state, mount, layout};
 
 layout('components.layouts.public');
 
-state(['dateInput' => '', 'conversionResults' => []]);
+#[Validate('required|date_format:Y-m-d', message: 'Please enter a valid date in YYYY-MM-DD format.')]
+state('dateInput', '');
+
+state('conversionResults', []);
+state('conversionError', '');
 
 mount(function () {
     // Initialize with today's date in YYYY-MM-DD format
@@ -25,12 +30,13 @@ $setTomorrow = function () {
 };
 
 $convertDate = function (DateTimeConverterService $converter) {
+    $this->reset('conversionResults', 'conversionError');
+    $this->validate();
+
     try {
         $this->conversionResults = $converter->convert($this->dateInput);
     } catch (\InvalidArgumentException $e) {
-        // In the next phase, we will add user-facing error messages.
-        // For now, we clear results.
-        $this->conversionResults = [];
+        $this->conversionError = 'An unexpected error occurred. Please try again.';
     }
 };
 
@@ -104,6 +110,9 @@ $convertDate = function (DateTimeConverterService $converter) {
                                 placeholder="YYYY-MM-DD"
                             />
                         </div>
+                        @error('dateInput')
+                            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Quick Action Buttons -->
@@ -132,11 +141,32 @@ $convertDate = function (DateTimeConverterService $converter) {
                     <button 
                         id="btn-convert-date"
                         wire:click="convertDate"
-                        class="btn-convert-glow w-full sm:w-auto px-12 py-4 bg-theme-100 text-theme-900 font-bold text-lg rounded-lg shadow-md transition-all duration-300 border-b-4 border-theme-300 hover:bg-theme-300 hover:text-theme-50 active:border-b-0 active:translate-y-1">
-                        Convert Date
+                        wire:loading.attr="disabled"
+                        class="btn-convert-glow w-full sm:w-auto px-12 py-4 bg-theme-100 text-theme-900 font-bold text-lg rounded-lg shadow-md transition-all duration-300 border-b-4 border-theme-300 hover:bg-theme-300 hover:text-theme-50 active:border-b-0 active:translate-y-1 relative flex items-center justify-center disabled:opacity-75 disabled:cursor-not-allowed">
+                        
+                        <span wire:loading.remove wire:target="convertDate">
+                            Convert Date
+                        </span>
+                        
+                        <span wire:loading wire:target="convertDate" class="flex items-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Converting...
+                        </span>
                     </button>
                 </div>
             </div>
+
+            <!-- Conversion Error Message -->
+            @if ($conversionError)
+                <div id="conversion-error" class="mb-8 p-4 max-w-2xl mx-auto bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p class="text-red-800 dark:text-red-200 text-sm">
+                        {{ $conversionError }}
+                    </p>
+                </div>
+            @endif
 
             <!-- Conversion Results Section -->
             <div id="conversion-results-section"
