@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\DateTimeConverterService;
 use function Livewire\Volt\{state, mount, layout};
 
 layout('components.layouts.public');
@@ -23,14 +24,14 @@ $setTomorrow = function () {
     $this->dateInput = now()->addDay()->format('Y-m-d');
 };
 
-$convertDate = function () {
-    // Placeholder for future API integration
-    $this->conversionResults = [
-        'gregorian' => $this->dateInput,
-        'jalali' => 'Will be converted via API',
-        'unix' => strtotime($this->dateInput),
-        'iso8601' => date('c', strtotime($this->dateInput)),
-    ];
+$convertDate = function (DateTimeConverterService $converter) {
+    try {
+        $this->conversionResults = $converter->convert($this->dateInput);
+    } catch (\InvalidArgumentException $e) {
+        // In the next phase, we will add user-facing error messages.
+        // For now, we clear results.
+        $this->conversionResults = [];
+    }
 };
 
 ?>
@@ -183,14 +184,6 @@ $convertDate = function () {
                             </p>
                         </div>
                     @endif
-                </div>
-
-                <!-- API Notice -->
-                <div id="api-notice" class="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                    <p class="text-yellow-800 dark:text-yellow-200 text-sm">
-                        <strong>Note:</strong> This is a frontend-only demo. 
-                        API integration for comprehensive calendar conversions is coming soon.
-                    </p>
                 </div>
             </div>
 
