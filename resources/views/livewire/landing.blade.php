@@ -1,6 +1,8 @@
 <?php
 
-use function Livewire\Volt\{state, mount};
+use function Livewire\Volt\{state, mount, layout};
+
+layout('components.layouts.public');
 
 state(['dateInput' => '', 'conversionResults' => []]);
 
