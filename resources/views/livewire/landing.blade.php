@@ -1,16 +1,16 @@
 <?php
 
 use App\Services\DateTimeConverterService;
-use Livewire\Attributes\Validate;
-use function Livewire\Volt\{state, mount, layout};
+use function Livewire\Volt\{state, mount, layout, rules};
 
 layout('components.layouts.public');
 
-#[Validate('required|date_format:Y-m-d', message: 'Please enter a valid date in YYYY-MM-DD format.')]
 state('dateInput', '');
-
 state('conversionResults', []);
 state('conversionError', '');
+
+rules(['dateInput' => 'required|date_format:Y-m-d'])
+    ->message(['dateInput' => 'Please enter a valid date in YYYY-MM-DD format.']);
 
 mount(function () {
     // Initialize with today's date in YYYY-MM-DD format
