@@ -191,27 +191,27 @@ $convertDate = function () {
 
             <!-- Features Preview -->
             <div class="mt-20 max-w-6xl mx-auto">
-                <h2 class="text-3xl font-bold text-slate-800 dark:text-slate-200 mb-12">
+                <h2 class="text-3xl font-bold text-stone-800 dark:text-stone-200 mb-12">
                     Supported Calendar Systems
                 </h2>
                 
                 <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-                        <div class="text-blue-600 dark:text-blue-400 text-3xl mb-4">📅</div>
-                        <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">Gregorian Calendar</h3>
-                        <p class="text-slate-600 dark:text-slate-400">Standard international calendar system</p>
+                    <div class="bg-stone-50 dark:bg-stone-800 rounded-xl p-6 shadow-lg border border-stone-300 dark:border-stone-700">
+                        <div class="text-teal-600 dark:text-teal-400 text-3xl mb-4">📅</div>
+                        <h3 class="text-xl font-semibold text-stone-800 dark:text-stone-200 mb-2">Gregorian Calendar</h3>
+                        <p class="text-stone-600 dark:text-stone-400">Standard international calendar system</p>
                     </div>
                     
-                    <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+                    <div class="bg-stone-50 dark:bg-stone-800 rounded-xl p-6 shadow-lg border border-stone-300 dark:border-stone-700">
                         <div class="text-green-600 dark:text-green-400 text-3xl mb-4">🌙</div>
-                        <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">Jalali Calendar</h3>
-                        <p class="text-slate-600 dark:text-slate-400">Persian solar calendar system</p>
+                        <h3 class="text-xl font-semibold text-stone-800 dark:text-stone-200 mb-2">Jalali Calendar</h3>
+                        <p class="text-stone-600 dark:text-stone-400">Persian solar calendar system</p>
                     </div>
                     
-                    <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-                        <div class="text-purple-600 dark:text-purple-400 text-3xl mb-4">⏰</div>
-                        <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">Unix Timestamp</h3>
-                        <p class="text-slate-600 dark:text-slate-400">Seconds since Unix epoch</p>
+                    <div class="bg-stone-50 dark:bg-stone-800 rounded-xl p-6 shadow-lg border border-stone-300 dark:border-stone-700">
+                        <div class="text-amber-600 dark:text-amber-400 text-3xl mb-4">⏰</div>
+                        <h3 class="text-xl font-semibold text-stone-800 dark:text-stone-200 mb-2">Unix Timestamp</h3>
+                        <p class="text-stone-600 dark:text-stone-400">Seconds since Unix epoch</p>
                     </div>
                 </div>
             </div>
@@ -220,7 +220,7 @@ $convertDate = function () {
 
     <!-- Footer -->
     <footer class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-20">
-        <div class="text-center text-slate-500 dark:text-slate-400 text-sm">
+        <div class="text-center text-stone-500 dark:text-stone-400 text-sm">
             <p>&copy; {{ date('Y') }} EpochBridge. Built with Laravel & the TALL stack.</p>
         </div>
     </footer>
