@@ -72,8 +72,8 @@ $convertDate = function () {
             
             <!-- Hero Section -->
             <div id="hero-section" class="mb-16">
-                <h1 id="main-heading" class="text-6xl sm:text-7xl lg:text-8xl font-bold text-theme-900 dark:text-theme-50 mb-6">
-                    EpochBridge
+                <h1 id="main-heading" class="text-6xl sm:text-7xl lg:text-8xl font-bold mb-6">
+                    <span class="text-theme-900 dark:text-theme-50">Epoch</span><span class="text-theme-300">Bridge</span>
                 </h1>
                 <p id="subtitle" class="text-xl sm:text-2xl text-theme-500 dark:text-theme-100 mb-8 max-w-3xl mx-auto leading-relaxed">
                     Convert between different date-time formats with ease. 
@@ -131,7 +131,7 @@ $convertDate = function () {
                     <button 
                         id="btn-convert-date"
                         wire:click="convertDate"
-                        class="btn-convert-glow w-full sm:w-auto px-12 py-4 bg-theme-300 text-theme-50 font-bold text-lg rounded-lg shadow-md transition-all duration-300 border-b-4 border-theme-500 hover:bg-theme-500 active:border-b-0 active:translate-y-1">
+                        class="btn-convert-glow w-full sm:w-auto px-12 py-4 bg-theme-100 text-theme-900 font-bold text-lg rounded-lg shadow-md transition-all duration-300 border-b-4 border-theme-300 hover:bg-theme-300 hover:text-theme-50 active:border-b-0 active:translate-y-1">
                         Convert Date
                     </button>
                 </div>
