@@ -11,6 +11,12 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
+    --color-theme-50: #F5D2A5;
+    --color-theme-100: #CDB586;
+    --color-theme-300: #7E7254;
+    --color-theme-500: #50493E;
+    --color-theme-900: #13100B;
+
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
     --color-zinc-200: #e5e5e5;
@@ -62,6 +68,10 @@ select:focus[data-flux-control] {
 }
 
 /* Custom EpochBridge Components */
+.btn-convert-glow:hover {
+    box-shadow: 0 0 15px 2px var(--color-theme-300);
+}
+
 .datetime-input {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
