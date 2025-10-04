@@ -102,16 +102,6 @@ $convertDate = function () {
                                 class="datetime-input w-full px-6 py-4 text-lg font-medium text-center border-2 border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none"
                                 placeholder="YYYY-MM-DD"
                             />
-                            
-                            <!-- Additional text input for manual entry -->
-                            <div class="mt-4">
-                                <input 
-                                    type="text" 
-                                    wire:model.live="dateInput"
-                                    class="datetime-input w-full px-6 py-3 text-lg text-center border-2 border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none"
-                                    placeholder="YYYY-MM-DD or enter any date format"
-                                />
-                            </div>
                         </div>
                     </div>
 
@@ -119,17 +109,17 @@ $convertDate = function () {
                     <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                         <button 
                             wire:click="setToday"
-                            class="quick-action-btn px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md">
+                            class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white dark:border-blue-500 dark:text-blue-500 dark:hover:bg-blue-500 dark:hover:text-white">
                             TODAY
                         </button>
                         <button 
                             wire:click="setYesterday"
-                            class="quick-action-btn px-8 py-3 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-lg shadow-md">
+                            class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-slate-600 text-slate-600 hover:bg-slate-600 hover:text-white dark:border-slate-500 dark:text-slate-500 dark:hover:bg-slate-500 dark:hover:text-white">
                             YESTERDAY
                         </button>
                         <button 
                             wire:click="setTomorrow"
-                            class="quick-action-btn px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md">
+                            class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-green-600 text-green-600 hover:bg-green-600 hover:text-white dark:border-green-500 dark:text-green-500 dark:hover:bg-green-500 dark:hover:text-white">
                             TOMORROW
                         </button>
                     </div>
@@ -137,7 +127,7 @@ $convertDate = function () {
                     <!-- Convert Button -->
                     <button 
                         wire:click="convertDate"
-                        class="glow-border w-full sm:w-auto px-12 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-300">
+                        class="w-full sm:w-auto px-12 py-4 bg-black text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-300 border border-white hover:bg-gray-800">
                         Convert Date
                     </button>
                 </div>
