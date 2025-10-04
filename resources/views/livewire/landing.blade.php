@@ -224,7 +224,7 @@ $convertDate = function () {
     </main>
 
     <!-- Footer -->
-    <footer class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-20">
+    <footer id="landing-footer" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-20">
         <div class="text-center text-stone-500 dark:text-stone-400 text-sm">
             <p>&copy; {{ date('Y') }} EpochBridge. Built with Laravel & the TALL stack.</p>
         </div>
