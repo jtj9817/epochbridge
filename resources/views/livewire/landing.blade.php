@@ -10,7 +10,7 @@ state('conversionResults', []);
 state('conversionError', '');
 
 rules(['dateInput' => 'required|date_format:Y-m-d'])
-    ->message(['dateInput' => 'Please enter a valid date in YYYY-MM-DD format.']);
+    ->messages(['dateInput' => 'Please enter a valid date in YYYY-MM-DD format.']);
 
 mount(function () {
     // Initialize with today's date in YYYY-MM-DD format
