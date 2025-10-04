@@ -37,9 +37,10 @@ Thumbs.db
 *.swo
 *~
 
-
+# Others
 .editorconfig
 .env.example
 .gitattributes
 .github/
 .claude/
+coding-prompts.md
