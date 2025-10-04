@@ -35,7 +35,7 @@ $convertDate = function () {
 
 ?>
 
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800" 
+<div class="min-h-screen bg-stone-100 dark:bg-stone-900" 
      x-data="{ 
         showResults: @entangle('conversionResults').live,
         inputValue: @entangle('dateInput').live 
@@ -47,17 +47,17 @@ $convertDate = function () {
             <nav class="flex items-center justify-end gap-4">
                 @auth
                     <a href="{{ url('/dashboard') }}" 
-                       class="inline-block px-5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors">
+                       class="inline-block px-5 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-600 rounded-lg text-sm font-medium text-stone-700 dark:text-stone-200 transition-colors">
                         Dashboard
                     </a>
                 @else
                     <a href="{{ route('login') }}" 
-                       class="inline-block px-5 py-2 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white rounded-lg text-sm font-medium transition-colors">
+                       class="inline-block px-5 py-2 text-stone-700 dark:text-stone-200 hover:text-stone-900 dark:hover:text-white rounded-lg text-sm font-medium transition-colors">
                         Log in
                     </a>
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}" 
-                           class="inline-block px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                           class="inline-block px-5 py-2 bg-green-700 hover:bg-green-800 text-white rounded-lg text-sm font-medium transition-colors">
                             Register
                         </a>
                     @endif
@@ -72,15 +72,15 @@ $convertDate = function () {
             
             <!-- Hero Section -->
             <div class="mb-16">
-                <h1 class="text-6xl sm:text-7xl lg:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 mb-6">
+                <h1 class="text-6xl sm:text-7xl lg:text-8xl font-bold text-stone-800 dark:text-stone-100 mb-6">
                     EpochBridge
                 </h1>
-                <p class="text-xl sm:text-2xl text-slate-600 dark:text-slate-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+                <p class="text-xl sm:text-2xl text-stone-600 dark:text-stone-400 mb-8 max-w-3xl mx-auto leading-relaxed">
                     Convert between different date-time formats with ease. 
-                    <span class="text-blue-600 dark:text-blue-400 font-semibold">Bridge the gap</span> 
+                    <span class="text-green-700 dark:text-green-500 font-semibold">Bridge the gap</span> 
                     between calendars and time systems.
                 </p>
-                <div class="text-sm text-slate-500 dark:text-slate-400">
+                <div class="text-sm text-stone-500 dark:text-stone-500">
                     Supporting Gregorian, Jalali, Unix timestamps, and more
                 </div>
             </div>
@@ -91,7 +91,7 @@ $convertDate = function () {
                     
                     <!-- Main Input Field -->
                     <div class="mb-8">
-                        <label for="date-input" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                        <label for="date-input" class="block text-sm font-medium text-stone-700 dark:text-stone-400 mb-3">
                             Enter your date
                         </label>
                         <div class="relative">
@@ -99,7 +99,7 @@ $convertDate = function () {
                                 type="date" 
                                 id="date-input"
                                 wire:model.live="dateInput"
-                                class="datetime-input w-full px-6 py-4 text-lg font-medium text-center border-2 border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none"
+                                class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-stone-400 dark:border-stone-600 rounded-lg bg-stone-50 dark:bg-stone-800 text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 shadow-inner transition"
                                 placeholder="YYYY-MM-DD"
                             />
                         </div>
@@ -109,17 +109,17 @@ $convertDate = function () {
                     <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                         <button 
                             wire:click="setToday"
-                            class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white dark:border-blue-500 dark:text-blue-500 dark:hover:bg-blue-500 dark:hover:text-white">
+                            class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white dark:border-teal-500 dark:text-teal-500 dark:hover:bg-teal-500 dark:hover:text-white">
                             TODAY
                         </button>
                         <button 
                             wire:click="setYesterday"
-                            class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-slate-600 text-slate-600 hover:bg-slate-600 hover:text-white dark:border-slate-500 dark:text-slate-500 dark:hover:bg-slate-500 dark:hover:text-white">
+                            class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-stone-600 text-stone-600 hover:bg-stone-600 hover:text-white dark:border-stone-400 dark:text-stone-400 dark:hover:bg-stone-400 dark:hover:text-stone-900">
                             YESTERDAY
                         </button>
                         <button 
                             wire:click="setTomorrow"
-                            class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-green-600 text-green-600 hover:bg-green-600 hover:text-white dark:border-green-500 dark:text-green-500 dark:hover:bg-green-500 dark:hover:text-white">
+                            class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white dark:border-amber-500 dark:text-amber-500 dark:hover:bg-amber-500 dark:hover:text-white">
                             TOMORROW
                         </button>
                     </div>
@@ -127,7 +127,7 @@ $convertDate = function () {
                     <!-- Convert Button -->
                     <button 
                         wire:click="convertDate"
-                        class="w-full sm:w-auto px-12 py-4 bg-black text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-300 border border-white hover:bg-gray-800">
+                        class="w-full sm:w-auto px-12 py-4 bg-green-700 text-white font-bold text-lg rounded-lg shadow-md transition-all duration-300 border-b-4 border-green-900 hover:bg-green-800 active:border-b-0 active:translate-y-1">
                         Convert Date
                     </button>
                 </div>
@@ -140,40 +140,40 @@ $convertDate = function () {
                  x-transition:enter-end="opacity-100 transform scale-100"
                  class="max-w-4xl mx-auto">
                 
-                <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-6">
+                <h2 class="text-2xl font-bold text-stone-800 dark:text-stone-200 mb-6">
                     Conversion Results
                 </h2>
                 
                 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                     @if (!empty($conversionResults))
                         <!-- Gregorian Calendar -->
-                        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-                            <h3 class="font-semibold text-slate-600 dark:text-slate-400 mb-2">Gregorian</h3>
-                            <p class="text-lg font-mono text-slate-900 dark:text-slate-100">
+                        <div class="bg-stone-50 dark:bg-stone-800 rounded-xl p-6 shadow-lg border border-stone-300 dark:border-stone-700">
+                            <h3 class="font-semibold text-stone-600 dark:text-stone-400 mb-2">Gregorian</h3>
+                            <p class="text-lg font-mono text-stone-900 dark:text-stone-100">
                                 {{ $conversionResults['gregorian'] ?? 'N/A' }}
                             </p>
                         </div>
 
                         <!-- Jalali Calendar -->
-                        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-                            <h3 class="font-semibold text-slate-600 dark:text-slate-400 mb-2">Jalali</h3>
-                            <p class="text-lg font-mono text-slate-900 dark:text-slate-100">
+                        <div class="bg-stone-50 dark:bg-stone-800 rounded-xl p-6 shadow-lg border border-stone-300 dark:border-stone-700">
+                            <h3 class="font-semibold text-stone-600 dark:text-stone-400 mb-2">Jalali</h3>
+                            <p class="text-lg font-mono text-stone-900 dark:text-stone-100">
                                 {{ $conversionResults['jalali'] ?? 'N/A' }}
                             </p>
                         </div>
 
                         <!-- Unix Timestamp -->
-                        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-                            <h3 class="font-semibold text-slate-600 dark:text-slate-400 mb-2">Unix Timestamp</h3>
-                            <p class="text-lg font-mono text-slate-900 dark:text-slate-100">
+                        <div class="bg-stone-50 dark:bg-stone-800 rounded-xl p-6 shadow-lg border border-stone-300 dark:border-stone-700">
+                            <h3 class="font-semibold text-stone-600 dark:text-stone-400 mb-2">Unix Timestamp</h3>
+                            <p class="text-lg font-mono text-stone-900 dark:text-stone-100">
                                 {{ $conversionResults['unix'] ?? 'N/A' }}
                             </p>
                         </div>
 
                         <!-- ISO 8601 -->
-                        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-                            <h3 class="font-semibold text-slate-600 dark:text-slate-400 mb-2">ISO 8601</h3>
-                            <p class="text-lg font-mono text-slate-900 dark:text-slate-100 break-all">
+                        <div class="bg-stone-50 dark:bg-stone-800 rounded-xl p-6 shadow-lg border border-stone-300 dark:border-stone-700">
+                            <h3 class="font-semibold text-stone-600 dark:text-stone-400 mb-2">ISO 8601</h3>
+                            <p class="text-lg font-mono text-stone-900 dark:text-stone-100 break-all">
                                 {{ $conversionResults['iso8601'] ?? 'N/A' }}
                             </p>
                         </div>
