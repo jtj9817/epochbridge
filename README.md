@@ -4,6 +4,9 @@ A modern Laravel 12 application built with the TALL Stack (Tailwind CSS, Alpine.
 
 ## Features
 
+- **Date & Time Conversion**: Real-time conversion between Gregorian and Persian/Jalali calendars
+- **Multi-Format Output**: Unix timestamps, ISO 8601, and detailed calendar components
+- **Interactive Landing Page**: Modern interface with quick-action buttons (Today, Yesterday, Tomorrow)
 - **TALL Stack Architecture**: Tailwind CSS 4, Alpine.js, Livewire 3, Laravel 12
 - **Authentication System**: Complete auth flow with Laravel Fortify
 - **Two-Factor Authentication**: Enhanced security with recovery codes
@@ -139,7 +142,8 @@ app/
 ├── Http/Controllers/        # HTTP controllers
 ├── Livewire/               # Livewire components
 ├── Models/                 # Eloquent models
-└── Providers/              # Service providers
+├── Providers/              # Service providers
+└── Services/               # Business logic services
 
 resources/
 ├── css/                    # Tailwind CSS files
@@ -157,16 +161,36 @@ tests/
 
 ## Key Features
 
+### Date Conversion System
+The core functionality of EpochBridge is powered by the `DateTimeConverterService` which provides:
+
+- **Multi-Calendar Support**: Gregorian ↔ Persian/Jalali conversion
+- **Comprehensive Output**: Returns detailed date components including:
+  - Year, month name, day, day of week
+  - English transliterations for Persian calendar
+  - Unix timestamps and ISO 8601 formatting
+- **Input Validation**: Robust error handling for invalid date formats
+- **Timezone Aware**: Consistent date processing with timezone support
+
 ### Calendar Integration
 - **fisharebest/ext-calendar**: Extended calendar functionality
 - **morilog/jalali**: Persian/Jalali calendar support
 - Date conversion utilities for both Gregorian and Jalali systems
 
+### Interactive Landing Page
+Located at `resources/views/livewire/landing.blade.php`:
+- Real-time date conversion interface
+- Quick-action buttons (Today, Yesterday, Tomorrow)
+- Input validation with user-friendly error messages
+- Loading states and responsive design
+- Livewire Volt single-file component architecture
+
 ### Livewire Volt
 Single-file components combining PHP logic and Blade templates:
-- Authentication forms in `resources/views/livewire/auth/`
-- Settings pages in `resources/views/livewire/settings/`
-- Page components in `resources/views/pages/`
+- **Landing page**: `resources/views/livewire/landing.blade.php` - Main date conversion interface
+- **Authentication forms**: `resources/views/livewire/auth/` - Login, register, password reset, 2FA
+- **Settings pages**: `resources/views/livewire/settings/` - User profile, password, appearance, 2FA management
+- **Page components**: `resources/views/pages/` - Additional page-level components
 
 ### Flux UI Integration
 Pre-built component library providing:
