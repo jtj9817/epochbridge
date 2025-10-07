@@ -209,14 +209,16 @@ $convertDate = function (DateTimeConverterService $converter) {
                                 <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center">Jalali</h3>
                             </div>
                             <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
-                                <div class="text-sm font-medium text-theme-500 dark:text-theme-100 uppercase tracking-wider">
+                                <div class="text-sm font-medium text-theme-500 dark:text-theme-100 tracking-wider">
                                     {{ $conversionResults['jalali']['month_name'] }}
+                                    <span class="block text-xs italic opacity-75 uppercase">{{ $conversionResults['jalali']['month_name_en'] }}</span>
                                 </div>
                                 <div class="text-6xl font-bold text-theme-900 dark:text-theme-50 my-2">
                                     {{ $conversionResults['jalali']['day'] }}
                                 </div>
                                 <div class="text-lg text-theme-500 dark:text-theme-100">
                                     {{ $conversionResults['jalali']['day_of_week'] }}
+                                    <span class="block text-sm italic opacity-75">{{ $conversionResults['jalali']['day_of_week_en'] }}</span>
                                 </div>
                                 <div class="text-sm font-mono text-theme-300 dark:text-theme-300 mt-2">
                                     {{ $conversionResults['jalali']['year'] }}
