@@ -52,6 +52,21 @@ $convertDate = function (DateTimeConverterService $converter) {
                 this.copiedFeedback = type;
                 setTimeout(() => { this.copiedFeedback = null }, 3000);
             });
+        },
+        savedConversions: JSON.parse(localStorage.getItem('savedConversions')) || [],
+        showSaveLimitNotification: false,
+        saveConversion() {
+            if (this.savedConversions.length >= 3) {
+                this.showSaveLimitNotification = true;
+                return;
+            }
+            const newConversion = { ...this.showResults, id: Date.now() };
+            this.savedConversions.unshift(newConversion);
+            localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
+        },
+        deleteSaved(id) {
+            this.savedConversions = this.savedConversions.filter(item => item.id !== id);
+            localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
         }
      }">
     
@@ -189,19 +204,29 @@ $convertDate = function (DateTimeConverterService $converter) {
                     <h2 id="conversion-results-heading" class="text-2xl font-bold text-theme-900 dark:text-theme-50">
                         Conversion Results
                     </h2>
-                    <button
-                        @click="copyToClipboard(
-                            `Gregorian: {{ $conversionResults['gregorian']['full_date'] ?? '' }}\n` +
-                            `Jalali: {{ $conversionResults['jalali']['full_date'] ?? '' }}\n` +
-                            `Unix: {{ $conversionResults['unix'] ?? '' }}\n` +
-                            `ISO 8601: {{ $conversionResults['iso8601'] ?? '' }}`,
-                            'all'
-                        )"
-                        class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline"
-                        :class="{ 'text-green-500': copiedFeedback === 'all' }"
-                        x-text="copiedFeedback === 'all' ? 'Copied!' : 'Copy All'">
-                        Copy All
-                    </button>
+                    <div class="flex items-center gap-4">
+                        <button
+                            @click="copyToClipboard(
+                                `Gregorian: {{ $conversionResults['gregorian']['full_date'] ?? '' }}\n` +
+                                `Jalali: {{ $conversionResults['jalali']['full_date'] ?? '' }}\n` +
+                                `Unix: {{ $conversionResults['unix'] ?? '' }}\n` +
+                                `ISO 8601: {{ $conversionResults['iso8601'] ?? '' }}`,
+                                'all'
+                            )"
+                            class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline"
+                            :class="{ 'text-green-500': copiedFeedback === 'all' }"
+                            x-text="copiedFeedback === 'all' ? 'Copied!' : 'Copy All'">
+                            Copy All
+                        </button>
+                        @guest
+                        <button
+                            x-show="Object.keys(showResults).length > 0"
+                            @click="saveConversion()"
+                            class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
+                            Save
+                        </button>
+                        @endguest
+                    </div>
                 </div>
                 
                 <div id="results-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -310,6 +335,56 @@ $convertDate = function (DateTimeConverterService $converter) {
                     @endif
                 </div>
             </div>
+
+            <!-- Save Limit Notification -->
+            <div x-show="showSaveLimitNotification" x-transition x-cloak class="mt-8 max-w-4xl mx-auto p-4 bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 rounded-r-lg">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.21 3.03-1.742 3.03H4.42c-1.532 0-2.492-1.696-1.742-3.03l5.58-9.92zM10 13a1 1 0 110-2 1 1 0 010 2zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3 flex-grow">
+                        <p class="text-sm">You've reached the guest limit of 3 saved conversions. <a href="{{ route('register') }}" class="font-bold underline hover:text-yellow-700 dark:hover:text-yellow-100">Create an account</a> for unlimited saves.</p>
+                    </div>
+                    <div class="ml-auto pl-3">
+                        <div class="-mx-1.5 -my-1.5">
+                            <button @click="showSaveLimitNotification = false" type="button" class="inline-flex bg-yellow-100 dark:bg-transparent rounded-md p-1.5 text-yellow-500 hover:bg-yellow-200 dark:hover:bg-yellow-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 dark:focus:ring-offset-yellow-900/30 focus:ring-yellow-600">
+                                <span class="sr-only">Dismiss</span>
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saved Conversions for Guests -->
+            @guest
+            <div id="saved-conversions-guest" class="mt-16 max-w-4xl mx-auto" x-show="savedConversions.length > 0" x-cloak>
+                <h2 class="text-2xl font-bold text-theme-900 dark:text-theme-50 mb-6 text-center sm:text-left">
+                    Your Saved Conversions
+                </h2>
+                <div class="space-y-4">
+                    <template x-for="item in savedConversions" :key="item.id">
+                        <div class="p-4 bg-theme-100 dark:bg-theme-500 rounded-lg shadow-md flex items-center justify-between gap-4">
+                            <div class="text-sm text-theme-900 dark:text-theme-50 grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-center sm:text-left flex-grow">
+                                <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span x-text="item.gregorian.full_date"></span></div>
+                                <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span x-text="item.jalali.full_date"></span></div>
+                                <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span x-text="item.unix"></span></div>
+                            </div>
+                            <button @click="deleteSaved(item.id)" class="text-red-500 hover:text-red-700 transition-colors flex-shrink-0" title="Delete">
+                                <span class="sr-only">Delete</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            @endguest
 
             <!-- Features Preview -->
             <div id="features-preview-section" class="mt-20 max-w-6xl mx-auto">
