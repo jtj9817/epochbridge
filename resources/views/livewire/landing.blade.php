@@ -183,35 +183,71 @@ $convertDate = function (DateTimeConverterService $converter) {
                 <div id="results-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                     @if (!empty($conversionResults))
                         <!-- Gregorian Calendar -->
-                        <div id="result-card-gregorian" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                            <h3 class="font-semibold text-theme-500 dark:text-theme-100 mb-2">Gregorian</h3>
-                            <p class="text-lg font-mono text-theme-900 dark:text-theme-50">
-                                {{ $conversionResults['gregorian'] ?? 'N/A' }}
-                            </p>
+                        <div id="result-card-gregorian" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
+                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50">
+                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center">Gregorian</h3>
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <div class="text-sm font-medium text-theme-500 dark:text-theme-100 uppercase tracking-wider">
+                                    {{ $conversionResults['gregorian']['month_name'] }}
+                                </div>
+                                <div class="text-6xl font-bold text-theme-900 dark:text-theme-50 my-2">
+                                    {{ $conversionResults['gregorian']['day'] }}
+                                </div>
+                                <div class="text-lg text-theme-500 dark:text-theme-100">
+                                    {{ $conversionResults['gregorian']['day_of_week'] }}
+                                </div>
+                                <div class="text-sm font-mono text-theme-300 dark:text-theme-300 mt-2">
+                                    {{ $conversionResults['gregorian']['year'] }}
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Jalali Calendar -->
-                        <div id="result-card-jalali" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                            <h3 class="font-semibold text-theme-500 dark:text-theme-100 mb-2">Jalali</h3>
-                            <p class="text-lg font-mono text-theme-900 dark:text-theme-50">
-                                {{ $conversionResults['jalali'] ?? 'N/A' }}
-                            </p>
+                        <div id="result-card-jalali" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
+                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50">
+                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center">Jalali</h3>
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <div class="text-sm font-medium text-theme-500 dark:text-theme-100 uppercase tracking-wider">
+                                    {{ $conversionResults['jalali']['month_name'] }}
+                                </div>
+                                <div class="text-6xl font-bold text-theme-900 dark:text-theme-50 my-2">
+                                    {{ $conversionResults['jalali']['day'] }}
+                                </div>
+                                <div class="text-lg text-theme-500 dark:text-theme-100">
+                                    {{ $conversionResults['jalali']['day_of_week'] }}
+                                </div>
+                                <div class="text-sm font-mono text-theme-300 dark:text-theme-300 mt-2">
+                                    {{ $conversionResults['jalali']['year'] }}
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Unix Timestamp -->
-                        <div id="result-card-unix" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                            <h3 class="font-semibold text-theme-500 dark:text-theme-100 mb-2">Unix Timestamp</h3>
-                            <p class="text-lg font-mono text-theme-900 dark:text-theme-50">
-                                {{ $conversionResults['unix'] ?? 'N/A' }}
-                            </p>
+                        <div id="result-card-unix" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
+                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50">
+                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center">Unix Timestamp</h3>
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <p class="text-3xl font-mono text-theme-900 dark:text-theme-50 tracking-wider">
+                                    {{ $conversionResults['unix'] ?? 'N/A' }}
+                                </p>
+                                <p class="text-xs text-theme-300 dark:text-theme-300 mt-2">seconds since epoch</p>
+                            </div>
                         </div>
 
                         <!-- ISO 8601 -->
-                        <div id="result-card-iso8601" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                            <h3 class="font-semibold text-theme-500 dark:text-theme-100 mb-2">ISO 8601</h3>
-                            <p class="text-lg font-mono text-theme-900 dark:text-theme-50 break-all">
-                                {{ $conversionResults['iso8601'] ?? 'N/A' }}
-                            </p>
+                        <div id="result-card-iso8601" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
+                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50">
+                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center">ISO 8601</h3>
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <p class="text-xl font-mono text-theme-900 dark:text-theme-50 break-all">
+                                    {{ $conversionResults['iso8601'] ?? 'N/A' }}
+                                </p>
+                                <p class="text-xs text-theme-300 dark:text-theme-300 mt-2">UTC format</p>
+                            </div>
                         </div>
                     @endif
                 </div>

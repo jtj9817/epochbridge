@@ -12,7 +12,7 @@ class DateTimeConverterService
      * Converts a date string into various formats.
      *
      * @param  string  $dateString The date string to convert.
-     * @return array<string, string|int> An associative array with converted dates.
+     * @return array<string, mixed> An associative array with converted dates.
      *
      * @throws \InvalidArgumentException If the date string is invalid.
      */
@@ -29,8 +29,20 @@ class DateTimeConverterService
         $jalaliDate = Jalalian::fromCarbon($carbonDate);
 
         return [
-            'gregorian' => $carbonDate->format('Y-m-d'),
-            'jalali'    => $jalaliDate->format('Y-m-d'),
+            'gregorian' => [
+                'year'        => $carbonDate->year,
+                'month_name'  => $carbonDate->format('F'),
+                'day'         => $carbonDate->day,
+                'day_of_week' => $carbonDate->format('l'),
+                'full_date'   => $carbonDate->format('Y-m-d'),
+            ],
+            'jalali'    => [
+                'year'        => $jalaliDate->getYear(),
+                'month_name'  => $jalaliDate->getMonthName(),
+                'day'         => $jalaliDate->getDay(),
+                'day_of_week' => $jalaliDate->getDayOfWeekName(),
+                'full_date'   => $jalaliDate->format('Y-m-d'),
+            ],
             'unix'      => $carbonDate->unix(),
             'iso8601'   => $carbonDate->clone()->utc()->toIso8601String(),
         ];
