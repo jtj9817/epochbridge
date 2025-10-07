@@ -266,10 +266,15 @@ $deleteConversion = function (int $id) {
                 <div id="results-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                     @if (!empty($conversionResults))
                         <!-- Gregorian Calendar -->
-                        <div id="result-card-gregorian" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
-                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50 flex items-center justify-between">
-                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center flex-grow">Gregorian</h3>
-                                <button @click="copyToClipboard('{{ $conversionResults['gregorian']['full_date'] ?? '' }}', 'gregorian')" title="Copy" class="text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white transition-colors">
+                        <div id="result-card-gregorian" class="bg-white dark:bg-zinc-800/50 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 flex flex-col">
+                            <div class="p-4 border-b border-zinc-200/80 dark:border-zinc-700/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-zinc-700 dark:text-zinc-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Gregorian
+                                </h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['gregorian']['full_date'] ?? '' }}', 'gregorian')" title="Copy" class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">
                                     <span x-show="copiedFeedback !== 'gregorian'">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -279,26 +284,31 @@ $deleteConversion = function (int $id) {
                                 </button>
                             </div>
                             <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
-                                <div class="text-sm font-medium text-theme-500 dark:text-theme-100 uppercase tracking-wider">
+                                <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                                     {{ $conversionResults['gregorian']['month_name'] }}
                                 </div>
-                                <div class="text-6xl font-bold text-theme-900 dark:text-theme-50 my-2">
+                                <div class="text-6xl font-bold text-blue-600 dark:text-blue-400 my-1">
                                     {{ $conversionResults['gregorian']['day'] }}
                                 </div>
-                                <div class="text-lg text-theme-500 dark:text-theme-100">
+                                <div class="text-lg text-zinc-600 dark:text-zinc-300">
                                     {{ $conversionResults['gregorian']['day_of_week'] }}
                                 </div>
-                                <div class="text-sm font-mono text-theme-300 dark:text-theme-300 mt-2">
+                                <div class="text-sm font-mono text-zinc-400 dark:text-zinc-500 mt-2">
                                     {{ $conversionResults['gregorian']['year'] }}
                                 </div>
                             </div>
                         </div>
 
                         <!-- Jalali Calendar -->
-                        <div id="result-card-jalali" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
-                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50 flex items-center justify-between">
-                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center flex-grow">Jalali</h3>
-                                <button @click="copyToClipboard('{{ $conversionResults['jalali']['full_date'] ?? '' }}', 'jalali')" title="Copy" class="text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white transition-colors">
+                        <div id="result-card-jalali" class="bg-teal-50/50 dark:bg-teal-950/30 rounded-xl shadow-lg border border-teal-200 dark:border-teal-800 flex flex-col">
+                            <div class="p-4 border-b border-teal-200/80 dark:border-teal-800/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-teal-800 dark:text-teal-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    Jalali
+                                </h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['jalali']['full_date'] ?? '' }}', 'jalali')" title="Copy" class="text-teal-600 hover:text-teal-900 dark:text-teal-400 dark:hover:text-teal-100 transition-colors">
                                     <span x-show="copiedFeedback !== 'jalali'">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -308,28 +318,33 @@ $deleteConversion = function (int $id) {
                                 </button>
                             </div>
                             <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
-                                <div class="text-sm font-medium text-theme-500 dark:text-theme-100 tracking-wider">
+                                <div class="text-sm font-medium text-teal-700 dark:text-teal-300 tracking-wider">
                                     {{ $conversionResults['jalali']['month_name'] }}
                                     <span class="block text-xs italic opacity-75 uppercase">{{ $conversionResults['jalali']['month_name_en'] }}</span>
                                 </div>
-                                <div class="text-6xl font-bold text-theme-900 dark:text-theme-50 my-2">
+                                <div class="text-6xl font-bold text-teal-600 dark:text-teal-400 my-1">
                                     {{ $conversionResults['jalali']['day'] }}
                                 </div>
-                                <div class="text-lg text-theme-500 dark:text-theme-100">
+                                <div class="text-lg text-teal-600 dark:text-teal-300">
                                     {{ $conversionResults['jalali']['day_of_week'] }}
                                     <span class="block text-sm italic opacity-75">{{ $conversionResults['jalali']['day_of_week_en'] }}</span>
                                 </div>
-                                <div class="text-sm font-mono text-theme-300 dark:text-theme-300 mt-2">
+                                <div class="text-sm font-mono text-teal-500 dark:text-teal-500 mt-2">
                                     {{ $conversionResults['jalali']['year'] }}
                                 </div>
                             </div>
                         </div>
 
                         <!-- Unix Timestamp -->
-                        <div id="result-card-unix" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
-                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50 flex items-center justify-between">
-                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center flex-grow">Unix Timestamp</h3>
-                                <button @click="copyToClipboard('{{ $conversionResults['unix'] ?? '' }}', 'unix')" title="Copy" class="text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white transition-colors">
+                        <div id="result-card-unix" class="bg-zinc-100 dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 flex flex-col shadow-green-500/5 dark:shadow-green-400/5">
+                            <div class="p-4 border-b border-zinc-200/80 dark:border-zinc-700/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-mono text-sm uppercase tracking-widest text-zinc-700 dark:text-zinc-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Unix
+                                </h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['unix'] ?? '' }}', 'unix')" title="Copy" class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">
                                     <span x-show="copiedFeedback !== 'unix'">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -339,18 +354,23 @@ $deleteConversion = function (int $id) {
                                 </button>
                             </div>
                             <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
-                                <p class="text-3xl font-mono text-theme-900 dark:text-theme-50 tracking-wider">
+                                <p class="text-3xl font-mono text-green-600 dark:text-green-400 tracking-wider">
                                     {{ $conversionResults['unix'] ?? 'N/A' }}
                                 </p>
-                                <p class="text-xs text-theme-300 dark:text-theme-300 mt-2">seconds since epoch</p>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-2 uppercase tracking-widest">seconds since epoch</p>
                             </div>
                         </div>
 
                         <!-- ISO 8601 -->
-                        <div id="result-card-iso8601" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
-                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50 flex items-center justify-between">
-                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center flex-grow">ISO 8601</h3>
-                                <button @click="copyToClipboard('{{ $conversionResults['iso8601'] ?? '' }}', 'iso8601')" title="Copy" class="text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white transition-colors">
+                        <div id="result-card-iso8601" class="bg-zinc-50 dark:bg-black/20 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 flex flex-col">
+                            <div class="p-4 border-b border-zinc-200/80 dark:border-zinc-700/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-semibold text-zinc-700 dark:text-zinc-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h8a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 4.293l.707-.707a2 2 0 012.828 0l.707.707M7.707 4.293l.707.707a2 2 0 002.828 0l.707-.707M15 21v-3.5a2.5 2.5 0 00-5 0V21M3 11a9 9 0 1118 0 9 9 0 01-18 0z" />
+                                    </svg>
+                                    ISO 8601
+                                </h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['iso8601'] ?? '' }}', 'iso8601')" title="Copy" class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">
                                     <span x-show="copiedFeedback !== 'iso8601'">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -360,10 +380,10 @@ $deleteConversion = function (int $id) {
                                 </button>
                             </div>
                             <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
-                                <p class="text-xl font-mono text-theme-900 dark:text-theme-50 break-all">
+                                <p class="text-xl font-mono text-zinc-800 dark:text-zinc-100 break-all">
                                     {{ $conversionResults['iso8601'] ?? 'N/A' }}
                                 </p>
-                                <p class="text-xs text-theme-300 dark:text-theme-300 mt-2">UTC format</p>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-2 uppercase tracking-widest">UTC format</p>
                             </div>
                         </div>
                     @endif
