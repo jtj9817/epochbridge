@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('saved_conversions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('original_input');
+            $table->string('gregorian_date');
+            $table->string('jalali_date');
+            $table->bigInteger('unix_timestamp');
+            $table->string('iso8601_string');
             $table->timestamps();
         });
     }

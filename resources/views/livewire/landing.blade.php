@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\SavedConversion;
 use App\Services\DateTimeConverterService;
+use Illuminate\Support\Collection;
 use function Livewire\Volt\{state, mount, layout, rules};
 
 layout('components.layouts.public');
@@ -8,6 +10,7 @@ layout('components.layouts.public');
 state('dateInput', '');
 state('conversionResults', []);
 state('conversionError', '');
+state(['savedConversions' => fn () => auth()->check() ? auth()->user()->savedConversions : collect()]);
 
 rules(['dateInput' => 'required|date_format:Y-m-d'])
     ->messages(['dateInput' => 'Please enter a valid date in YYYY-MM-DD format.']);
@@ -40,6 +43,30 @@ $convertDate = function (DateTimeConverterService $converter) {
     }
 };
 
+$saveConversion = function () {
+    if (! auth()->check() || empty($this->conversionResults)) {
+        return;
+    }
+
+    auth()->user()->savedConversions()->create([
+        'original_input' => $this->dateInput,
+        'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
+        'jalali_date' => $this->conversionResults['jalali']['full_date'],
+        'unix_timestamp' => $this->conversionResults['unix'],
+        'iso8601_string' => $this->conversionResults['iso8601'],
+    ]);
+
+    $this->savedConversions = auth()->user()->savedConversions()->get();
+};
+
+$deleteConversion = function (int $id) {
+    $conversion = auth()->user()->savedConversions()->find($id);
+    if ($conversion) {
+        $conversion->delete();
+        $this->savedConversions = $this->savedConversions->except($id);
+    }
+};
+
 ?>
 
 <div id="landing-page-container" class="min-h-screen bg-theme-50 dark:bg-theme-900" 
@@ -53,9 +80,9 @@ $convertDate = function (DateTimeConverterService $converter) {
                 setTimeout(() => { this.copiedFeedback = null }, 3000);
             });
         },
-        savedConversions: JSON.parse(localStorage.getItem('savedConversions')) || [],
+        savedConversions: JSON.parse(localStorage.getItem('savedConversions')) || [], // Guest saved conversions
         showSaveLimitNotification: false,
-        saveConversion() {
+        saveConversion() { // Guest save function
             if (this.savedConversions.length >= 3) {
                 this.showSaveLimitNotification = true;
                 return;
@@ -64,7 +91,7 @@ $convertDate = function (DateTimeConverterService $converter) {
             this.savedConversions.unshift(newConversion);
             localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
         },
-        deleteSaved(id) {
+        deleteSaved(id) { // Guest delete function
             this.savedConversions = this.savedConversions.filter(item => item.id !== id);
             localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
         }
@@ -218,14 +245,21 @@ $convertDate = function (DateTimeConverterService $converter) {
                             x-text="copiedFeedback === 'all' ? 'Copied!' : 'Copy All'">
                             Copy All
                         </button>
-                        @guest
+                        @auth
+                        <button
+                            x-show="Object.keys(showResults).length > 0"
+                            wire:click="saveConversion"
+                            class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
+                            Save
+                        </button>
+                        @else
                         <button
                             x-show="Object.keys(showResults).length > 0"
                             @click="saveConversion()"
                             class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
                             Save
                         </button>
-                        @endguest
+                        @endauth
                     </div>
                 </div>
                 
@@ -385,6 +419,33 @@ $convertDate = function (DateTimeConverterService $converter) {
                 </div>
             </div>
             @endguest
+
+            @auth
+            <div id="saved-conversions-auth" class="mt-16 max-w-4xl mx-auto">
+                @if ($savedConversions->isNotEmpty())
+                    <h2 class="text-2xl font-bold text-theme-900 dark:text-theme-50 mb-6 text-center sm:text-left">
+                        Your Saved Conversions
+                    </h2>
+                    <div class="space-y-4">
+                        @foreach($savedConversions as $item)
+                            <div wire:key="{{ $item->id }}" class="p-4 bg-theme-100 dark:bg-theme-500 rounded-lg shadow-md flex items-center justify-between gap-4">
+                                <div class="text-sm text-theme-900 dark:text-theme-50 grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2 text-center sm:text-left flex-grow">
+                                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span>{{ $item->gregorian_date }}</span></div>
+                                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span>{{ $item->jalali_date }}</span></div>
+                                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span>{{ $item->unix_timestamp }}</span></div>
+                                </div>
+                                <button wire:click="deleteConversion({{ $item->id }})" wire:confirm="Are you sure you want to delete this saved conversion?" class="text-red-500 hover:text-red-700 transition-colors flex-shrink-0" title="Delete">
+                                    <span class="sr-only">Delete</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+            @endauth
 
             <!-- Features Preview -->
             <div id="features-preview-section" class="mt-20 max-w-6xl mx-auto">
