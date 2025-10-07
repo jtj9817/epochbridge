@@ -38,9 +38,9 @@ class DateTimeConverterService
             ],
             'jalali'    => [
                 'year'        => $jalaliDate->getYear(),
-                'month_name'  => $jalaliDate->getMonthName(),
+                'month_name'  => $jalaliDate->format('%B'),
                 'day'         => $jalaliDate->getDay(),
-                'day_of_week' => $jalaliDate->getDayOfWeekName(),
+                'day_of_week' => $jalaliDate->format('%A'),
                 'full_date'   => $jalaliDate->format('Y-m-d'),
             ],
             'unix'      => $carbonDate->unix(),
