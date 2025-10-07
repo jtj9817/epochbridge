@@ -45,7 +45,14 @@ $convertDate = function (DateTimeConverterService $converter) {
 <div id="landing-page-container" class="min-h-screen bg-theme-50 dark:bg-theme-900" 
      x-data="{ 
         showResults: @entangle('conversionResults').live,
-        inputValue: @entangle('dateInput').live 
+        inputValue: @entangle('dateInput').live,
+        copiedFeedback: null,
+        copyToClipboard(text, type) {
+            navigator.clipboard.writeText(text).then(() => {
+                this.copiedFeedback = type;
+                setTimeout(() => { this.copiedFeedback = null }, 3000);
+            });
+        }
      }">
     
     <!-- Header -->
@@ -178,16 +185,39 @@ $convertDate = function (DateTimeConverterService $converter) {
                  x-transition:enter-end="opacity-100 transform scale-100"
                  class="max-w-4xl mx-auto">
                 
-                <h2 id="conversion-results-heading" class="text-2xl font-bold text-theme-900 dark:text-theme-50 mb-6">
-                    Conversion Results
-                </h2>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 id="conversion-results-heading" class="text-2xl font-bold text-theme-900 dark:text-theme-50">
+                        Conversion Results
+                    </h2>
+                    <button
+                        @click="copyToClipboard(
+                            `Gregorian: {{ $conversionResults['gregorian']['full_date'] ?? '' }}\n` +
+                            `Jalali: {{ $conversionResults['jalali']['full_date'] ?? '' }}\n` +
+                            `Unix: {{ $conversionResults['unix'] ?? '' }}\n` +
+                            `ISO 8601: {{ $conversionResults['iso8601'] ?? '' }}`,
+                            'all'
+                        )"
+                        class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline"
+                        :class="{ 'text-green-500': copiedFeedback === 'all' }"
+                        x-text="copiedFeedback === 'all' ? 'Copied!' : 'Copy All'">
+                        Copy All
+                    </button>
+                </div>
                 
                 <div id="results-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                     @if (!empty($conversionResults))
                         <!-- Gregorian Calendar -->
                         <div id="result-card-gregorian" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
-                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50">
-                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center">Gregorian</h3>
+                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50 flex items-center justify-between">
+                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center flex-grow">Gregorian</h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['gregorian']['full_date'] ?? '' }}', 'gregorian')" title="Copy" class="text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white transition-colors">
+                                    <span x-show="copiedFeedback !== 'gregorian'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <span x-show="copiedFeedback === 'gregorian'" x-cloak class="text-green-500 text-xs">Copied!</span>
+                                </button>
                             </div>
                             <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
                                 <div class="text-sm font-medium text-theme-500 dark:text-theme-100 uppercase tracking-wider">
@@ -207,8 +237,16 @@ $convertDate = function (DateTimeConverterService $converter) {
 
                         <!-- Jalali Calendar -->
                         <div id="result-card-jalali" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
-                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50">
-                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center">Jalali</h3>
+                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50 flex items-center justify-between">
+                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center flex-grow">Jalali</h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['jalali']['full_date'] ?? '' }}', 'jalali')" title="Copy" class="text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white transition-colors">
+                                    <span x-show="copiedFeedback !== 'jalali'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <span x-show="copiedFeedback === 'jalali'" x-cloak class="text-green-500 text-xs">Copied!</span>
+                                </button>
                             </div>
                             <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
                                 <div class="text-sm font-medium text-theme-500 dark:text-theme-100 tracking-wider">
@@ -230,8 +268,16 @@ $convertDate = function (DateTimeConverterService $converter) {
 
                         <!-- Unix Timestamp -->
                         <div id="result-card-unix" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
-                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50">
-                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center">Unix Timestamp</h3>
+                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50 flex items-center justify-between">
+                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center flex-grow">Unix Timestamp</h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['unix'] ?? '' }}', 'unix')" title="Copy" class="text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white transition-colors">
+                                    <span x-show="copiedFeedback !== 'unix'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <span x-show="copiedFeedback === 'unix'" x-cloak class="text-green-500 text-xs">Copied!</span>
+                                </button>
                             </div>
                             <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
                                 <p class="text-3xl font-mono text-theme-900 dark:text-theme-50 tracking-wider">
@@ -243,8 +289,16 @@ $convertDate = function (DateTimeConverterService $converter) {
 
                         <!-- ISO 8601 -->
                         <div id="result-card-iso8601" class="bg-theme-100 dark:bg-theme-500 rounded-xl shadow-lg border border-theme-300 dark:border-theme-300 flex flex-col">
-                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50">
-                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center">ISO 8601</h3>
+                            <div class="p-4 border-b border-theme-300/50 dark:border-theme-300/50 flex items-center justify-between">
+                                <h3 class="font-semibold text-theme-500 dark:text-theme-100 text-center flex-grow">ISO 8601</h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['iso8601'] ?? '' }}', 'iso8601')" title="Copy" class="text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white transition-colors">
+                                    <span x-show="copiedFeedback !== 'iso8601'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <span x-show="copiedFeedback === 'iso8601'" x-cloak class="text-green-500 text-xs">Copied!</span>
+                                </button>
                             </div>
                             <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
                                 <p class="text-xl font-mono text-theme-900 dark:text-theme-50 break-all">
