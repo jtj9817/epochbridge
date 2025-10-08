@@ -270,17 +270,9 @@ $deleteConversion = function (int $id) {
                                 :placeholder="inputType === 'jd' ? 'e.g., 2460310.5' : 'e.g., 60309'"
                             />
                             <input 
-                                x-show="inputType === 'hebrew' || inputType === 'islamic' || inputType === 'french_republican'" x-cloak
+                                x-show="['hebrew', 'islamic', 'french_republican', 'chinese', 'babylonian', 'assyrian', 'macedonian'].includes(inputType)" x-cloak
                                 type="text" 
                                 id="date-input-calendars"
-                                wire:model.live="dateInput"
-                                class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
-                                placeholder="YYYY/MM/DD"
-                            />
-                            <input 
-                                x-show="inputType === 'chinese'" x-cloak
-                                type="text" 
-                                id="date-input-chinese"
                                 wire:model.live="dateInput"
                                 class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
                                 placeholder="YYYY/MM/DD"
