@@ -53,6 +53,9 @@ class DateTimeConverterService
             'babylonian' => new BabylonianCalendarService(),
             'assyrian' => new AssyrianCalendarService(),
             'macedonian' => new AncientMacedonianService(),
+            'coptic' => new CopticCalendarService(),
+            'egyptian' => new EgyptianCalendarService(),
+            'ethiopian' => new EthiopianCalendarService(),
         ];
     }
 
@@ -79,7 +82,7 @@ class DateTimeConverterService
                 'iso8601' => Carbon::parse($dateString),
                 'jd' => Carbon::createFromJulianDay((float) $dateString),
                 'mjd' => Carbon::createFromJulianDay((float) $dateString + 2400000.5),
-                'hebrew', 'islamic', 'french_republican', 'chinese', 'japanese', 'babylonian', 'assyrian', 'macedonian' => $this->convertFromCalendar($inputType, $dateString),
+                'hebrew', 'islamic', 'french_republican', 'chinese', 'japanese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian' => $this->convertFromCalendar($inputType, $dateString),
                 default => throw new InvalidArgumentException('Invalid input type provided.'),
             };
         } catch (\Exception $e) {
