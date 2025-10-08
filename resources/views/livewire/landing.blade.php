@@ -23,6 +23,9 @@ state('inputTypes', [
     'iso8601' => 'ISO 8601',
     'jd' => 'Julian Day',
     'mjd' => 'Modified Julian Day',
+    'hebrew' => 'Hebrew (YYYY/MM/DD)',
+    'islamic' => 'Islamic (YYYY/MM/DD)',
+    'french_republican' => 'French Republican (YYYY/MM/DD)',
 ]);
 
 rules(fn () => match ($this->inputType) {
@@ -31,10 +34,11 @@ rules(fn () => match ($this->inputType) {
     'unix' => ['dateInput' => 'required|integer'],
     'iso8601' => ['dateInput' => 'required|string'],
     'jd', 'mjd' => ['dateInput' => 'required|numeric'],
+    'hebrew', 'islamic', 'french_republican' => ['dateInput' => 'required|date_format:Y/m/d'],
     default => ['dateInput' => 'required'],
 })->messages([
     'dateInput.required' => 'Please enter a value.',
-    'dateInput.date_format' => 'Please enter a valid date. For Gregorian use YYYY-MM-DD, for Jalali use YYYY/MM/DD.',
+    'dateInput.date_format' => 'Please enter a valid date. For Gregorian use YYYY-MM-DD, for Jalali/Hebrew/Islamic/French Republican use YYYY/MM/DD.',
     'dateInput.integer' => 'Please enter a valid integer Unix timestamp.',
     'dateInput.numeric' => 'Please enter a valid number.',
 ]);
@@ -51,6 +55,7 @@ $setToday = function () {
         'iso8601' => now()->startOfDay()->toIso8601String(),
         'jd' => GregorianToJD(now()->month, now()->day, now()->year),
         'mjd' => GregorianToJD(now()->month, now()->day, now()->year) - 2400000.5,
+        'hebrew', 'islamic', 'french_republican' => now()->format('Y/m/d'), // Will be converted by service
         default => now()->format('Y-m-d'),
     };
 };
@@ -255,6 +260,14 @@ $deleteConversion = function (int $id) {
                                 wire:model.live="dateInput"
                                 class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
                                 :placeholder="inputType === 'jd' ? 'e.g., 2460310.5' : 'e.g., 60309'"
+                            />
+                            <input 
+                                x-show="inputType === 'hebrew' || inputType === 'islamic' || inputType === 'french_republican'" x-cloak
+                                type="text" 
+                                id="date-input-calendars"
+                                wire:model.live="dateInput"
+                                class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                                placeholder="YYYY/MM/DD"
                             />
                         </div>
                         @error('dateInput')
@@ -538,6 +551,114 @@ $deleteConversion = function (int $id) {
                                 <p class="text-xs text-orange-500 dark:text-orange-500 mt-2 uppercase tracking-widest">Modified Julian Day</p>
                             </div>
                         </div>
+
+                        <!-- Hebrew Calendar -->
+                        @isset($conversionResults['hebrew'])
+                        <div id="result-card-hebrew" class="bg-purple-50/50 dark:bg-purple-950/30 rounded-xl shadow-lg border border-purple-200 dark:border-purple-800 flex flex-col">
+                            <div class="p-4 border-b border-purple-200/80 dark:border-purple-800/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-purple-800 dark:text-purple-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    Hebrew
+                                </h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['hebrew']['full_date'] ?? '' }}', 'hebrew')" title="Copy" class="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-100 transition-colors">
+                                    <span x-show="copiedFeedback !== 'hebrew'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <span x-show="copiedFeedback === 'hebrew'" x-cloak class="text-green-500 text-xs">Copied!</span>
+                                </button>
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <div class="text-sm font-medium text-purple-700 dark:text-purple-300 tracking-wider">
+                                    {{ $conversionResults['hebrew']['month_name'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-6xl font-bold text-purple-600 dark:text-purple-400 my-1">
+                                    {{ $conversionResults['hebrew']['day'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-lg text-purple-600 dark:text-purple-300">
+                                    {{ $conversionResults['hebrew']['day_of_week'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-sm font-mono text-purple-500 dark:text-purple-500 mt-2">
+                                    {{ $conversionResults['hebrew']['year'] ?? 'N/A' }}
+                                </div>
+                            </div>
+                        </div>
+                        @endisset
+
+                        <!-- Islamic Calendar -->
+                        @isset($conversionResults['islamic'])
+                        <div id="result-card-islamic" class="bg-green-50/50 dark:bg-green-950/30 rounded-xl shadow-lg border border-green-200 dark:border-green-800 flex flex-col">
+                            <div class="p-4 border-b border-green-200/80 dark:border-green-800/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-green-800 dark:text-green-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                                    </svg>
+                                    Islamic
+                                </h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['islamic']['full_date'] ?? '' }}', 'islamic')" title="Copy" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-100 transition-colors">
+                                    <span x-show="copiedFeedback !== 'islamic'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <span x-show="copiedFeedback === 'islamic'" x-cloak class="text-green-500 text-xs">Copied!</span>
+                                </button>
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <div class="text-sm font-medium text-green-700 dark:text-green-300 tracking-wider">
+                                    {{ $conversionResults['islamic']['month_name'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-6xl font-bold text-green-600 dark:text-green-400 my-1">
+                                    {{ $conversionResults['islamic']['day'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-lg text-green-600 dark:text-green-300">
+                                    {{ $conversionResults['islamic']['day_of_week'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-sm font-mono text-green-500 dark:text-green-500 mt-2">
+                                    {{ $conversionResults['islamic']['year'] ?? 'N/A' }} AH
+                                </div>
+                            </div>
+                        </div>
+                        @endisset
+
+                        <!-- French Republican Calendar -->
+                        @isset($conversionResults['french_republican'])
+                        <div id="result-card-french-republican" class="bg-blue-50/50 dark:bg-blue-950/30 rounded-xl shadow-lg border border-blue-200 dark:border-blue-800 flex flex-col">
+                            <div class="p-4 border-b border-blue-200/80 dark:border-blue-800/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-blue-800 dark:text-blue-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    </svg>
+                                    French Republican
+                                </h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['french_republican']['full_date'] ?? '' }}', 'french_republican')" title="Copy" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-100 transition-colors">
+                                    <span x-show="copiedFeedback !== 'french_republican'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <span x-show="copiedFeedback === 'french_republican'" x-cloak class="text-green-500 text-xs">Copied!</span>
+                                </button>
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <div class="text-sm font-medium text-blue-700 dark:text-blue-300 tracking-wider">
+                                    {{ $conversionResults['french_republican']['month_name'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-6xl font-bold text-blue-600 dark:text-blue-400 my-1">
+                                    {{ $conversionResults['french_republican']['day'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-lg text-blue-600 dark:text-blue-300">
+                                    {{ $conversionResults['french_republican']['day_of_week'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-sm font-mono text-blue-500 dark:text-blue-500 mt-2">
+                                    {{ $conversionResults['french_republican']['year'] ?? 'N/A' }}
+                                </div>
+                            </div>
+                        </div>
+                        @endisset
                     @endif
                 </div>
             </div>
