@@ -48,7 +48,7 @@ abstract class CalendarConversionService
     /**
      * Common error handling for invalid dates
      */
-    protected function handleInvalidDate(string $message): void
+    protected function handleInvalidDate(string $message): never
     {
         throw new InvalidArgumentException($message);
     }
