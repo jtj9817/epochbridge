@@ -68,7 +68,7 @@ class IslamicCalendarService extends CalendarConversionService
         $day = $dateData['day'] ?? $dateData['islamic_day'] ?? null;
 
         if (! $year || ! $month || ! $day) {
-            $this->handleInvalidDate('Invalid Islamic date components');
+            $this->handleValidationError('Invalid Islamic date components');
         }
 
         $jd = $this->calendar->ymdToJd($year, $month, $day);

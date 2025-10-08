@@ -44,7 +44,7 @@ class AssyrianCalendarService extends CalendarConversionService
     {
         $year = $dateData['year'] ?? null;
         if ($year === null) {
-            $this->handleInvalidDate('Assyrian year is required.');
+            $this->handleValidationError('Assyrian year is required.');
         }
 
         $gregorianYear = $year - 4750;

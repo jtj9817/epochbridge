@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Exceptions\CalendarCalculationException;
+use App\Exceptions\CalendarValidationException;
 use Carbon\Carbon;
 
 class ChineseCalendarService extends CalendarConversionService
@@ -57,8 +59,13 @@ class ChineseCalendarService extends CalendarConversionService
                 'full_date' => $this->formatChineseDate($chineseDate),
                 'display' => $this->getDisplayDate($chineseDate, $zodiac),
             ];
+        } catch (CalendarCalculationException $e) {
+            throw $e; // Re-throw specific exceptions
         } catch (\Exception $e) {
-            $this->handleInvalidDate('Unable to calculate Chinese calendar date: '.$e->getMessage());
+            $this->handleCalculationError(
+                'Unable to calculate Chinese calendar date: '.$e->getMessage(),
+                $e
+            );
         }
     }
 
@@ -70,17 +77,20 @@ class ChineseCalendarService extends CalendarConversionService
         $isLeapMonth = $dateData['is_leap_month'] ?? false;
 
         if (! $year || ! $month || ! $day) {
-            $this->handleInvalidDate('Invalid Chinese date components');
+            $this->handleValidationError('Invalid Chinese date components');
         }
 
         if (! $this->validateDate($year, $month, $day)) {
-            $this->handleInvalidDate("Invalid Chinese date: {$year}/{$month}/{$day}");
+            $this->handleValidationError("Invalid Chinese date: {$year}/{$month}/{$day}");
         }
 
         try {
             return $this->calculateGregorianFromChinese($year, $month, $day, $isLeapMonth);
         } catch (\Exception $e) {
-            $this->handleInvalidDate('Unable to convert Chinese date to Gregorian: '.$e->getMessage());
+            $this->handleCalculationError(
+                'Unable to convert Chinese date to Gregorian: '.$e->getMessage(),
+                $e
+            );
         }
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\CalendarConversionException;
 use App\Models\SavedConversion;
 use App\Services\DateTimeConverterService;
 use Illuminate\Support\Carbon;
@@ -102,7 +103,7 @@ $convertDate = function (DateTimeConverterService $converter) {
 
     try {
         $this->conversionResults = $converter->convert($this->dateInput, $this->inputType);
-    } catch (\InvalidArgumentException $e) {
+    } catch (CalendarConversionException | \InvalidArgumentException $e) {
         $this->conversionError = $e->getMessage();
     }
 };

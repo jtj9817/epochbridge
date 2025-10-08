@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Exceptions\CalendarCalculationException;
+use App\Exceptions\CalendarMalformedDateException;
+use App\Exceptions\CalendarRangeException;
+use App\Exceptions\CalendarValidationException;
 use Carbon\Carbon;
-use InvalidArgumentException;
 
 abstract class CalendarConversionService
 {
@@ -12,7 +15,7 @@ abstract class CalendarConversionService
      * 
      * @param Carbon $date The Gregorian date to convert
      * @return array The converted date in this calendar system
-     * @throws InvalidArgumentException When date conversion fails
+     * @throws CalendarCalculationException When date conversion fails
      */
     abstract public function fromGregorian(Carbon $date): array;
 
@@ -21,7 +24,7 @@ abstract class CalendarConversionService
      * 
      * @param array $dateData The date data in this calendar system
      * @return Carbon The converted Gregorian date
-     * @throws InvalidArgumentException When date is invalid
+     * @throws CalendarValidationException|CalendarMalformedDateException|CalendarCalculationException
      */
     abstract public function toGregorian(array $dateData): Carbon;
 
@@ -46,11 +49,35 @@ abstract class CalendarConversionService
     abstract public function getDaysInMonth(int $year, int $month): int;
 
     /**
-     * Common error handling for invalid dates
+     * @throws CalendarMalformedDateException
      */
     protected function handleInvalidDate(string $message): never
     {
-        throw new InvalidArgumentException($message);
+        throw new CalendarMalformedDateException($message, $this->getKey());
+    }
+
+    /**
+     * @throws CalendarRangeException
+     */
+    protected function handleRangeError(string $message): never
+    {
+        throw new CalendarRangeException($message, $this->getKey());
+    }
+
+    /**
+     * @throws CalendarCalculationException
+     */
+    protected function handleCalculationError(string $message, ?\Throwable $previous = null): never
+    {
+        throw new CalendarCalculationException($message, $this->getKey(), null, 0, $previous);
+    }
+
+    /**
+     * @throws CalendarValidationException
+     */
+    protected function handleValidationError(string $message): never
+    {
+        throw new CalendarValidationException($message, $this->getKey());
     }
 
     /**

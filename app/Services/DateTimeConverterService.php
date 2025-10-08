@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Exceptions\CalendarConversionException;
+use App\Exceptions\CalendarMalformedDateException;
+use App\Exceptions\CalendarValidationException;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 use Morilog\Jalali\Jalalian;
@@ -86,6 +89,8 @@ class DateTimeConverterService
                 'hebrew', 'islamic', 'french_republican', 'chinese', 'japanese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian', 'mayan' => $this->convertFromCalendar($inputType, $dateString),
                 default => throw new InvalidArgumentException('Invalid input type provided.'),
             };
+        } catch (CalendarConversionException $e) {
+            throw $e; // Re-throw calendar-specific exceptions
         } catch (\Exception $e) {
             throw new InvalidArgumentException('Invalid date format provided for the selected input type.');
         }
@@ -139,7 +144,7 @@ class DateTimeConverterService
 
         // Parse date string (expecting YYYY/MM/DD format)
         if (!preg_match('/^(\d+)\/(\d+)\/(\d+)$/', $dateString, $matches)) {
-            throw new InvalidArgumentException("Invalid date format for {$calendarType}. Use YYYY/MM/DD.");
+            throw new CalendarMalformedDateException("Invalid date format for {$calendarType}. Use YYYY/MM/DD.", $calendarType);
         }
 
         $year = (int)$matches[1];
@@ -149,7 +154,7 @@ class DateTimeConverterService
         $service = $this->calendarServices[$calendarType];
         
         if (!$service->validateDate($year, $month, $day)) {
-            throw new InvalidArgumentException("Invalid {$calendarType} date: {$dateString}");
+            throw new CalendarValidationException("Invalid {$calendarType} date: {$dateString}", $calendarType);
         }
 
         return $service->toGregorian([

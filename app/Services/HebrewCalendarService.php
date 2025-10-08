@@ -78,7 +78,7 @@ class HebrewCalendarService extends CalendarConversionService
         $day = $dateData['day'] ?? $dateData['hebrew_day'] ?? null;
 
         if (!$year || !$month || !$day) {
-            $this->handleInvalidDate('Invalid Hebrew date components');
+            $this->handleValidationError('Invalid Hebrew date components');
         }
 
         $jd = \JewishToJD($month, $day, $year);

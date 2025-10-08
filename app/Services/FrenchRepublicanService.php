@@ -42,7 +42,7 @@ class FrenchRepublicanService extends CalendarConversionService
         $frenchDate = JDToFrench($jd);
         
         if ($frenchDate === '0/0/0') {
-            return ['error' => 'Date outside French Republican calendar range'];
+            $this->handleRangeError('Date outside French Republican calendar range');
         }
 
         list($month, $day, $year) = explode('/', $frenchDate);
@@ -72,7 +72,7 @@ class FrenchRepublicanService extends CalendarConversionService
         $day = $dateData['day'] ?? $dateData['french_day'] ?? null;
 
         if (!$year || !$month || !$day) {
-            $this->handleInvalidDate('Invalid French Republican date components');
+            $this->handleValidationError('Invalid French Republican date components');
         }
 
         $jd = FrenchToJD($month, $day, $year);
