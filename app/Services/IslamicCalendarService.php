@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Carbon\Carbon;
+use Fisharebest\ExtCalendar\ArabicCalendar;
 
 class IslamicCalendarService extends CalendarConversionService
 {
@@ -11,7 +12,7 @@ class IslamicCalendarService extends CalendarConversionService
         2 => 'Safar',
         3 => 'Rabi\' al-Awwal',
         4 => 'Rabi\' al-Thani',
-        5 => 'Jumada al-Awwal', 
+        5 => 'Jumada al-Awwal',
         6 => 'Jumada al-Thani',
         7 => 'Rajab',
         8 => 'Sha\'ban',
@@ -22,26 +23,28 @@ class IslamicCalendarService extends CalendarConversionService
     ];
 
     private const ISLAMIC_DAY_NAMES = [
-        0 => 'Yawm al-Aḥad',    // Sunday
+        0 => 'Yawm al-Ahad',    // Sunday
         1 => 'Yawm al-Ithnayn', // Monday
-        2 => 'Yawm al-Thulāthā\'', // Tuesday
-        3 => 'Yawm al-Arbi‘ā\'', // Wednesday
-        4 => 'Yawm al-Khamīs',  // Thursday
-        5 => 'Yawm al-Jum‘ah',  // Friday
+        2 => 'Yawm al-Thulatha', // Tuesday
+        3 => 'Yawm al-Arbia',   // Wednesday
+        4 => 'Yawm al-Khamis',  // Thursday
+        5 => 'Yawm al-Jumah',   // Friday
         6 => 'Yawm al-Sabt',    // Saturday
     ];
+
+    private ArabicCalendar $calendar;
+
+    public function __construct()
+    {
+        $this->calendar = new ArabicCalendar;
+    }
 
     public function fromGregorian(Carbon $date): array
     {
         $date = $this->ensureTimezone($date, 'Asia/Riyadh');
-        
-        $jd = GregorianToJD($date->month, $date->day, $date->year);
-        $islamicDate = JDToIslamic($jd);
-        
-        list($month, $day, $year) = explode('/', $islamicDate);
-        $month = (int)$month;
-        $day = (int)$day;
-        $year = (int)$year;
+
+        $jd = gregoriantojd($date->month, $date->day, $date->year);
+        [$year, $month, $day] = $this->calendar->jdToYmd($jd);
 
         $dayOfWeek = jddayofweek($jd, 0);
         $monthName = self::ISLAMIC_MONTH_NAMES[$month] ?? 'Unknown';
@@ -64,20 +67,20 @@ class IslamicCalendarService extends CalendarConversionService
         $month = $dateData['month'] ?? $dateData['islamic_month'] ?? null;
         $day = $dateData['day'] ?? $dateData['islamic_day'] ?? null;
 
-        if (!$year || !$month || !$day) {
+        if (! $year || ! $month || ! $day) {
             $this->handleInvalidDate('Invalid Islamic date components');
         }
 
-        $jd = IslamicToJD($month, $day, $year);
-        $gregorian = JDToGregorian($jd);
-        
+        $jd = $this->calendar->ymdToJd($year, $month, $day);
+        $gregorian = jdtogregorian($jd);
+
         if ($gregorian === '0/0/0') {
             $this->handleInvalidDate('Invalid Islamic date');
         }
 
-        list($month, $day, $year) = explode('/', $gregorian);
-        
-        return Carbon::create($year, $month, $day, 0, 0, 0, 'Asia/Riyadh');
+        [$gMonth, $gDay, $gYear] = explode('/', $gregorian);
+
+        return Carbon::create($gYear, $gMonth, $gDay, 0, 0, 0, 'Asia/Riyadh');
     }
 
     public function getKey(): string
@@ -96,12 +99,13 @@ class IslamicCalendarService extends CalendarConversionService
             return false;
         }
 
-        $maxDays = cal_days_in_month(CAL_ISLAMIC, $month, $year);
+        $maxDays = $this->calendar->daysInMonth($year, $month);
+
         return $day <= $maxDays;
     }
 
     public function getDaysInMonth(int $year, int $month): int
     {
-        return cal_days_in_month(CAL_ISLAMIC, $month, $year);
+        return $this->calendar->daysInMonth($year, $month);
     }
 }
