@@ -32,12 +32,12 @@ class JulianDayService extends CalendarConversionService
         } elseif (isset($dateData['modified_julian_day'])) {
             $jd = (float) $dateData['modified_julian_day'] + 2400000.5;
         } else {
-            $this->handleInvalidDate('No Julian Day or Modified Julian Day provided');
+            $this->handleValidationError('No Julian Day or Modified Julian Day provided');
         }
 
         $gregorian = JDToGregorian($jd);
         if ($gregorian === '0/0/0') {
-            $this->handleInvalidDate('Invalid Julian Day number');
+            $this->handleRangeError('Invalid Julian Day number');
         }
 
         list($month, $day, $year) = explode('/', $gregorian);

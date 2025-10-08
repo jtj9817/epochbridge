@@ -58,7 +58,7 @@ class BabylonianCalendarService extends CalendarConversionService
 
     public function toGregorian(array $dateData): Carbon
     {
-        $this->handleInvalidDate('Conversion from Babylonian is not supported due to historical complexities.');
+        $this->handleCalculationError('Conversion from Babylonian is not supported due to historical complexities.');
         // @codeCoverageIgnoreStart
         return Carbon::now(); // Should not be reached
         // @codeCoverageIgnoreEnd

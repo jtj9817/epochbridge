@@ -55,7 +55,7 @@ class AncientMacedonianService extends CalendarConversionService
 
     public function toGregorian(array $dateData): Carbon
     {
-        $this->handleInvalidDate('Conversion from Ancient Macedonian is not supported due to historical complexities.');
+        $this->handleCalculationError('Conversion from Ancient Macedonian is not supported due to historical complexities.');
         // @codeCoverageIgnoreStart
         return Carbon::now(); // Should not be reached
         // @codeCoverageIgnoreEnd
