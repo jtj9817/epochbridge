@@ -47,8 +47,8 @@ $setToday = function () {
         'jalali' => Jalalian::fromCarbon(now())->format('Y/m/d'),
         'unix' => now()->startOfDay()->timestamp,
         'iso8601' => now()->startOfDay()->toIso8601String(),
-        'jd' => now()->getJulianDay(),
-        'mjd' => now()->getJulianDay() - 2400000.5,
+        'jd' => GregorianToJD(now()->month, now()->day, now()->year),
+        'mjd' => GregorianToJD(now()->month, now()->day, now()->year) - 2400000.5,
         default => now()->format('Y-m-d'),
     };
 };
@@ -59,8 +59,8 @@ $setYesterday = function () {
         'jalali' => Jalalian::fromCarbon($date)->format('Y/m/d'),
         'unix' => $date->startOfDay()->timestamp,
         'iso8601' => $date->startOfDay()->toIso8601String(),
-        'jd' => $date->getJulianDay(),
-        'mjd' => $date->getJulianDay() - 2400000.5,
+        'jd' => GregorianToJD($date->month, $date->day, $date->year),
+        'mjd' => GregorianToJD($date->month, $date->day, $date->year) - 2400000.5,
         default => $date->format('Y-m-d'),
     };
 };
@@ -71,8 +71,8 @@ $setTomorrow = function () {
         'jalali' => Jalalian::fromCarbon($date)->format('Y/m/d'),
         'unix' => $date->startOfDay()->timestamp,
         'iso8601' => $date->startOfDay()->toIso8601String(),
-        'jd' => $date->getJulianDay(),
-        'mjd' => $date->getJulianDay() - 2400000.5,
+        'jd' => GregorianToJD($date->month, $date->day, $date->year),
+        'mjd' => GregorianToJD($date->month, $date->day, $date->year) - 2400000.5,
         default => $date->format('Y-m-d'),
     };
 };
@@ -333,7 +333,9 @@ $deleteConversion = function (int $id) {
                                 `Gregorian: {{ $conversionResults['gregorian']['full_date'] ?? '' }}\n` +
                                 `Jalali: {{ $conversionResults['jalali']['full_date'] ?? '' }}\n` +
                                 `Unix: {{ $conversionResults['unix'] ?? '' }}\n` +
-                                `ISO 8601: {{ $conversionResults['iso8601'] ?? '' }}`,
+                                `ISO 8601: {{ $conversionResults['iso8601'] ?? '' }}\n` +
+                                `Julian Day: {{ $conversionResults['jd'] ?? '' }}\n` +
+                                `Modified Julian Day: {{ $conversionResults['mjd'] ?? '' }}`,
                                 'all'
                             )"
                             class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline"
@@ -359,7 +361,7 @@ $deleteConversion = function (int $id) {
                     </div>
                 </div>
                 
-                <div id="results-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div id="results-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     @if (!empty($conversionResults))
                         <!-- Gregorian Calendar -->
                         <div id="result-card-gregorian" class="bg-white dark:bg-zinc-800/50 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 flex flex-col">

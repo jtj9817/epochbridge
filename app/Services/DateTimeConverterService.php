@@ -69,7 +69,10 @@ class DateTimeConverterService
         }
 
         $jalaliDate = Jalalian::fromCarbon($carbonDate);
-        $julianDay = $carbonDate->getJulianDay();
+        $julianDay = GregorianToJD($carbonDate->month, $carbonDate->day, $carbonDate->year) 
+             + ($carbonDate->hour / 24) 
+             + ($carbonDate->minute / 1440) 
+             + ($carbonDate->second / 86400);
 
         return [
             'gregorian' => [
