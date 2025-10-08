@@ -11,7 +11,6 @@ class HebrewCalendarService extends CalendarConversionService
 
     public function __construct()
     {
-        parent::__construct();
         $this->jewishCalendar = new JewishCalendar();
     }
 
