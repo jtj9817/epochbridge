@@ -44,7 +44,7 @@ class MayanCalendarService extends CalendarConversionService
 
     public function toGregorian(array $dateData): Carbon
     {
-        $this->handleInvalidDate('Direct conversion from Mayan components is not supported via this form. Please use Gregorian input.');
+        $this->handleCalculationError('Direct conversion from Mayan components is not supported via this form. Please use Gregorian input.');
         // @codeCoverageIgnoreStart
         return Carbon::now(); // Should not be reached
         // @codeCoverageIgnoreEnd

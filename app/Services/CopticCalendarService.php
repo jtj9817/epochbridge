@@ -66,7 +66,7 @@ class CopticCalendarService extends CalendarConversionService
         $day = $dateData['day'] ?? null;
         
         if (!$year || !$month || !$day) {
-            $this->handleInvalidDate('Invalid Coptic date components');
+            $this->handleValidationError('Invalid Coptic date components');
         }
 
         $jd = self::COPTIC_EPOCH + ($year - 1) * 365 + floor($year / 4) + ($month - 1) * 30 + $day - 1;

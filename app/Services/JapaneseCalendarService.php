@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\JapaneseEra;
 use Carbon\Carbon;
-use InvalidArgumentException;
 
 class JapaneseCalendarService extends CalendarConversionService
 {
@@ -15,7 +14,7 @@ class JapaneseCalendarService extends CalendarConversionService
         $era = JapaneseEra::findEraForDate($date);
         
         if (!$era) {
-            $this->handleInvalidDate('No Japanese era found for the given date');
+            $this->handleRangeError('No Japanese era found for the given date');
         }
 
         $eraYear = $era->getEraYear($date);
@@ -44,7 +43,7 @@ class JapaneseCalendarService extends CalendarConversionService
         $day = $dateData['day'] ?? null;
 
         if (!$eraName || !$year || !$month || !$day) {
-            $this->handleInvalidDate('Invalid Japanese date components');
+            $this->handleValidationError('Invalid Japanese date components');
         }
 
         $era = JapaneseEra::where('name_romanized', $eraName)
@@ -53,7 +52,7 @@ class JapaneseCalendarService extends CalendarConversionService
             ->first();
 
         if (!$era) {
-            $this->handleInvalidDate("Japanese era '{$eraName}' not found");
+            $this->handleValidationError("Japanese era '{$eraName}' not found");
         }
 
         $gregorianYear = $era->start_date->year + $year - 1;
@@ -62,11 +61,11 @@ class JapaneseCalendarService extends CalendarConversionService
         // Validate that the date is within the era's range
         if ($candidateDate->lt($era->start_date) || 
             ($era->end_date && $candidateDate->gt($era->end_date))) {
-            $this->handleInvalidDate("Date {$eraName}{$year}/{$month}/{$day} is not within the era's valid range");
+            $this->handleRangeError("Date {$eraName}{$year}/{$month}/{$day} is not within the era's valid range");
         }
 
         if (!$this->validateDate($year, $month, $day)) {
-            $this->handleInvalidDate("Invalid Japanese date: {$eraName}{$year}/{$month}/{$day}");
+            $this->handleValidationError("Invalid Japanese date: {$eraName}{$year}/{$month}/{$day}");
         }
 
         return $candidateDate;
