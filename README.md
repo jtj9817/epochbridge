@@ -1,17 +1,31 @@
 # EpochBridge
 
-A modern Laravel 12 application built with the TALL Stack (Tailwind CSS, Alpine.js, Livewire, Laravel) featuring complete authentication and calendar functionality.
+A comprehensive calendar conversion platform built with Laravel 12 and the TALL Stack, supporting 15+ historical and modern calendar systems with complete authentication and user management features.
 
 ## Features
 
-- **Date & Time Conversion**: Real-time conversion between Gregorian and Persian/Jalali calendars
-- **Multi-Format Output**: Unix timestamps, ISO 8601, and detailed calendar components
-- **Interactive Landing Page**: Modern interface with quick-action buttons (Today, Yesterday, Tomorrow)
+### Calendar Conversion System
+- **15+ Calendar Systems**: Comprehensive support including:
+  - **Modern**: Gregorian, Persian/Jalali, Islamic (Hijri), Hebrew
+  - **Historical**: Julian, French Republican, Coptic, Ethiopian, Egyptian
+  - **Ancient**: Babylonian, Assyrian, Ancient Macedonian, Mayan
+  - **East Asian**: Chinese Lunisolar, Japanese Era-based
+- **Multi-Format Output**: Unix timestamps, ISO 8601, Julian Day Numbers, and detailed calendar components
+- **Real-time Conversion**: Instant conversion between any supported calendar systems
+- **Historical Accuracy**: Authentic calculations with astronomical data integration
+
+### User Experience
+- **Interactive Landing Page**: Modern interface with comprehensive calendar displays
+- **Conversion Management**: Save and manage conversions (authenticated users) or use local storage (guests)
+- **Clipboard Integration**: Copy conversion results with one click
+- **Quick Actions**: Today, Yesterday, Tomorrow buttons for rapid navigation
+- **Responsive Design**: Optimized for desktop and mobile devices
+
+### Technical Stack
 - **TALL Stack Architecture**: Tailwind CSS 4, Alpine.js, Livewire 3, Laravel 12
 - **Authentication System**: Complete auth flow with Laravel Fortify
 - **Two-Factor Authentication**: Enhanced security with recovery codes
 - **Email Verification**: Required for new user accounts
-- **Calendar Integration**: Extended calendar functionality with Persian/Jalali support
 - **Modern UI**: Built with Flux UI component library
 - **Livewire Volt**: Single-file components for rapid development
 
@@ -142,48 +156,116 @@ app/
 ├── Http/Controllers/        # HTTP controllers
 ├── Livewire/               # Livewire components
 ├── Models/                 # Eloquent models
+│   ├── User.php           # User model with saved conversions
+│   ├── SavedConversion.php # User conversion history
+│   ├── JapaneseEra.php    # Japanese era data
+│   ├── HistoricalCalendarData.php # Ancient calendar reference data
+│   └── MayanCalendarData.php # Mayan calendar calculations
 ├── Providers/              # Service providers
-└── Services/               # Business logic services
+└── Services/               # Calendar conversion services
+    ├── DateTimeConverterService.php    # Main conversion orchestrator
+    ├── CalendarConversionService.php   # Base conversion utilities
+    ├── JulianDayService.php           # Julian Day calculations
+    ├── HebrewCalendarService.php      # Hebrew calendar
+    ├── IslamicCalendarService.php     # Islamic/Hijri calendar
+    ├── ChineseCalendarService.php     # Chinese lunisolar calendar
+    ├── JapaneseCalendarService.php    # Japanese era-based calendar
+    ├── FrenchRepublicanService.php    # French Revolutionary calendar
+    ├── CopticCalendarService.php      # Coptic calendar
+    ├── EthiopianCalendarService.php   # Ethiopian calendar
+    ├── EgyptianCalendarService.php    # Ancient Egyptian calendar
+    ├── BabylonianCalendarService.php  # Babylonian calendar
+    ├── AssyrianCalendarService.php    # Assyrian calendar
+    ├── AncientMacedonianService.php   # Ancient Macedonian calendar
+    ├── MayanCalendarService.php       # Mayan calendar system
+    └── AncientAstronomyService.php    # Astronomical calculations
 
 resources/
 ├── css/                    # Tailwind CSS files
 ├── js/                     # JavaScript files
-├── views/
-│   ├── components/         # Blade components
-│   ├── livewire/          # Livewire Volt components
-│   └── pages/             # Page-level Volt components
+└── views/
+    ├── components/         # Blade components
+    ├── livewire/          # Livewire Volt components
+    │   ├── landing.blade.php    # Main calendar conversion interface
+    │   ├── auth/               # Authentication forms
+    │   └── settings/           # User settings pages
+    └── pages/             # Page-level Volt components
+
+database/
+├── migrations/            # Database schema
+│   ├── *_create_saved_conversions_table.php
+│   ├── *_create_japanese_eras_table.php
+│   ├── *_create_historical_calendar_data_table.php
+│   └── *_create_mayan_calendar_data_table.php
+└── seeders/              # Database seeders
+    ├── JapaneseEraSeeder.php
+    └── MayanCalendarDataSeeder.php
 
 tests/
 ├── Feature/               # Feature tests
 ├── Unit/                  # Unit tests
+│   └── Services/         # Calendar service tests
 └── Browser/               # Dusk browser tests
 ```
 
 ## Key Features
 
-### Date Conversion System
-The core functionality of EpochBridge is powered by the `DateTimeConverterService` which provides:
+### Multi-Calendar Conversion Engine
+The core functionality is powered by `DateTimeConverterService` and 15+ specialized calendar services:
 
-- **Multi-Calendar Support**: Gregorian ↔ Persian/Jalali conversion
-- **Comprehensive Output**: Returns detailed date components including:
-  - Year, month name, day, day of week
-  - English transliterations for Persian calendar
-  - Unix timestamps and ISO 8601 formatting
-- **Input Validation**: Robust error handling for invalid date formats
-- **Timezone Aware**: Consistent date processing with timezone support
+- **Universal Conversion**: Convert between any of the 15+ supported calendar systems
+- **Comprehensive Output**: Detailed components for each calendar including:
+  - Year, month name, day, day of week in native scripts
+  - English transliterations and romanizations
+  - Cultural and historical context
+  - Unix timestamps, ISO 8601, and Julian Day Numbers
+- **Historical Accuracy**: Authentic calculations using:
+  - Astronomical data for lunar calendars
+  - Historical era systems (Japanese, Roman, etc.)
+  - Ancient calculation methods for historical calendars
+- **Input Validation**: Robust error handling with user-friendly messages
+- **Timezone Aware**: Consistent processing across time zones
 
-### Calendar Integration
-- **fisharebest/ext-calendar**: Extended calendar functionality
-- **morilog/jalali**: Persian/Jalali calendar support
-- Date conversion utilities for both Gregorian and Jalali systems
+### Supported Calendar Systems
+
+#### Modern Calendars
+- **Gregorian**: International standard civil calendar
+- **Persian/Jalali**: Official calendar of Iran and Afghanistan  
+- **Islamic (Hijri)**: Lunar calendar used in Islamic countries
+- **Hebrew**: Jewish calendar with lunar-solar calculations
+
+#### Historical Calendars
+- **Julian**: Roman calendar, predecessor to Gregorian
+- **French Republican**: Revolutionary calendar (1793-1805)
+- **Coptic**: Egyptian Christian calendar
+- **Ethiopian**: Traditional calendar of Ethiopia
+- **Egyptian**: Ancient Egyptian civil calendar
+
+#### Ancient Calendars
+- **Babylonian**: Ancient Mesopotamian lunar calendar
+- **Assyrian**: Ancient Assyrian calendar system
+- **Ancient Macedonian**: Calendar of ancient Macedonia
+- **Mayan**: Complex Mesoamerican calendar system
+
+#### East Asian Calendars
+- **Chinese Lunisolar**: Traditional Chinese calendar with zodiac
+- **Japanese Era-based**: Calendar with imperial era names
+
+### User Features
+- **Conversion Management**: Authenticated users can save and organize conversion history
+- **Guest Storage**: Non-authenticated users utilize local browser storage
+- **Clipboard Integration**: One-click copying of conversion results
+- **Bulk Operations**: Save multiple conversions simultaneously
+- **Search & Filter**: Find saved conversions by date or calendar type
 
 ### Interactive Landing Page
 Located at `resources/views/livewire/landing.blade.php`:
-- Real-time date conversion interface
-- Quick-action buttons (Today, Yesterday, Tomorrow)
-- Input validation with user-friendly error messages
-- Loading states and responsive design
-- Livewire Volt single-file component architecture
+- **Comprehensive Display**: All 15+ calendars shown simultaneously
+- **Real-time Updates**: Instant conversion as you type
+- **Quick Actions**: Today, Yesterday, Tomorrow navigation
+- **Visual Design**: Unique styling for each calendar system with cultural icons
+- **Responsive Layout**: Optimized grid system for all device sizes
+- **Loading States**: Smooth UX with loading indicators
 
 ### Livewire Volt
 Single-file components combining PHP logic and Blade templates:
