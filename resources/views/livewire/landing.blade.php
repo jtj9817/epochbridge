@@ -484,6 +484,58 @@ $deleteConversion = function (int $id) {
                                 <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-2 uppercase tracking-widest">UTC format</p>
                             </div>
                         </div>
+
+                        <!-- Julian Day -->
+                        <div id="result-card-jd" class="bg-purple-50/50 dark:bg-purple-950/30 rounded-xl shadow-lg border border-purple-200 dark:border-purple-800 flex flex-col">
+                            <div class="p-4 border-b border-purple-200/80 dark:border-purple-800/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-purple-800 dark:text-purple-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Julian Day
+                                </h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['jd'] ?? '' }}', 'jd')" title="Copy" class="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-100 transition-colors">
+                                    <span x-show="copiedFeedback !== 'jd'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <span x-show="copiedFeedback === 'jd'" x-cloak class="text-green-500 text-xs">Copied!</span>
+                                </button>
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <p class="text-3xl font-mono text-purple-600 dark:text-purple-400 tracking-wider">
+                                    {{ $conversionResults['jd'] ?? 'N/A' }}
+                                </p>
+                                <p class="text-xs text-purple-500 dark:text-purple-500 mt-2 uppercase tracking-widest">Julian Day Number</p>
+                            </div>
+                        </div>
+
+                        <!-- Modified Julian Day -->
+                        <div id="result-card-mjd" class="bg-orange-50/50 dark:bg-orange-950/30 rounded-xl shadow-lg border border-orange-200 dark:border-orange-800 flex flex-col">
+                            <div class="p-4 border-b border-orange-200/80 dark:border-orange-800/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-orange-800 dark:text-orange-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Modified Julian Day
+                                </h3>
+                                <button @click="copyToClipboard('{{ $conversionResults['mjd'] ?? '' }}', 'mjd')" title="Copy" class="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-100 transition-colors">
+                                    <span x-show="copiedFeedback !== 'mjd'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <span x-show="copiedFeedback === 'mjd'" x-cloak class="text-green-500 text-xs">Copied!</span>
+                                </button>
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <p class="text-3xl font-mono text-orange-600 dark:text-orange-400 tracking-wider">
+                                    {{ $conversionResults['mjd'] ?? 'N/A' }}
+                                </p>
+                                <p class="text-xs text-orange-500 dark:text-orange-500 mt-2 uppercase tracking-widest">Modified Julian Day</p>
+                            </div>
+                        </div>
                     @endif
                 </div>
             </div>
