@@ -34,6 +34,7 @@ state('inputTypes', [
     'babylonian' => 'Babylonian (YYYY/MM/DD)',
     'assyrian' => 'Assyrian (YYYY/MM/DD)',
     'macedonian' => 'Ancient Macedonian (YYYY/MM/DD)',
+    'mayan' => 'Mayan (from Gregorian YYYY/MM/DD)',
 ]);
 
 rules(fn () => match ($this->inputType) {
@@ -42,12 +43,12 @@ rules(fn () => match ($this->inputType) {
     'unix' => ['dateInput' => 'required|integer'],
     'iso8601' => ['dateInput' => 'required|string'],
     'jd', 'mjd' => ['dateInput' => 'required|numeric'],
-    'hebrew', 'islamic', 'french_republican', 'chinese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian' => ['dateInput' => 'required|date_format:Y/m/d'],
+    'hebrew', 'islamic', 'french_republican', 'chinese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian', 'mayan' => ['dateInput' => 'required|date_format:Y/m/d'],
     'japanese' => ['dateInput' => 'required|string'], // More complex format: EraYear/MM/DD
     default => ['dateInput' => 'required'],
 })->messages([
     'dateInput.required' => 'Please enter a value.',
-    'dateInput.date_format' => 'Please enter a valid date. For Gregorian use YYYY-MM-DD. For Jalali, Hebrew, Islamic, French Republican, Chinese, Babylonian, Assyrian, Macedonian, Coptic, Egyptian, Ethiopian use YYYY/MM/DD. For Japanese use EraYear/MM/DD.',
+    'dateInput.date_format' => 'Please enter a valid date. For Gregorian use YYYY-MM-DD. For others, use YYYY/MM/DD.',
     'dateInput.integer' => 'Please enter a valid integer Unix timestamp.',
     'dateInput.numeric' => 'Please enter a valid number.',
 ]);
@@ -273,7 +274,7 @@ $deleteConversion = function (int $id) {
                                 :placeholder="inputType === 'jd' ? 'e.g., 2460310.5' : 'e.g., 60309'"
                             />
                             <input 
-                                x-show="['hebrew', 'islamic', 'french_republican', 'chinese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian'].includes(inputType)" x-cloak
+                                x-show="['hebrew', 'islamic', 'french_republican', 'chinese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian', 'mayan'].includes(inputType)" x-cloak
                                 type="text" 
                                 id="date-input-calendars"
                                 wire:model.live="dateInput"
@@ -864,6 +865,44 @@ $deleteConversion = function (int $id) {
                         </div>
                         @endisset
 
+                        <!-- Mayan Calendar -->
+                        @isset($conversionResults['mayan'])
+                        <div id="result-card-mayan" class="bg-stone-50/50 dark:bg-stone-950/30 rounded-xl shadow-lg border border-stone-200 dark:border-stone-800 flex flex-col md:col-span-2 lg:col-span-1">
+                            <div class="p-4 border-b border-stone-200/80 dark:border-stone-800/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-stone-800 dark:text-stone-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                    </svg>
+                                    Mayan
+                                </h3>
+                                @if($conversionResults['mayan']['disclaimer'] ?? false)
+                                <div x-data="{ show: false }" class="relative">
+                                    <button @mouseenter="show = true" @mouseleave="show = false" class="text-stone-600 dark:text-stone-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </button>
+                                    <div x-show="show" x-transition class="absolute bottom-full right-0 mb-2 w-64 p-2 text-xs bg-zinc-800 text-white rounded-md z-10">
+                                        {{ $conversionResults['mayan']['disclaimer'] }}
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center space-y-4">
+                                <div>
+                                    <p class="text-xs text-stone-500 dark:text-stone-400 uppercase tracking-widest">Long Count</p>
+                                    <p class="text-2xl font-mono text-stone-700 dark:text-stone-300">{{ $conversionResults['mayan']['long_count'] ?? 'N/A' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-stone-500 dark:text-stone-400 uppercase tracking-widest">Tzolk'in</p>
+                                    <p class="text-xl font-semibold text-stone-600 dark:text-stone-200">{{ $conversionResults['mayan']['tzolkin'] ?? 'N/A' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-stone-500 dark:text-stone-400 uppercase tracking-widest">Haab'</p>
+                                    <p class="text-xl font-semibold text-stone-600 dark:text-stone-200">{{ $conversionResults['mayan']['haab'] ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        @endisset
+
                         <!-- French Republican Calendar -->
                         @isset($conversionResults['french_republican'])
                         <div id="result-card-french-republican" class="bg-blue-50/50 dark:bg-blue-950/30 rounded-xl shadow-lg border border-blue-200 dark:border-blue-800 flex flex-col">
@@ -1034,6 +1073,12 @@ $deleteConversion = function (int $id) {
                         <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">🇪🇹</div>
                         <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Ethiopian Calendar</h3>
                         <p class="text-theme-500 dark:text-theme-100">Principal calendar in Ethiopia with a 13-month structure</p>
+                    </div>
+
+                    <div id="feature-card-mayan" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
+                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">🗿</div>
+                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Mayan Calendar</h3>
+                        <p class="text-theme-500 dark:text-theme-100">Complex system with Long Count, Tzolk'in, and Haab' cycles</p>
                     </div>
                 </div>
             </div>
