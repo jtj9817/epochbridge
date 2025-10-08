@@ -4,6 +4,7 @@ use App\Models\SavedConversion;
 use App\Services\DateTimeConverterService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Morilog\Jalali\Jalalian;
 use function Livewire\Volt\{state, mount, layout, rules};
