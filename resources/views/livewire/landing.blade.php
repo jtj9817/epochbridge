@@ -26,6 +26,8 @@ state('inputTypes', [
     'hebrew' => 'Hebrew (YYYY/MM/DD)',
     'islamic' => 'Islamic (YYYY/MM/DD)',
     'french_republican' => 'French Republican (YYYY/MM/DD)',
+    'chinese' => 'Chinese (YYYY/MM/DD)',
+    'japanese' => 'Japanese (Era Year/MM/DD)',
 ]);
 
 rules(fn () => match ($this->inputType) {
@@ -34,11 +36,12 @@ rules(fn () => match ($this->inputType) {
     'unix' => ['dateInput' => 'required|integer'],
     'iso8601' => ['dateInput' => 'required|string'],
     'jd', 'mjd' => ['dateInput' => 'required|numeric'],
-    'hebrew', 'islamic', 'french_republican' => ['dateInput' => 'required|date_format:Y/m/d'],
+    'hebrew', 'islamic', 'french_republican', 'chinese' => ['dateInput' => 'required|date_format:Y/m/d'],
+    'japanese' => ['dateInput' => 'required|string'], // More complex format: EraYear/MM/DD
     default => ['dateInput' => 'required'],
 })->messages([
     'dateInput.required' => 'Please enter a value.',
-    'dateInput.date_format' => 'Please enter a valid date. For Gregorian use YYYY-MM-DD, for Jalali/Hebrew/Islamic/French Republican use YYYY/MM/DD.',
+    'dateInput.date_format' => 'Please enter a valid date. For Gregorian use YYYY-MM-DD, for Jalali/Hebrew/Islamic/French Republican/Chinese use YYYY/MM/DD, for Japanese use EraYear/MM/DD.',
     'dateInput.integer' => 'Please enter a valid integer Unix timestamp.',
     'dateInput.numeric' => 'Please enter a valid number.',
 ]);
@@ -68,6 +71,8 @@ $setYesterday = function () {
         'iso8601' => $date->startOfDay()->toIso8601String(),
         'jd' => GregorianToJD($date->month, $date->day, $date->year),
         'mjd' => GregorianToJD($date->month, $date->day, $date->year) - 2400000.5,
+        'chinese' => $date->format('Y/m/d'), // Will be converted by service
+        'japanese' => 'Reiwa' . (now()->year - 2018) . '/' . now()->format('m/d'), // Assuming Reiwa started 2019-05-01
         default => $date->format('Y-m-d'),
     };
 };
@@ -268,6 +273,22 @@ $deleteConversion = function (int $id) {
                                 wire:model.live="dateInput"
                                 class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
                                 placeholder="YYYY/MM/DD"
+                            />
+                            <input 
+                                x-show="inputType === 'chinese'" x-cloak
+                                type="text" 
+                                id="date-input-chinese"
+                                wire:model.live="dateInput"
+                                class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                                placeholder="YYYY/MM/DD"
+                            />
+                            <input 
+                                x-show="inputType === 'japanese'" x-cloak
+                                type="text" 
+                                id="date-input-japanese"
+                                wire:model.live="dateInput"
+                                class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                                placeholder="Reiwa1/MM/DD or 2023/MM/DD"
                             />
                         </div>
                         @error('dateInput')
@@ -763,6 +784,18 @@ $deleteConversion = function (int $id) {
                         <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">⏰</div>
                         <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Unix Timestamp</h3>
                         <p class="text-theme-500 dark:text-theme-100">Seconds since Unix epoch</p>
+                    </div>
+                    
+                    <div id="feature-card-chinese" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
+                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">🐉</div>
+                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Chinese Lunisolar Calendar</h3>
+                        <p class="text-theme-500 dark:text-theme-100">Traditional Chinese calendar with zodiac and solar terms</p>
+                    </div>
+
+                    <div id="feature-card-japanese" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
+                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">🌸</div>
+                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Japanese Era Calendar</h3>
+                        <p class="text-theme-500 dark:text-theme-100">Imperial era-based calendar system (e.g., Reiwa)</p>
                     </div>
                 </div>
             </div>
