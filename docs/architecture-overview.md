@@ -17,12 +17,17 @@
 
 ## Application Overview
 
-EpochBridge is a modern Laravel 12 web application built using the TALL Stack (Tailwind CSS, Alpine.js, Livewire, Laravel) architecture. The application serves as a comprehensive date and time conversion platform with support for multiple calendar systems, particularly focusing on Gregorian and Persian/Jalali calendar conversions.
+EpochBridge is a comprehensive calendar conversion platform built using the TALL Stack (Tailwind CSS, Alpine.js, Livewire, Laravel) architecture. The application supports 15+ historical and modern calendar systems with complete user management and conversion history features.
 
 ### Core Purpose
-- **Primary Function**: Date and time conversion between different calendar systems
-- **Target Users**: Developers, researchers, and users working with multiple calendar systems
-- **Key Features**: Real-time date conversion, Persian/Jalali calendar support, user authentication, and responsive web interface
+- **Primary Function**: Universal calendar conversion between 15+ calendar systems including modern, historical, and ancient calendars
+- **Target Users**: Historians, developers, researchers, genealogists, and anyone working with diverse calendar systems
+- **Key Features**: 
+  - Real-time conversion between 15+ calendar systems
+  - Historical accuracy with astronomical calculations
+  - User conversion management and history
+  - Clipboard integration for easy data export
+  - Comprehensive authentication and user profiles
 
 ## Technology Stack
 
@@ -32,8 +37,9 @@ EpochBridge is a modern Laravel 12 web application built using the TALL Stack (T
 - **Interactive Components**: Livewire 3 with Volt
 - **Database**: MySQL 8.0 (via Docker)
 - **Calendar Libraries**: 
-  - `fisharebest/ext-calendar` 2.6+ (Extended calendar functionality)
+  - `fisharebest/ext-calendar` 2.6+ (Hebrew, Islamic, French Republican calendars)
   - `morilog/jalali` 3.* (Persian/Jalali calendar support)
+- **Custom Calendar Services**: 15+ specialized services for historical and ancient calendars
 
 ### Frontend Technologies
 - **CSS Framework**: Tailwind CSS 4 with Vite integration
@@ -310,52 +316,75 @@ Route::middleware(['auth', 'verified'])->group(function () {
 #### Primary Libraries
 1. **fisharebest/ext-calendar**: Extended calendar functionality
    - Julian Day Number conversions
-   - Multiple calendar system support
-   - Historical date accuracy
+   - Hebrew, Islamic (Hijri), French Republican calendars
+   - Historical date accuracy with astronomical calculations
 
 2. **morilog/jalali**: Persian/Jalali calendar
    - Jalali to Gregorian conversion
    - Persian month/day names
    - Cultural date formatting
 
-#### DateTimeConverterService Architecture
-```php
-class DateTimeConverterService
-{
-    // Jalali month names in English transliteration
-    private const JALALI_MONTHS_EN = [
-        1 => 'Farvardin', 2 => 'Ordibehesht', 3 => 'Khordad',
-        4 => 'Tir', 5 => 'Mordad', 6 => 'Shahrivar',
-        7 => 'Mehr', 8 => 'Aban', 9 => 'Azar',
-        10 => 'Dey', 11 => 'Bahman', 12 => 'Esfand'
-    ];
-
-    // Jalali day names in English transliteration
-    private const JALALI_DAYS_EN = [
-        0 => 'Shanbeh',      // Saturday
-        1 => 'Yekshanbeh',   // Sunday
-        2 => 'Doshanbeh',    // Monday
-        3 => 'Seshhanbeh',   // Tuesday
-        4 => 'Chaharshanbeh', // Wednesday
-        5 => 'Panjshanbeh',  // Thursday
-        6 => 'Jomeh'         // Friday
-    ];
-}
+#### 15+ Calendar Service Architecture
+```
+app/Services/
+├── DateTimeConverterService.php    # Main orchestrator
+├── CalendarConversionService.php   # Base conversion utilities
+├── JulianDayService.php           # Universal Julian Day conversions
+├── HebrewCalendarService.php      # Jewish calendar (lunar-solar)
+├── IslamicCalendarService.php     # Hijri lunar calendar
+├── ChineseCalendarService.php     # Chinese lunisolar with zodiac
+├── JapaneseCalendarService.php    # Imperial era-based calendar
+├── FrenchRepublicanService.php    # Revolutionary calendar (1793-1805)
+├── CopticCalendarService.php      # Egyptian Christian calendar
+├── EthiopianCalendarService.php   # Traditional Ethiopian calendar
+├── EgyptianCalendarService.php    # Ancient Egyptian civil calendar
+├── BabylonianCalendarService.php  # Ancient Mesopotamian lunar
+├── AssyrianCalendarService.php    # Ancient Assyrian calendar
+├── AncientMacedonianService.php   # Ancient Macedonian calendar
+├── MayanCalendarService.php       # Complex Mesoamerican system
+└── AncientAstronomyService.php    # Astronomical calculations
 ```
 
-#### Conversion Process Flow
+#### Universal Conversion Process Flow
 ```
-User Input (YYYY-MM-DD)
+User Input (Date in any format)
     ↓
-Carbon::parse() validation
+DateTimeConverterService::convert()
     ↓
-Jalalian::fromCarbon() conversion
+Input validation & normalization
     ↓
-Multi-format output:
-├── Gregorian (full details)
-├── Jalali (Persian + English names)
-├── Unix timestamp
-└── ISO 8601 format
+Julian Day Number calculation (universal backbone)
+    ↓
+Parallel conversion to all 15+ calendar systems:
+├── Modern Calendars (Gregorian, Persian, Hebrew, Islamic)
+├── Historical Calendars (Julian, French Republican, Coptic, Ethiopian, Egyptian)
+├── Ancient Calendars (Babylonian, Assyrian, Ancient Macedonian, Mayan)
+└── East Asian Calendars (Chinese Lunisolar, Japanese Era-based)
+    ↓
+Comprehensive output with:
+├── Native date components (year, month, day)
+├── Cultural names in original scripts
+├── English transliterations
+├── Historical context and era information
+├── Julian Day Numbers
+├── Unix timestamps
+└── ISO 8601 formatting
+```
+
+#### Calendar Data Models
+```
+app/Models/
+├── User.php                      # User with saved conversions
+├── SavedConversion.php          # User conversion history
+├── JapaneseEra.php             # Japanese imperial eras (Heisei, Reiwa, etc.)
+├── HistoricalCalendarData.php  # Ancient calendar reference data
+└── MayanCalendarData.php       # Mayan calendar calculations
+
+database/migrations/
+├── *_create_saved_conversions_table.php
+├── *_create_japanese_eras_table.php
+├── *_create_historical_calendar_data_table.php
+└── *_create_mayan_calendar_data_table.php
 ```
 
 ## Database Architecture
@@ -372,7 +401,11 @@ database/migrations/
 ├── 0001_01_01_000000_create_users_table.php
 ├── 0001_01_01_000001_create_cache_table.php
 ├── 0001_01_01_000002_create_jobs_table.php
-└── 2025_09_02_075243_add_two_factor_columns_to_users_table.php
+├── 2025_01_15_000000_create_japanese_eras_table.php
+├── 2025_01_16_000000_create_historical_calendar_data_table.php
+├── 2025_09_02_075243_add_two_factor_columns_to_users_table.php
+├── 2025_10_07_221538_create_saved_conversions_table.php
+└── 2025_11_10_000000_create_mayan_calendar_data_table.php
 ```
 
 ### Schema Design
@@ -389,6 +422,57 @@ users
 ├── two_factor_secret (text, nullable)        # 2FA secret
 ├── two_factor_recovery_codes (text, nullable) # Recovery codes
 ├── two_factor_confirmed_at (timestamp, nullable) # 2FA confirmation
+├── created_at (timestamp)
+└── updated_at (timestamp)
+```
+
+#### Saved Conversions Table
+```sql
+saved_conversions
+├── id (bigint, primary key)
+├── user_id (bigint, foreign key to users.id, nullable) # Null for guest conversions
+├── conversion_data (json)                              # Full conversion results
+├── input_date (varchar)                               # Original input date
+├── created_at (timestamp)
+└── updated_at (timestamp)
+```
+
+#### Japanese Eras Table
+```sql
+japanese_eras
+├── id (bigint, primary key)
+├── name_japanese (varchar)    # Era name in Japanese
+├── name_english (varchar)     # Era name in English
+├── start_date (date)          # Era start date (Gregorian)
+├── end_date (date, nullable)  # Era end date (null for current era)
+├── created_at (timestamp)
+└── updated_at (timestamp)
+```
+
+#### Historical Calendar Data Table
+```sql
+historical_calendar_data
+├── id (bigint, primary key)
+├── calendar_type (varchar)    # Calendar system identifier
+├── data_type (varchar)        # Type of data (month_names, era_info, etc.)
+├── data_content (json)        # Flexible JSON storage for calendar data
+├── metadata (json, nullable)  # Additional metadata
+├── created_at (timestamp)
+└── updated_at (timestamp)
+```
+
+#### Mayan Calendar Data Table
+```sql
+mayan_calendar_data
+├── id (bigint, primary key)
+├── long_count (varchar)       # Mayan Long Count date
+├── haab_day (integer)         # Haab calendar day
+├── haab_month (varchar)       # Haab calendar month
+├── tzolkin_day (integer)      # Tzolkin calendar day
+├── tzolkin_sign (varchar)     # Tzolkin calendar sign
+├── gregorian_date (date)      # Corresponding Gregorian date
+├── julian_day_number (integer) # Julian Day Number
+├── notes (text, nullable)     # Additional notes
 ├── created_at (timestamp)
 └── updated_at (timestamp)
 ```
