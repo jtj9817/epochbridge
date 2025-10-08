@@ -36,20 +36,20 @@ class HebrewCalendarService extends CalendarConversionService
     {
         $date = $this->ensureTimezone($date, 'Asia/Jerusalem');
         
-        $jd = GregorianToJD($date->month, $date->day, $date->year);
-        $hebrewDate = JDToJewish($jd);
+        $jd = \GregorianToJD($date->month, $date->day, $date->year);
+        $hebrewDate = \JDToJewish($jd);
         
         list($month, $day, $year) = explode('/', $hebrewDate);
         $month = (int)$month;
         $day = (int)$day;
         $year = (int)$year;
 
-        $dayOfWeek = jddayofweek($jd, 0);
+        $dayOfWeek = \jddayofweek($jd, 0);
         $monthName = self::HEBREW_MONTH_NAMES[$month] ?? 'Unknown';
         $dayName = self::HEBREW_DAY_NAMES[$dayOfWeek] ?? 'Unknown';
 
         // Check for leap year (13 months)
-        $isLeapYear = JewishLeapYear($year);
+        $isLeapYear = \JewishLeapYear($year);
 
         return [
             'year' => $year,
@@ -73,8 +73,8 @@ class HebrewCalendarService extends CalendarConversionService
             $this->handleInvalidDate('Invalid Hebrew date components');
         }
 
-        $jd = JewishToJD($month, $day, $year);
-        $gregorian = JDToGregorian($jd);
+        $jd = \JewishToJD($month, $day, $year);
+        $gregorian = \JDToGregorian($jd);
         
         if ($gregorian === '0/0/0') {
             $this->handleInvalidDate('Invalid Hebrew date');
@@ -102,17 +102,17 @@ class HebrewCalendarService extends CalendarConversionService
         }
 
         // Check if month exists in this year (leap year handling)
-        $isLeapYear = JewishLeapYear($year);
+        $isLeapYear = \JewishLeapYear($year);
         if ($month === 7 && !$isLeapYear) {
             return false; // Adar II only exists in leap years
         }
 
-        $maxDays = cal_days_in_month(CAL_JEWISH, $month, $year);
+        $maxDays = \cal_days_in_month(\CAL_JEWISH, $month, $year);
         return $day <= $maxDays;
     }
 
     public function getDaysInMonth(int $year, int $month): int
     {
-        return cal_days_in_month(CAL_JEWISH, $month, $year);
+        return \cal_days_in_month(\CAL_JEWISH, $month, $year);
     }
 }
