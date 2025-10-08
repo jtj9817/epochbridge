@@ -3,9 +3,18 @@
 namespace App\Services;
 
 use Carbon\Carbon;
+use Fisharebest\ExtCalendar\JewishCalendar;
 
 class HebrewCalendarService extends CalendarConversionService
 {
+    private JewishCalendar $jewishCalendar;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->jewishCalendar = new JewishCalendar();
+    }
+
     private const HEBREW_MONTH_NAMES = [
         1 => 'Tishrei',
         2 => 'Cheshvan', 
@@ -49,7 +58,7 @@ class HebrewCalendarService extends CalendarConversionService
         $dayName = self::HEBREW_DAY_NAMES[$dayOfWeek] ?? 'Unknown';
 
         // Check for leap year (13 months)
-        $isLeapYear = \JewishLeapYear($year);
+        $isLeapYear = $this->jewishCalendar->isLeapYear($year);
 
         return [
             'year' => $year,
@@ -102,17 +111,17 @@ class HebrewCalendarService extends CalendarConversionService
         }
 
         // Check if month exists in this year (leap year handling)
-        $isLeapYear = \JewishLeapYear($year);
+        $isLeapYear = $this->jewishCalendar->isLeapYear($year);
         if ($month === 7 && !$isLeapYear) {
             return false; // Adar II only exists in leap years
         }
 
-        $maxDays = \cal_days_in_month(\CAL_JEWISH, $month, $year);
+        $maxDays = $this->jewishCalendar->daysInMonth($year, $month);
         return $day <= $maxDays;
     }
 
     public function getDaysInMonth(int $year, int $month): int
     {
-        return \cal_days_in_month(\CAL_JEWISH, $month, $year);
+        return $this->jewishCalendar->daysInMonth($year, $month);
     }
 }
