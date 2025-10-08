@@ -28,15 +28,18 @@ state('inputTypes', [
     'french_republican' => 'French Republican (YYYY/MM/DD)',
     'chinese' => 'Chinese (YYYY/MM/DD)',
     'japanese' => 'Japanese (Era Year/MM/DD)',
+    'babylonian' => 'Babylonian (YYYY/MM/DD)',
+    'assyrian' => 'Assyrian (YYYY/MM/DD)',
+    'macedonian' => 'Ancient Macedonian (YYYY/MM/DD)',
 ]);
 
 rules(fn () => match ($this->inputType) {
     'gregorian' => ['dateInput' => 'required|date_format:Y-m-d'],
-    'jalali' => ['dateInput' => 'required|date_format:Y/m/d'],
+    'jalali' => ['dateInput' => 'required|date_format:Y/m/d'], // Note the slash format
     'unix' => ['dateInput' => 'required|integer'],
     'iso8601' => ['dateInput' => 'required|string'],
     'jd', 'mjd' => ['dateInput' => 'required|numeric'],
-    'hebrew', 'islamic', 'french_republican', 'chinese' => ['dateInput' => 'required|date_format:Y/m/d'],
+    'hebrew', 'islamic', 'french_republican', 'chinese', 'babylonian', 'assyrian', 'macedonian' => ['dateInput' => 'required|date_format:Y/m/d'],
     'japanese' => ['dateInput' => 'required|string'], // More complex format: EraYear/MM/DD
     default => ['dateInput' => 'required'],
 })->messages([
@@ -640,6 +643,111 @@ $deleteConversion = function (int $id) {
                                 </div>
                                 <div class="text-sm font-mono text-green-500 dark:text-green-500 mt-2">
                                     {{ $conversionResults['islamic']['year'] ?? 'N/A' }} AH
+                                </div>
+                            </div>
+                        </div>
+                        @endisset
+
+                        <!-- Babylonian Calendar -->
+                        @isset($conversionResults['babylonian'])
+                        <div id="result-card-babylonian" class="bg-yellow-50/50 dark:bg-yellow-950/30 rounded-xl shadow-lg border border-yellow-200 dark:border-yellow-800 flex flex-col">
+                            <div class="p-4 border-b border-yellow-200/80 dark:border-yellow-800/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-yellow-800 dark:text-yellow-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9V3m-3.5 3.5L12 3m0 0L8.5 6.5M12 21v-3" />
+                                    </svg>
+                                    Babylonian
+                                </h3>
+                                @if($conversionResults['babylonian']['disclaimer'] ?? false)
+                                    <div x-data="{ show: false }" class="relative">
+                                        <button @mouseenter="show = true" @mouseleave="show = false" class="text-yellow-600 dark:text-yellow-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </button>
+                                        <div x-show="show" x-transition class="absolute bottom-full right-0 mb-2 w-64 p-2 text-xs bg-zinc-800 text-white rounded-md z-10">
+                                            {{ $conversionResults['babylonian']['disclaimer'] }}
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <div class="text-sm font-medium text-yellow-700 dark:text-yellow-300 tracking-wider">
+                                    {{ $conversionResults['babylonian']['month_name'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-6xl font-bold text-yellow-600 dark:text-yellow-400 my-1">
+                                    {{ $conversionResults['babylonian']['day'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-sm font-mono text-yellow-500 dark:text-yellow-500 mt-2">
+                                    {{ $conversionResults['babylonian']['year'] ?? 'N/A' }}
+                                </div>
+                            </div>
+                        </div>
+                        @endisset
+
+                        <!-- Assyrian Calendar -->
+                        @isset($conversionResults['assyrian'])
+                        <div id="result-card-assyrian" class="bg-gray-50/50 dark:bg-gray-950/30 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col">
+                            <div class="p-4 border-b border-gray-200/80 dark:border-gray-800/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-gray-800 dark:text-gray-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                                    </svg>
+                                    Assyrian
+                                </h3>
+                                @if($conversionResults['assyrian']['disclaimer'] ?? false)
+                                <div x-data="{ show: false }" class="relative">
+                                    <button @mouseenter="show = true" @mouseleave="show = false" class="text-gray-600 dark:text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </button>
+                                    <div x-show="show" x-transition class="absolute bottom-full right-0 mb-2 w-64 p-2 text-xs bg-zinc-800 text-white rounded-md z-10">
+                                        {{ $conversionResults['assyrian']['disclaimer'] }}
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <div class="text-sm font-medium text-gray-700 dark:text-gray-300 tracking-wider">
+                                    {{ $conversionResults['assyrian']['month_name'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-6xl font-bold text-gray-600 dark:text-gray-400 my-1">
+                                    {{ $conversionResults['assyrian']['day'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-sm font-mono text-gray-500 dark:text-gray-500 mt-2">
+                                    {{ $conversionResults['assyrian']['year'] ?? 'N/A' }}
+                                </div>
+                            </div>
+                        </div>
+                        @endisset
+
+                        <!-- Ancient Macedonian Calendar -->
+                        @isset($conversionResults['macedonian'])
+                        <div id="result-card-macedonian" class="bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl shadow-lg border border-indigo-200 dark:border-indigo-800 flex flex-col">
+                            <div class="p-4 border-b border-indigo-200/80 dark:border-indigo-800/80 flex items-center justify-between">
+                                <h3 class="flex items-center gap-2.5 font-bold text-indigo-800 dark:text-indigo-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 14l9-5-9-5-9 5 9 5z" /> <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222 4 2.222V20" />
+                                    </svg>
+                                    Ancient Macedonian
+                                </h3>
+                                @if($conversionResults['macedonian']['disclaimer'] ?? false)
+                                <div x-data="{ show: false }" class="relative">
+                                    <button @mouseenter="show = true" @mouseleave="show = false" class="text-indigo-600 dark:text-indigo-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </button>
+                                    <div x-show="show" x-transition class="absolute bottom-full right-0 mb-2 w-64 p-2 text-xs bg-zinc-800 text-white rounded-md z-10">
+                                        {{ $conversionResults['macedonian']['disclaimer'] }}
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <div class="text-sm font-medium text-indigo-700 dark:text-indigo-300 tracking-wider">
+                                    {{ $conversionResults['macedonian']['month_name'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-6xl font-bold text-indigo-600 dark:text-indigo-400 my-1">
+                                    {{ $conversionResults['macedonian']['day'] ?? 'N/A' }}
+                                </div>
+                                <div class="text-sm font-mono text-indigo-500 dark:text-indigo-500 mt-2">
+                                    {{ $conversionResults['macedonian']['year'] ?? 'N/A' }} SE
                                 </div>
                             </div>
                         </div>
