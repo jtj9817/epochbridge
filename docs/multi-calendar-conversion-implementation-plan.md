@@ -28,15 +28,16 @@ This plan implements a comprehensive calendar conversion system for EpochBridge,
 
 ## 🚀 Phase Structure
 
-## 📁 Phase 1: Julian Day Conversions & Existing Calendar Extensions
+## 📁 Phase 1: Refactor Jalali Support & Implement Core Calendars
 
-> **🎯 GOAL:** Implement Julian Day conversions and leverage existing package support for Hebrew, Islamic, and French Republican calendars
+> **🎯 GOAL:** Refactor existing Jalali support into a new extensible architecture and implement Julian Day conversions, while leveraging existing package support for Hebrew, Islamic, and French Republican calendars
 
-> **📖 CONTEXT:** The `fisharebest/ext-calendar` package already provides Julian Day Number (JD) support and several calendar systems. We need to expose these through Laravel services and create user interfaces.
+> **📖 CONTEXT:** The application's core Jalali conversion feature resides in `app/Services/DateTimeConverterService.php`. The `fisharebest/ext-calendar` package provides Julian Day Number (JD) support and other calendar systems. This phase will refactor the existing Jalali logic into a new, extensible architecture and expose the other pre-supported calendars through services and user interfaces.
 
 > **📋 TASK:** Create conversion services for Julian Day formats and integrate existing calendar support
 
 ### ✅ Requirements
+- [x] Jalali Calendar integration and refactoring
 - [x] Julian Day Number (JD) conversion
 - [x] Modified Julian Day (MJD) conversion  
 - [x] Julian Date-time conversion
@@ -47,9 +48,10 @@ This plan implements a comprehensive calendar conversion system for EpochBridge,
 - [x] Livewire components for frontend
 
 ### 📐 Guidelines
-- ✅ Use existing `fisharebest/ext-calendar` infrastructure
+- ✅ Use existing `morilog/jalali` and `fisharebest/ext-calendar` infrastructure
 - ✅ Create Laravel service classes following SOLID principles
-- ✅ Implement proper error handling and validation
+- ✅ Implement standardized error handling for common exceptions (e.g., invalid dates).
+- ✅ Enforce specific timezones where required for accuracy (e.g., `Asia/Tehran` for Jalali).
 - ✅ Follow TALL Stack patterns for frontend
 
 ### 🔧 Implementation Details
@@ -57,11 +59,17 @@ This plan implements a comprehensive calendar conversion system for EpochBridge,
 #### 🖥️ Backend Changes
 
 1. **📦 Create Base Calendar Service** - `app/Services/CalendarConversionService.php`
-   - Abstract base class for all calendar conversions
-   - Common methods for date validation and error handling
-   - Julian Day Number utilities
+   - Abstract base class for all calendar conversions.
+   - Defines a standardized approach for date validation, timezone management, and common exception handling.
+   - Provides Julian Day Number utilities.
 
-2. **📅 Create Julian Day Service** - `app/Services/JulianDayService.php`
+2. **🇮🇷 Create Jalali Calendar Service** - `app/Services/JalaliCalendarService.php`
+   - Extends `CalendarConversionService`.
+   - Refactors existing conversion logic from `DateTimeConverterService.php`.
+   - Encapsulates usage of the `morilog/jalali` package.
+   - **Crucially, enforces the `Asia/Tehran` timezone** for all calculations to ensure accuracy.
+
+3. **📅 Create Julian Day Service** - `app/Services/JulianDayService.php`
    ```php
    public function convertToJulianDay(Carbon $date): int
    public function convertToModifiedJulianDay(Carbon $date): float
@@ -69,7 +77,7 @@ This plan implements a comprehensive calendar conversion system for EpochBridge,
    public function convertFromJulianDay(int $jd): Carbon
    ```
 
-3. **🏛️ Create Calendar-Specific Services:**
+4. **🏛️ Create Calendar-Specific Services:**
    - 📜 `app/Services/HebrewCalendarService.php`
    - 🕌 `app/Services/IslamicCalendarService.php` 
    - 🇫🇷 `app/Services/FrenchRepublicanService.php`
