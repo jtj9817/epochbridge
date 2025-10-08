@@ -4,6 +4,7 @@ use App\Models\SavedConversion;
 use App\Services\DateTimeConverterService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Morilog\Jalali\Jalalian;
 use function Livewire\Volt\{state, mount, layout, rules};
 
@@ -13,7 +14,7 @@ state('dateInput', '');
 state('inputType', 'gregorian');
 state('conversionResults', []);
 state('conversionError', '');
-state(['savedConversions' => fn () => auth()->check() ? auth()->user()->savedConversions : collect()]);
+state(['savedConversions' => fn () => Auth::check() ? Auth::user()->savedConversions : collect()]);
 state('inputTypes', [
     'gregorian' => 'Gregorian (YYYY-MM-DD)',
     'jalali' => 'Jalali (YYYY/MM/DD)',
@@ -89,11 +90,11 @@ $convertDate = function (DateTimeConverterService $converter) {
 };
 
 $saveConversion = function () {
-    if (! auth()->check() || empty($this->conversionResults)) {
+    if (! Auth::check() || empty($this->conversionResults)) {
         return;
     }
 
-    auth()->user()->savedConversions()->create([
+    Auth::user()->savedConversions()->create([
         'original_input' => $this->dateInput,
         'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
         'jalali_date' => $this->conversionResults['jalali']['full_date'],
@@ -101,11 +102,11 @@ $saveConversion = function () {
         'iso8601_string' => $this->conversionResults['iso8601'],
     ]);
 
-    $this->savedConversions = auth()->user()->savedConversions()->get();
+    $this->savedConversions = Auth::user()->savedConversions()->get();
 };
 
 $deleteConversion = function (int $id) {
-    $conversion = auth()->user()->savedConversions()->find($id);
+    $conversion = Auth::user()->savedConversions()->find($id);
     if ($conversion) {
         $conversion->delete();
         $this->savedConversions = $this->savedConversions->except($id);
