@@ -40,24 +40,36 @@ class DateTimeConverterService
     ];
 
     /**
-     * Converts a date string into various formats.
+     * Converts a date string from a given format into various other formats.
      *
      * @param  string  $dateString The date string to convert.
+     * @param  string  $inputType The format of the input date string.
      * @return array<string, mixed> An associative array with converted dates.
      *
-     * @throws \InvalidArgumentException If the date string is invalid.
+     * @throws \InvalidArgumentException If the date string is invalid or input type is unsupported.
      */
-    public function convert(string $dateString): array
+    public function convert(string $dateString, string $inputType = 'gregorian'): array
     {
+        if (empty(trim($dateString))) {
+            throw new InvalidArgumentException('Input date cannot be empty.');
+        }
+
         try {
-            // Parse date. This will use the application's default timezone.
-            // Set time to the beginning of the day for consistency.
-            $carbonDate = Carbon::parse($dateString)->startOfDay();
+            $carbonDate = match ($inputType) {
+                'gregorian' => Carbon::parse($dateString)->startOfDay(),
+                'jalali' => Jalalian::fromFormat('Y/m/d', $dateString)->toCarbon()->startOfDay(),
+                'unix' => Carbon::createFromTimestamp((int) $dateString),
+                'iso8601' => Carbon::parse($dateString),
+                'jd' => Carbon::createFromJulianDay((float) $dateString),
+                'mjd' => Carbon::createFromJulianDay((float) $dateString + 2400000.5),
+                default => throw new InvalidArgumentException('Invalid input type provided.'),
+            };
         } catch (\Exception $e) {
-            throw new InvalidArgumentException('Invalid date format provided.');
+            throw new InvalidArgumentException('Invalid date format provided for the selected input type.');
         }
 
         $jalaliDate = Jalalian::fromCarbon($carbonDate);
+        $julianDay = $carbonDate->getJulianDay();
 
         return [
             'gregorian' => [
@@ -74,10 +86,12 @@ class DateTimeConverterService
                 'day'            => $jalaliDate->getDay(),
                 'day_of_week'    => $jalaliDate->format('%A'),
                 'day_of_week_en' => self::JALALI_DAYS_EN[$jalaliDate->getDayOfWeek()],
-                'full_date'      => $jalaliDate->format('Y-m-d'),
+                'full_date'      => $jalaliDate->format('Y/m/d'),
             ],
             'unix'      => $carbonDate->unix(),
             'iso8601'   => $carbonDate->clone()->utc()->toIso8601String(),
+            'jd'        => $julianDay,
+            'mjd'       => $julianDay - 2400000.5,
         ];
     }
 }

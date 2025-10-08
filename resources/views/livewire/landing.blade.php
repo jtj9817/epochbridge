@@ -2,18 +2,40 @@
 
 use App\Models\SavedConversion;
 use App\Services\DateTimeConverterService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Morilog\Jalali\Jalalian;
 use function Livewire\Volt\{state, mount, layout, rules};
 
 layout('components.layouts.public');
 
 state('dateInput', '');
+state('inputType', 'gregorian');
 state('conversionResults', []);
 state('conversionError', '');
 state(['savedConversions' => fn () => auth()->check() ? auth()->user()->savedConversions : collect()]);
+state('inputTypes', [
+    'gregorian' => 'Gregorian (YYYY-MM-DD)',
+    'jalali' => 'Jalali (YYYY/MM/DD)',
+    'unix' => 'Unix Timestamp',
+    'iso8601' => 'ISO 8601',
+    'jd' => 'Julian Day',
+    'mjd' => 'Modified Julian Day',
+]);
 
-rules(['dateInput' => 'required|date_format:Y-m-d'])
-    ->messages(['dateInput' => 'Please enter a valid date in YYYY-MM-DD format.']);
+rules(fn () => match ($this->inputType) {
+    'gregorian' => ['dateInput' => 'required|date_format:Y-m-d'],
+    'jalali' => ['dateInput' => 'required|date_format:Y/m/d'],
+    'unix' => ['dateInput' => 'required|integer'],
+    'iso8601' => ['dateInput' => 'required|string'],
+    'jd', 'mjd' => ['dateInput' => 'required|numeric'],
+    default => ['dateInput' => 'required'],
+})->messages([
+    'dateInput.required' => 'Please enter a value.',
+    'dateInput.date_format' => 'Please enter a valid date. For Gregorian use YYYY-MM-DD, for Jalali use YYYY/MM/DD.',
+    'dateInput.integer' => 'Please enter a valid integer Unix timestamp.',
+    'dateInput.numeric' => 'Please enter a valid number.',
+]);
 
 mount(function () {
     // Initialize with today's date in YYYY-MM-DD format
@@ -21,15 +43,38 @@ mount(function () {
 });
 
 $setToday = function () {
-    $this->dateInput = now()->format('Y-m-d');
+    $this->dateInput = match ($this->inputType) {
+        'jalali' => Jalalian::fromCarbon(now())->format('Y/m/d'),
+        'unix' => now()->startOfDay()->timestamp,
+        'iso8601' => now()->startOfDay()->toIso8601String(),
+        'jd' => now()->getJulianDay(),
+        'mjd' => now()->getJulianDay() - 2400000.5,
+        default => now()->format('Y-m-d'),
+    };
 };
 
 $setYesterday = function () {
-    $this->dateInput = now()->subDay()->format('Y-m-d');
+    $date = now()->subDay();
+    $this->dateInput = match ($this->inputType) {
+        'jalali' => Jalalian::fromCarbon($date)->format('Y/m/d'),
+        'unix' => $date->startOfDay()->timestamp,
+        'iso8601' => $date->startOfDay()->toIso8601String(),
+        'jd' => $date->getJulianDay(),
+        'mjd' => $date->getJulianDay() - 2400000.5,
+        default => $date->format('Y-m-d'),
+    };
 };
 
 $setTomorrow = function () {
-    $this->dateInput = now()->addDay()->format('Y-m-d');
+    $date = now()->addDay();
+    $this->dateInput = match ($this->inputType) {
+        'jalali' => Jalalian::fromCarbon($date)->format('Y/m/d'),
+        'unix' => $date->startOfDay()->timestamp,
+        'iso8601' => $date->startOfDay()->toIso8601String(),
+        'jd' => $date->getJulianDay(),
+        'mjd' => $date->getJulianDay() - 2400000.5,
+        default => $date->format('Y-m-d'),
+    };
 };
 
 $convertDate = function (DateTimeConverterService $converter) {
@@ -37,9 +82,9 @@ $convertDate = function (DateTimeConverterService $converter) {
     $this->validate();
 
     try {
-        $this->conversionResults = $converter->convert($this->dateInput);
+        $this->conversionResults = $converter->convert($this->dateInput, $this->inputType);
     } catch (\InvalidArgumentException $e) {
-        $this->conversionError = 'An unexpected error occurred. Please try again.';
+        $this->conversionError = $e->getMessage();
     }
 };
 
@@ -73,6 +118,7 @@ $deleteConversion = function (int $id) {
      x-data="{ 
         showResults: @entangle('conversionResults').live,
         inputValue: @entangle('dateInput').live,
+        inputType: @entangle('inputType').live,
         copiedFeedback: null,
         copyToClipboard(text, type) {
             navigator.clipboard.writeText(text).then(() => {
@@ -87,9 +133,10 @@ $deleteConversion = function (int $id) {
                 this.showSaveLimitNotification = true;
                 return;
             }
-            const newConversion = { ...this.showResults, id: Date.now() };
+            const newConversion = JSON.parse(JSON.stringify(this.showResults));
+            newConversion.id = Date.now();
             this.savedConversions.unshift(newConversion);
-            localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
+            localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions.slice(0, 3)));
         },
         deleteSaved(id) { // Guest delete function
             this.savedConversions = this.savedConversions.filter(item => item.id !== id);
@@ -145,22 +192,71 @@ $deleteConversion = function (int $id) {
             <div id="date-input-section" class="mb-12">
                 <div class="max-w-2xl mx-auto">
                     
+                    <!-- Input Type Selector -->
+                    <div class="mb-4">
+                        <label for="input-type-selector" class="block text-sm font-medium text-theme-500 dark:text-theme-100 mb-2 text-left">
+                            Input Format
+                        </label>
+                        <select 
+                            id="input-type-selector" 
+                            wire:model.live="inputType" 
+                            class="w-full px-4 py-2 text-base border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition">
+                            @foreach($inputTypes as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <!-- Main Input Field -->
                     <div class="mb-8">
-                        <label for="date-input" class="block text-sm font-medium text-theme-500 dark:text-theme-100 mb-3">
-                            Enter your date
+                        <label for="date-input" class="block text-sm font-medium text-theme-500 dark:text-theme-100 mb-3 text-left">
+                            Enter your value
                         </label>
                         <div class="relative">
                             <input 
+                                x-show="inputType === 'gregorian'"
                                 type="date" 
-                                id="date-input"
+                                id="date-input-gregorian"
                                 wire:model.live="dateInput"
                                 class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
                                 placeholder="YYYY-MM-DD"
                             />
+                            <input 
+                                x-show="inputType === 'jalali'" x-cloak
+                                type="text" 
+                                id="date-input-jalali"
+                                wire:model.live="dateInput"
+                                class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                                placeholder="YYYY/MM/DD"
+                            />
+                            <input 
+                                x-show="inputType === 'unix'" x-cloak
+                                type="number" 
+                                id="date-input-unix"
+                                wire:model.live="dateInput"
+                                class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                                placeholder="e.g., 1672531200"
+                            />
+                            <input 
+                                x-show="inputType === 'iso8601'" x-cloak
+                                type="text"
+                                id="date-input-iso8601"
+                                wire:model.live="dateInput"
+                                class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                                placeholder="e.g., 2023-01-01T00:00:00Z"
+                            />
+                            <input 
+                                x-show="inputType === 'jd' || inputType === 'mjd'" x-cloak
+                                type="number" 
+                                step="any"
+                                id="date-input-jd"
+                                wire:model.live="dateInput"
+                                class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                                :placeholder="inputType === 'jd' ? 'e.g., 2460310.5' : 'e.g., 60309'"
+                            />
                         </div>
                         @error('dateInput')
-                            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            <p class="mt-2 text-sm text-red-600 dark:text-red-400 text-left">{{ $message }}</p>
                         @enderror
                     </div>
 
