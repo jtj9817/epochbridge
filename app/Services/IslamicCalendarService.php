@@ -108,4 +108,9 @@ class IslamicCalendarService extends CalendarConversionService
     {
         return $this->calendar->daysInMonth($year, $month);
     }
+
+    public function getTags(): array
+    {
+        return ['modern', 'lunar'];
+    }
 }

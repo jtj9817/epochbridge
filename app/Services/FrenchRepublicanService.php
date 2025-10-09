@@ -128,4 +128,9 @@ class FrenchRepublicanService extends CalendarConversionService
         // French Republican leap year rule (simplified)
         return $year % 4 === 0 && ($year % 100 !== 0 || $year % 400 === 0);
     }
+
+    public function getTags(): array
+    {
+        return ['historical', 'solar'];
+    }
 }

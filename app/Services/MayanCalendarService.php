@@ -114,4 +114,9 @@ class MayanCalendarService extends CalendarConversionService
             'day_name' => self::$tzolkinData[$dayIndex] ?? 'Unknown',
         ];
     }
+
+    public function getTags(): array
+    {
+        return ['ancient', 'system'];
+    }
 }

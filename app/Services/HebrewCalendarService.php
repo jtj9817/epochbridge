@@ -123,4 +123,9 @@ class HebrewCalendarService extends CalendarConversionService
     {
         return $this->jewishCalendar->daysInMonth($year, $month);
     }
+
+    public function getTags(): array
+    {
+        return ['modern', 'lunisolar'];
+    }
 }

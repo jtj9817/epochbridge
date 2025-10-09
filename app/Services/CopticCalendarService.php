@@ -108,4 +108,9 @@ class CopticCalendarService extends CalendarConversionService
         $isLeap = ($year % 4) === 3;
         return $isLeap ? 6 : 5;
     }
+
+    public function getTags(): array
+    {
+        return ['historical', 'solar'];
+    }
 }

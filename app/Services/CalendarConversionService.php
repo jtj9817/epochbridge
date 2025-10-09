@@ -39,6 +39,13 @@ abstract class CalendarConversionService
     abstract public function getName(): string;
 
     /**
+     * Get tags for filtering
+     *
+     * @return array<string>
+     */
+    abstract public function getTags(): array;
+
+    /**
      * Validate date components for this calendar system
      */
     abstract public function validateDate(int $year, int $month, int $day): bool;

@@ -63,7 +63,7 @@ updated([
                     x-show="$wire.inputType === 'jalali'" x-cloak
                     type="text"
                     id="date-input-jalali"
-                    wire:model.live="dateInput"
+                    wire:model.live.debounce.300ms="dateInput"
                     class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
                     placeholder="YYYY/MM/DD"
                 />
@@ -71,7 +71,7 @@ updated([
                     x-show="$wire.inputType === 'unix'" x-cloak
                     type="number"
                     id="date-input-unix"
-                    wire:model.live="dateInput"
+                    wire:model.live.debounce.300ms="dateInput"
                     class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
                     placeholder="e.g., 1672531200"
                 />
@@ -79,7 +79,7 @@ updated([
                     x-show="$wire.inputType === 'iso8601'" x-cloak
                     type="text"
                     id="date-input-iso8601"
-                    wire:model.live="dateInput"
+                    wire:model.live.debounce.300ms="dateInput"
                     class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
                     placeholder="e.g., 2023-01-01T00:00:00Z"
                 />
@@ -88,7 +88,7 @@ updated([
                     type="number"
                     step="any"
                     id="date-input-jd"
-                    wire:model.live="dateInput"
+                    wire:model.live.debounce.300ms="dateInput"
                     class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
                     :placeholder="$wire.inputType === 'jd' ? 'e.g., 2460310.5' : 'e.g., 60309'"
                 />
@@ -96,7 +96,7 @@ updated([
                     x-show="['hebrew', 'islamic', 'french_republican', 'chinese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian', 'mayan'].includes($wire.inputType)" x-cloak
                     type="text"
                     id="date-input-calendars"
-                    wire:model.live="dateInput"
+                    wire:model.live.debounce.300ms="dateInput"
                     class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
                     placeholder="YYYY/MM/DD"
                 />
@@ -104,7 +104,7 @@ updated([
                     x-show="$wire.inputType === 'japanese'" x-cloak
                     type="text"
                     id="date-input-japanese"
-                    wire:model.live="dateInput"
+                    wire:model.live.debounce.300ms="dateInput"
                     class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
                     placeholder="Reiwa1/MM/DD or 2023/MM/DD"
                 />

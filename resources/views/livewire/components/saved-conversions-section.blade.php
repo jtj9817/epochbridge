@@ -36,7 +36,8 @@ $deleteConversion = function (int $id) {
                 this.savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
                 window.addEventListener('new-guest-conversion', event => {
                     this.savedConversions.unshift(event.detail.conversion);
-                    localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions.slice(0, 3))); // Enforce limit
+                    this.savedConversions = this.savedConversions.slice(0, 3);
+                    localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
                 });
             },
             deleteSaved(id) {

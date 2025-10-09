@@ -77,4 +77,9 @@ class AssyrianCalendarService extends CalendarConversionService
     {
         return cal_days_in_month(CAL_GREGORIAN, $month, $year - 4750);
     }
+
+    public function getTags(): array
+    {
+        return ['ancient', 'solar'];
+    }
 }

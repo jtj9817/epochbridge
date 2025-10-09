@@ -74,4 +74,9 @@ class JulianDayService extends CalendarConversionService
         // Julian Day doesn't have months in the traditional sense
         return 0;
     }
+
+    public function getTags(): array
+    {
+        return ['modern', 'system'];
+    }
 }

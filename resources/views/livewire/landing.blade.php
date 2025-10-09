@@ -32,6 +32,13 @@ state('inputTypes', [
     'macedonian' => 'Ancient Macedonian (YYYY/MM/DD)',
     'mayan' => 'Mayan (from Gregorian YYYY/MM/DD)',
 ]);
+state([
+    'additionalConversionResults' => [],
+    'additionalCalendarsLoaded' => false,
+    'searchTerm' => '',
+    'selectedTypes' => [],
+]);
+
 
 mount(function () {
     // Initialize with today's date in YYYY-MM-DD format
@@ -51,7 +58,7 @@ $updateInput = function (string $dateInput, string $inputType) {
 };
 
 $convertDate = function (DateTimeConverterService $converter) {
-    $this->reset('conversionResults', 'conversionError');
+    $this->reset('conversionResults', 'conversionError', 'additionalConversionResults', 'additionalCalendarsLoaded');
 
     try {
         $this->conversionResults = $converter->convert($this->dateInput, $this->inputType);
@@ -61,6 +68,28 @@ $convertDate = function (DateTimeConverterService $converter) {
         $this->conversionError = $e->validator->errors()->first('dateInput');
     }
 };
+
+#[On('load-additional-calendars')]
+$loadAdditionalCalendars = function (DateTimeConverterService $converter) {
+    if ($this->additionalCalendarsLoaded || empty($this->conversionResults)) {
+        return;
+    }
+
+    try {
+        $this->additionalConversionResults = $converter->convertAdditional($this->dateInput, $this->inputType);
+    } catch (\Exception $e) {
+        // Silently fail or add a specific error state for additional calendars
+    } finally {
+        $this->additionalCalendarsLoaded = true;
+    }
+};
+
+#[On('filters-updated')]
+$updateFilters = function(string $searchTerm, array $selectedTypes) {
+    $this->searchTerm = $searchTerm;
+    $this->selectedTypes = $selectedTypes;
+};
+
 
 #[On('save-conversion')]
 $saveConversion = function () {
@@ -173,9 +202,22 @@ $saveConversion = function () {
                 </div>
             </div>
 
-            <!-- Conversion Results Section -->
-            <livewire:components.calendar-results-grid :conversionResults="$conversionResults" :conversionError="$conversionError" wire:key="results-grid" />
+            <!-- Search and Filter Section -->
+            <div x-show="Object.keys(showResults).length > 0" x-transition>
+                <livewire:components.calendar-search-filter wire:key="search-filter" />
+            </div>
 
+            <!-- Conversion Results Section -->
+            <livewire:components.calendar-results-grid
+                :conversionResults="$conversionResults"
+                :additionalConversionResults="$additionalConversionResults"
+                :additionalCalendarsLoaded="$additionalCalendarsLoaded"
+                :conversionError="$conversionError"
+                :searchTerm="$searchTerm"
+                :selectedTypes="$selectedTypes"
+                wire:key="results-grid"
+            />
+            
 
             <!-- Save Limit Notification -->
             <div x-show="showSaveLimitNotification" x-transition x-cloak class="mt-8 max-w-4xl mx-auto p-4 bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 rounded-r-lg">

@@ -127,4 +127,9 @@ class JapaneseCalendarService extends CalendarConversionService
             })
             ->toArray();
     }
+
+    public function getTags(): array
+    {
+        return ['east-asian', 'solar'];
+    }
 }

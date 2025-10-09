@@ -294,4 +294,9 @@ class ChineseCalendarService extends CalendarConversionService
 
         return $chineseNewYear->copy()->addDays($daysFromNewYear);
     }
+
+    public function getTags(): array
+    {
+        return ['east-asian', 'lunisolar'];
+    }
 }

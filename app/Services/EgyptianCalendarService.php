@@ -93,4 +93,9 @@ class EgyptianCalendarService extends CalendarConversionService
     {
         return ($month <= 12) ? 30 : 5;
     }
+
+    public function getTags(): array
+    {
+        return ['ancient', 'solar'];
+    }
 }

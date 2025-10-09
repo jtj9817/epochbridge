@@ -1,8 +1,36 @@
 <?php
 
-use function Livewire\Volt\{state};
+use function Livewire\Volt\{state, computed};
 
-state(['conversionResults' => [], 'conversionError' => '']);
+state([
+    'conversionResults' => [],
+    'additionalConversionResults' => [],
+    'additionalCalendarsLoaded' => false,
+    'conversionError' => '',
+    'searchTerm' => '',
+    'selectedTypes' => [],
+]);
+
+$filteredResults = computed(function() {
+    $allResults = array_merge($this->conversionResults, $this->additionalConversionResults);
+
+    if (empty($this->searchTerm) && empty($this->selectedTypes)) {
+        return $allResults;
+    }
+
+    return collect($allResults)->filter(function ($data, $key) {
+        if (!is_array($data)) return false;
+
+        $name = $data['name'] ?? $key;
+        $tags = $data['tags'] ?? [];
+
+        $searchMatch = empty($this->searchTerm) || str_contains(strtolower($name), strtolower($this->searchTerm));
+
+        $typeMatch = empty($this->selectedTypes) || !empty(array_intersect($this->selectedTypes, $tags));
+
+        return $searchMatch && $typeMatch;
+    })->all();
+});
 
 ?>
 
@@ -71,21 +99,35 @@ state(['conversionResults' => [], 'conversionError' => '']);
         </div>
 
         <div id="results-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            @if (!empty($conversionResults))
-                <x-calendars.gregorian-card :data="$conversionResults['gregorian']" />
-                <x-calendars.jalali-card :data="$conversionResults['jalali']" />
-                <x-calendars.unix-card :data="$conversionResults['unix']" />
-                <x-calendars.iso8601-card :data="$conversionResults['iso8601']" />
-                <x-calendars.julian-day-card :data="$conversionResults['jd']" />
-                <x-calendars.modified-julian-day-card :data="$conversionResults['mjd']" />
-
-                @foreach(['hebrew', 'islamic', 'french_republican', 'chinese', 'japanese', 'coptic', 'egyptian', 'ethiopian', 'babylonian', 'assyrian', 'macedonian', 'mayan'] as $calendar)
-                    @isset($conversionResults[$calendar])
-                        @if(!isset($conversionResults[$calendar]['error']))
-                            <x-dynamic-component :component="'calendars.' . str_replace('_', '-', $calendar) . '-card'" :data="$conversionResults[$calendar]" />
-                        @endif
-                    @endisset
+            @if (!empty($this->filteredResults))
+                @foreach($this->filteredResults as $key => $data)
+                    @if(is_array($data) && !isset($data['error']))
+                        @switch($key)
+                            @case('gregorian') <x-calendars.gregorian-card :data="$data" /> @break
+                            @case('jalali') <x-calendars.jalali-card :data="$data" /> @break
+                            @case('unix') <x-calendars.unix-card :data="$data" /> @break
+                            @case('iso8601') <x-calendars.iso8601-card :data="$data" /> @break
+                            @case('jd') <x-calendars.julian-day-card :data="$data" /> @break
+                            @case('mjd') <x-calendars.modified-julian-day-card :data="$data" /> @break
+                            @default
+                                <x-dynamic-component :component="'calendars.' . str_replace('_', '-', $key) . '-card'" :data="$data" />
+                        @endswitch
+                    @endif
                 @endforeach
+            @endif
+
+            @if(empty($this->filteredResults) && (!empty($conversionResults)))
+                <div class="md:col-span-2 lg:col-span-3 text-center py-8 text-theme-500 dark:text-theme-100">
+                    No calendars match your search criteria.
+                </div>
+            @endif
+            
+            @if(!$additionalCalendarsLoaded && !empty($conversionResults))
+                <div x-intersect.once="$wire.dispatch('load-additional-calendars')" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:col-span-2 lg:col-span-3">
+                    @for ($i = 0; $i < 6; $i++)
+                        <x-calendars.loading-skeleton />
+                    @endfor
+                </div>
             @endif
         </div>
     </div>

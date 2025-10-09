@@ -84,4 +84,9 @@ class BabylonianCalendarService extends CalendarConversionService
         // Lunar months alternate between 29 and 30 days
         return ($month % 2 === 1) ? 30 : 29;
     }
+
+    public function getTags(): array
+    {
+        return ['ancient', 'lunisolar'];
+    }
 }
