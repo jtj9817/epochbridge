@@ -1,17 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\On;
-use function Livewire\Volt\{state};
+use function Livewire\Volt\{state, on};
 
 state(['savedConversions' => fn () => Auth::check() ? Auth::user()->savedConversions()->get() : collect()]);
 
-#[On('conversion-saved')]
-$refreshSavedConversions = function () {
+$refreshSavedConversions = on('conversion-saved', function () {
     if (Auth::check()) {
         $this->savedConversions = Auth::user()->savedConversions()->get();
     }
-};
+});
 
 $deleteConversion = function (int $id) {
     if (Auth::check()) {
