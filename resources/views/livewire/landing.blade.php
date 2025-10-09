@@ -46,16 +46,16 @@ mount(function () {
 });
 
 #[On('date-selected')]
-$setDate = function (string $date) {
+function setDate(string $date) {
     $this->dateInput = $date;
     $this->convertDate();
-};
+}
 
 #[On('input-updated')]
-$updateInput = function (string $dateInput, string $inputType) {
+function updateInput(string $dateInput, string $inputType) {
     $this->dateInput = $dateInput;
     $this->inputType = $inputType;
-};
+}
 
 $convertDate = function (DateTimeConverterService $converter) {
     $this->reset('conversionResults', 'conversionError', 'additionalConversionResults', 'additionalCalendarsLoaded');
@@ -70,7 +70,7 @@ $convertDate = function (DateTimeConverterService $converter) {
 };
 
 #[On('load-additional-calendars')]
-$loadAdditionalCalendars = function (DateTimeConverterService $converter) {
+function loadAdditionalCalendars(DateTimeConverterService $converter) {
     if ($this->additionalCalendarsLoaded || empty($this->conversionResults)) {
         return;
     }
@@ -82,17 +82,17 @@ $loadAdditionalCalendars = function (DateTimeConverterService $converter) {
     } finally {
         $this->additionalCalendarsLoaded = true;
     }
-};
+}
 
 #[On('filters-updated')]
-$updateFilters = function(string $searchTerm, array $selectedTypes) {
+function updateFilters(string $searchTerm, array $selectedTypes) {
     $this->searchTerm = $searchTerm;
     $this->selectedTypes = $selectedTypes;
-};
+}
 
 
 #[On('save-conversion')]
-$saveConversion = function () {
+function saveConversion() {
     if (! Auth::check() || empty($this->conversionResults)) {
         return;
     }
@@ -106,7 +106,7 @@ $saveConversion = function () {
     ]);
 
     $this->dispatch('conversion-saved');
-};
+}
 
 ?>
 
