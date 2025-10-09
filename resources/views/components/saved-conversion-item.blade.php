@@ -7,7 +7,7 @@
             <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span x-text="item.jalali.full_date"></span></div>
             <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span x-text="item.unix"></span></div>
         @else
-            <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span>{{ $item->gregorian_date }}</span></div>
+            <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span>{{ $item->gregorian_date->format('Y-m-d') }}</span></div>
             <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span>{{ $item->jalali_date }}</span></div>
             <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span>{{ $item->unix_timestamp }}</span></div>
         @endif
