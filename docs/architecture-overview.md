@@ -97,6 +97,13 @@ The presentation layer handles user interface and user experience through:
 
 #### Livewire Volt Components
 - **Landing Page**: `livewire/landing.blade.php` - Main date conversion interface
+- **Modular Components**: `livewire/components/*.blade.php` - Extracted sections:
+  - `calendar-input-section.blade.php` - Date input with validation and error handling
+  - `calendar-quick-actions.blade.php` - Today/Yesterday/Tomorrow navigation
+  - `calendar-results-grid.blade.php` - Main conversion display with lazy loading
+  - `calendar-search-filter.blade.php` - Calendar system filtering interface
+  - `saved-conversions-section.blade.php` - User history management
+  - `saved-conversion-item.blade.php` - Individual saved conversion display
 - **Authentication**: `livewire/auth/*.blade.php` - Login, register, password reset
 - **Settings**: `livewire/settings/*.blade.php` - User profile and preferences
 - **Dashboard**: `dashboard.blade.php` - User dashboard (traditional Blade)
@@ -122,6 +129,27 @@ components/
 ├── app-logo.blade.php          # Application logo component
 ├── auth-header.blade.php       # Authentication header
 ├── input-otp.blade.php         # OTP input component
+├── calendars/                  # Individual calendar display components (20 calendars)
+│   ├── base-calendar-card.blade.php      # Base component template
+│   ├── gregorian-card.blade.php          # Modern calendars
+│   ├── jalali-card.blade.php
+│   ├── hebrew-card.blade.php
+│   ├── islamic-card.blade.php
+│   ├── chinese-card.blade.php            # East Asian calendars
+│   ├── japanese-card.blade.php
+│   ├── coptic-card.blade.php             # Historical calendars
+│   ├── ethiopian-card.blade.php
+│   ├── egyptian-card.blade.php
+│   ├── french-republican-card.blade.php
+│   ├── babylonian-card.blade.php         # Ancient calendars
+│   ├── assyrian-card.blade.php
+│   ├── macedonian-card.blade.php
+│   ├── mayan-card.blade.php
+│   ├── iso8601-card.blade.php            # Technical formats
+│   ├── julian-day-card.blade.php
+│   ├── modified-julian-day-card.blade.php
+│   └── unix-card.blade.php
+├── loading-skeleton.blade.php   # Loading state component
 └── settings/
     └── layout.blade.php        # Settings page layout
 ```
@@ -137,17 +165,20 @@ class DateTimeConverterService
 {
     public function convert(string $dateString): array
     {
-        // Converts dates between calendar systems
-        // Returns: gregorian, jalali, unix, iso8601 formats
+        // Converts dates between 15+ calendar systems
+        // Returns: comprehensive conversion data with caching
+        // Includes: gregorian, jalali, unix, iso8601, all supported calendars
     }
 }
 ```
 
 **Features**:
+- Universal conversion between 15+ calendar systems
 - Input validation and error handling
-- Multi-format date conversion
-- Jalali month/day name transliteration
-- Timezone-aware processing
+- Multi-format date conversion with caching
+- Calendar system categorization (modern, historical, ancient, technical)
+- Lazy loading support for performance optimization
+- Comprehensive output with Julian Day Number backbone
 
 ### 3. Repository Layer
 **Location**: `app/Models/`
@@ -211,11 +242,17 @@ Alpine.js is automatically included with Livewire 3 and used for:
 - Client-side state management
 - UI interactivity (dropdowns, modals, toggles)
 - Form enhancements
-- Real-time updates with Livewire entanglement
+- Real-time updates with modern Livewire Volt `on()` event listeners
+- Component communication between modular sections
 
-**Example Usage**:
+**Modern Event Handling**:
 ```php
-// In Livewire Volt component
+// New Livewire Volt on() helper for event listeners
+on('converted', function ($data) {
+    // Handle conversion results across components
+});
+
+// Alpine.js with entanglement
 x-data="{ 
     showResults: @entangle('conversionResults').live,
     inputValue: @entangle('dateInput').live 
@@ -581,15 +618,25 @@ tests/
 │   ├── Auth/                   # Authentication tests
 │   ├── Settings/               # Settings functionality tests
 │   ├── Livewire/               # Livewire component tests
+│   │   └── LandingPageTest.php # Main landing page component testing
 │   ├── DashboardTest.php       # Dashboard tests
 │   └── ExampleTest.php         # Example feature test
 ├── Unit/                       # Unit tests
 │   ├── Services/               # Service layer tests
+│   │   ├── CopticCalendarServiceTest.php     # Calendar service tests
+│   │   ├── EgyptianCalendarServiceTest.php
+│   │   ├── EthiopianCalendarServiceTest.php
+│   │   └── [Additional calendar service tests]
 │   └── ExampleTest.php         # Example unit test
 └── Browser/                    # Dusk browser tests
-    ├── ExampleTest.php         # Example browser test
+    ├── LandingPageTest.php     # Full page interaction tests
+    ├── Components/             # Component-specific browser tests
+    │   ├── CalendarQuickActionsTest.php
+    │   ├── CalendarResultsGridTest.php
+    │   ├── CalendarSearchFilterTest.php
+    │   └── SavedConversionsSectionTest.php
     ├── Pages/                  # Page object models
-    └── Components/             # Component testing
+    └── ExampleTest.php         # Example browser test
 ```
 
 ### Testing Strategy

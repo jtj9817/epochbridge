@@ -157,13 +157,13 @@ app/
 ├── Livewire/               # Livewire components
 ├── Models/                 # Eloquent models
 │   ├── User.php           # User model with saved conversions
-│   ├── SavedConversion.php # User conversion history
+│   ├── SavedConversion.php # User conversion history with date casting
 │   ├── JapaneseEra.php    # Japanese era data
 │   ├── HistoricalCalendarData.php # Ancient calendar reference data
 │   └── MayanCalendarData.php # Mayan calendar calculations
 ├── Providers/              # Service providers
 └── Services/               # Calendar conversion services
-    ├── DateTimeConverterService.php    # Main conversion orchestrator
+    ├── DateTimeConverterService.php    # Main conversion orchestrator with caching
     ├── CalendarConversionService.php   # Base conversion utilities
     ├── JulianDayService.php           # Julian Day calculations
     ├── HebrewCalendarService.php      # Hebrew calendar
@@ -185,10 +185,38 @@ resources/
 ├── js/                     # JavaScript files
 └── views/
     ├── components/         # Blade components
+    │   ├── calendars/     # Individual calendar display components (20 calendars)
+    │   │   ├── base-calendar-card.blade.php   # Base component template
+    │   │   ├── gregorian-card.blade.php       # Modern calendars
+    │   │   ├── jalali-card.blade.php
+    │   │   ├── hebrew-card.blade.php
+    │   │   ├── islamic-card.blade.php
+    │   │   ├── chinese-card.blade.php         # East Asian calendars
+    │   │   ├── japanese-card.blade.php
+    │   │   ├── coptic-card.blade.php          # Historical calendars
+    │   │   ├── ethiopian-card.blade.php
+    │   │   ├── egyptian-card.blade.php
+    │   │   ├── french-republican-card.blade.php
+    │   │   ├── babylonian-card.blade.php      # Ancient calendars
+    │   │   ├── assyrian-card.blade.php
+    │   │   ├── macedonian-card.blade.php
+    │   │   ├── mayan-card.blade.php
+    │   │   ├── iso8601-card.blade.php         # Technical formats
+    │   │   ├── julian-day-card.blade.php
+    │   │   ├── modified-julian-day-card.blade.php
+    │   │   └── unix-card.blade.php
+    │   └── loading-skeleton.blade.php
     ├── livewire/          # Livewire Volt components
-    │   ├── landing.blade.php    # Main calendar conversion interface
-    │   ├── auth/               # Authentication forms
-    │   └── settings/           # User settings pages
+    │   ├── landing.blade.php              # Main calendar conversion interface
+    │   ├── components/                    # Modular landing page sections
+    │   │   ├── calendar-input-section.blade.php    # Date input and validation
+    │   │   ├── calendar-quick-actions.blade.php    # Today/Yesterday/Tomorrow
+    │   │   ├── calendar-results-grid.blade.php     # Main conversion display
+    │   │   ├── calendar-search-filter.blade.php    # Calendar filtering
+    │   │   ├── saved-conversions-section.blade.php # User history management
+    │   │   └── saved-conversion-item.blade.php     # Individual saved item
+    │   ├── auth/                          # Authentication forms
+    │   └── settings/                      # User settings pages
     └── pages/             # Page-level Volt components
 
 database/
@@ -203,9 +231,12 @@ database/
 
 tests/
 ├── Feature/               # Feature tests
+│   └── Livewire/         # Livewire component tests
 ├── Unit/                  # Unit tests
 │   └── Services/         # Calendar service tests
 └── Browser/               # Dusk browser tests
+    ├── LandingPageTest.php      # Full page interaction tests
+    └── Components/              # Component-specific browser tests
 ```
 
 ## Key Features
@@ -259,17 +290,28 @@ The core functionality is powered by `DateTimeConverterService` and 15+ speciali
 - **Search & Filter**: Find saved conversions by date or calendar type
 
 ### Interactive Landing Page
-Located at `resources/views/livewire/landing.blade.php`:
-- **Comprehensive Display**: All 15+ calendars shown simultaneously
-- **Real-time Updates**: Instant conversion as you type
-- **Quick Actions**: Today, Yesterday, Tomorrow navigation
+Located at `resources/views/livewire/landing.blade.php` with modular component architecture:
+- **Comprehensive Display**: All 15+ calendars shown simultaneously using individual calendar cards
+- **Modular Design**: Separated into focused components for maintainability:
+  - Calendar input section with validation
+  - Quick action buttons (Today, Yesterday, Tomorrow)  
+  - Results grid with lazy loading and filtering
+  - Saved conversions management
+  - Search and filter functionality
+- **Real-time Updates**: Instant conversion with Livewire Volt `on()` event listeners
 - **Visual Design**: Unique styling for each calendar system with cultural icons
 - **Responsive Layout**: Optimized grid system for all device sizes
-- **Loading States**: Smooth UX with loading indicators
+- **Loading States**: Smooth UX with skeleton components and loading indicators
 
 ### Livewire Volt
-Single-file components combining PHP logic and Blade templates:
+Single-file components combining PHP logic and Blade templates with modern event handling:
 - **Landing page**: `resources/views/livewire/landing.blade.php` - Main date conversion interface
+- **Modular components**: `resources/views/livewire/components/` - Reusable sections:
+  - `calendar-input-section.blade.php` - Date input with validation
+  - `calendar-quick-actions.blade.php` - Navigation shortcuts
+  - `calendar-results-grid.blade.php` - Main conversion display
+  - `calendar-search-filter.blade.php` - Calendar filtering UI
+  - `saved-conversions-section.blade.php` - History management
 - **Authentication forms**: `resources/views/livewire/auth/` - Login, register, password reset, 2FA
 - **Settings pages**: `resources/views/livewire/settings/` - User profile, password, appearance, 2FA management
 - **Page components**: `resources/views/pages/` - Additional page-level components
