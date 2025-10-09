@@ -3,8 +3,7 @@
 use App\Exceptions\CalendarConversionException;
 use App\Services\DateTimeConverterService;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\On;
-use function Livewire\Volt\{state, mount, layout};
+use function Livewire\Volt\{state, mount, layout, on};
 
 layout('components.layouts.public');
 
@@ -45,17 +44,48 @@ mount(function () {
     $this->dateInput = now()->format('Y-m-d');
 });
 
-#[On('date-selected')]
-function setDate(string $date) {
-    $this->dateInput = $date;
-    $this->convertDate();
-}
+on([
+    'date-selected' => function (string $date) {
+        $this->dateInput = $date;
+        $this->convertDate();
+    },
+    'input-updated' => function (string $dateInput, string $inputType) {
+        $this->dateInput = $dateInput;
+        $this->inputType = $inputType;
+    },
+    'load-additional-calendars' => function (DateTimeConverterService $converter) {
+        if ($this->additionalCalendarsLoaded || empty($this->conversionResults)) {
+            return;
+        }
 
-#[On('input-updated')]
-function updateInput(string $dateInput, string $inputType) {
-    $this->dateInput = $dateInput;
-    $this->inputType = $inputType;
-}
+        try {
+            $this->additionalConversionResults = $converter->convertAdditional($this->dateInput, $this->inputType);
+        } catch (\Exception $e) {
+            // Silently fail or add a specific error state for additional calendars
+        } finally {
+            $this->additionalCalendarsLoaded = true;
+        }
+    },
+    'filters-updated' => function (string $searchTerm, array $selectedTypes) {
+        $this->searchTerm = $searchTerm;
+        $this->selectedTypes = $selectedTypes;
+    },
+    'save-conversion' => function () {
+        if (! Auth::check() || empty($this->conversionResults)) {
+            return;
+        }
+
+        Auth::user()->savedConversions()->create([
+            'original_input' => $this->dateInput,
+            'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
+            'jalali_date' => $this->conversionResults['jalali']['full_date'],
+            'unix_timestamp' => $this->conversionResults['unix'],
+            'iso8601_string' => $this->conversionResults['iso8601'],
+        ]);
+
+        $this->dispatch('conversion-saved');
+    }
+]);
 
 $convertDate = function (DateTimeConverterService $converter) {
     $this->reset('conversionResults', 'conversionError', 'additionalConversionResults', 'additionalCalendarsLoaded');
@@ -68,45 +98,6 @@ $convertDate = function (DateTimeConverterService $converter) {
         $this->conversionError = $e->validator->errors()->first('dateInput');
     }
 };
-
-#[On('load-additional-calendars')]
-function loadAdditionalCalendars(DateTimeConverterService $converter) {
-    if ($this->additionalCalendarsLoaded || empty($this->conversionResults)) {
-        return;
-    }
-
-    try {
-        $this->additionalConversionResults = $converter->convertAdditional($this->dateInput, $this->inputType);
-    } catch (\Exception $e) {
-        // Silently fail or add a specific error state for additional calendars
-    } finally {
-        $this->additionalCalendarsLoaded = true;
-    }
-}
-
-#[On('filters-updated')]
-function updateFilters(string $searchTerm, array $selectedTypes) {
-    $this->searchTerm = $searchTerm;
-    $this->selectedTypes = $selectedTypes;
-}
-
-
-#[On('save-conversion')]
-function saveConversion() {
-    if (! Auth::check() || empty($this->conversionResults)) {
-        return;
-    }
-
-    Auth::user()->savedConversions()->create([
-        'original_input' => $this->dateInput,
-        'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
-        'jalali_date' => $this->conversionResults['jalali']['full_date'],
-        'unix_timestamp' => $this->conversionResults['unix'],
-        'iso8601_string' => $this->conversionResults['iso8601'],
-    ]);
-
-    $this->dispatch('conversion-saved');
-}
 
 ?>
 
