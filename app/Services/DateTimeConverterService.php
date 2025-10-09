@@ -6,12 +6,14 @@ use App\Exceptions\CalendarConversionException;
 use App\Exceptions\CalendarMalformedDateException;
 use App\Exceptions\CalendarValidationException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use Morilog\Jalali\Jalalian;
 
 class DateTimeConverterService
 {
     private array $calendarServices;
+    private array $fastCalendars = ['julian', 'hebrew', 'islamic', 'coptic', 'ethiopian', 'french_republican'];
 
     /**
      * Jalali month names transliterated to English.
@@ -36,7 +38,7 @@ class DateTimeConverterService
      */
     private const JALALI_DAYS_EN = [
         0 => 'Shanbeh',      // Saturday
-        1 => 'Yekshanbeh',   // Sunday  
+        1 => 'Yekshanbeh',   // Sunday
         2 => 'Doshanbeh',    // Monday
         3 => 'Seshhanbeh',   // Tuesday
         4 => 'Chaharshanbeh', // Wednesday
@@ -63,23 +65,96 @@ class DateTimeConverterService
         ];
     }
 
-    /**
-     * Converts a date string from a given format into various other formats.
-     *
-     * @param  string  $dateString The date string to convert.
-     * @param  string  $inputType The format of the input date string.
-     * @return array<string, mixed> An associative array with converted dates.
-     *
-     * @throws \InvalidArgumentException If the date string is invalid or input type is unsupported.
-     */
     public function convert(string $dateString, string $inputType = 'gregorian'): array
     {
-        if (empty(trim($dateString))) {
-            throw new InvalidArgumentException('Input date cannot be empty.');
-        }
+        $cacheKey = 'conversion_fast_'.md5($dateString.$inputType);
 
+        return Cache::remember($cacheKey, 3600, function () use ($dateString, $inputType) {
+            if (empty(trim($dateString))) {
+                throw new InvalidArgumentException('Input date cannot be empty.');
+            }
+
+            $carbonDate = $this->parseInputDate($dateString, $inputType);
+
+            $jalaliDate = Jalalian::fromCarbon($carbonDate);
+            $julianDay = GregorianToJD($carbonDate->month, $carbonDate->day, $carbonDate->year)
+                 + ($carbonDate->hour / 24)
+                 + ($carbonDate->minute / 1440)
+                 + ($carbonDate->second / 86400);
+
+            $result = [
+                'gregorian' => [
+                    'year' => $carbonDate->year,
+                    'month_name' => $carbonDate->format('F'),
+                    'day' => $carbonDate->day,
+                    'day_of_week' => $carbonDate->format('l'),
+                    'full_date' => $carbonDate->format('Y-m-d'),
+                    'tags' => ['modern', 'solar'],
+                    'name' => 'Gregorian',
+                ],
+                'jalali' => [
+                    'year' => $jalaliDate->getYear(),
+                    'month_name' => $jalaliDate->format('%B'),
+                    'month_name_en' => self::JALALI_MONTHS_EN[$jalaliDate->getMonth()],
+                    'day' => $jalaliDate->getDay(),
+                    'day_of_week' => $jalaliDate->format('%A'),
+                    'day_of_week_en' => self::JALALI_DAYS_EN[$jalaliDate->getDayOfWeek()],
+                    'full_date' => $jalaliDate->format('Y/m/d'),
+                    'tags' => ['modern', 'solar'],
+                    'name' => 'Jalali',
+                ],
+                'unix' => $carbonDate->unix(),
+                'iso8601' => $carbonDate->clone()->utc()->toIso8601String(),
+                'jd' => $julianDay,
+                'mjd' => $julianDay - 2400000.5,
+            ];
+
+            // Add fast calendar conversions
+            foreach ($this->fastCalendars as $key) {
+                if (isset($this->calendarServices[$key])) {
+                    $service = $this->calendarServices[$key];
+                    try {
+                        $result[$key] = $service->fromGregorian($carbonDate);
+                        $result[$key]['tags'] = $service->getTags();
+                        $result[$key]['name'] = $service->getName();
+                    } catch (\Exception $e) {
+                        $result[$key] = ['error' => $e->getMessage()];
+                    }
+                }
+            }
+
+            return $result;
+        });
+    }
+
+    public function convertAdditional(string $dateString, string $inputType = 'gregorian'): array
+    {
+        $cacheKey = 'conversion_additional_'.md5($dateString.$inputType);
+
+        return Cache::remember($cacheKey, 3600, function () use ($dateString, $inputType) {
+            $carbonDate = $this->parseInputDate($dateString, $inputType);
+            $result = [];
+
+            $additionalCalendars = array_diff(array_keys($this->calendarServices), $this->fastCalendars);
+
+            foreach ($additionalCalendars as $key) {
+                $service = $this->calendarServices[$key];
+                try {
+                    $result[$key] = $service->fromGregorian($carbonDate);
+                    $result[$key]['tags'] = $service->getTags();
+                    $result[$key]['name'] = $service->getName();
+                } catch (\Exception $e) {
+                    $result[$key] = ['error' => $e->getMessage()];
+                }
+            }
+            return $result;
+        });
+    }
+
+    private function parseInputDate(string $dateString, string $inputType): Carbon
+    {
         try {
-            $carbonDate = match ($inputType) {
+            return match ($inputType) {
                 'gregorian' => Carbon::parse($dateString)->startOfDay(),
                 'jalali' => Jalalian::fromFormat('Y/m/d', $dateString)->toCarbon()->startOfDay(),
                 'unix' => Carbon::createFromTimestamp((int) $dateString),
@@ -94,46 +169,6 @@ class DateTimeConverterService
         } catch (\Exception $e) {
             throw new InvalidArgumentException('Invalid date format provided for the selected input type.');
         }
-
-        $jalaliDate = Jalalian::fromCarbon($carbonDate);
-        $julianDay = GregorianToJD($carbonDate->month, $carbonDate->day, $carbonDate->year) 
-             + ($carbonDate->hour / 24) 
-             + ($carbonDate->minute / 1440) 
-             + ($carbonDate->second / 86400);
-
-        $result = [
-            'gregorian' => [
-                'year'        => $carbonDate->year,
-                'month_name'  => $carbonDate->format('F'),
-                'day'         => $carbonDate->day,
-                'day_of_week' => $carbonDate->format('l'),
-                'full_date'   => $carbonDate->format('Y-m-d'),
-            ],
-            'jalali'    => [
-                'year'           => $jalaliDate->getYear(),
-                'month_name'     => $jalaliDate->format('%B'),
-                'month_name_en'  => self::JALALI_MONTHS_EN[$jalaliDate->getMonth()],
-                'day'            => $jalaliDate->getDay(),
-                'day_of_week'    => $jalaliDate->format('%A'),
-                'day_of_week_en' => self::JALALI_DAYS_EN[$jalaliDate->getDayOfWeek()],
-                'full_date'      => $jalaliDate->format('Y/m/d'),
-            ],
-            'unix'      => $carbonDate->unix(),
-            'iso8601'   => $carbonDate->clone()->utc()->toIso8601String(),
-            'jd'        => $julianDay,
-            'mjd'       => $julianDay - 2400000.5,
-        ];
-
-        // Add calendar conversions
-        foreach ($this->calendarServices as $key => $service) {
-            try {
-                $result[$key] = $service->fromGregorian($carbonDate);
-            } catch (\Exception $e) {
-                $result[$key] = ['error' => $e->getMessage()];
-            }
-        }
-
-        return $result;
     }
 
     private function convertFromCalendar(string $calendarType, string $dateString): Carbon
