@@ -88,7 +88,12 @@ class ExecuteTestSuiteJob implements ShouldQueue
             $runStartedAt = now();
 
             // Dispatch execution started event
-            TestExecutionStarted::dispatch($this->commandId, count($this->testFiles), $runStartedAt);
+            TestExecutionStarted::dispatch(
+                $this->commandId,
+                count($this->testFiles),
+                $runStartedAt,
+                $this->buildStartMetadata()
+            );
 
             Log::info("Starting test execution", [
                 'command_id' => $this->commandId,
@@ -132,6 +137,9 @@ class ExecuteTestSuiteJob implements ShouldQueue
                             'options' => $this->options,
                             'command' => $this->baseCommand,
                             'started_at' => $runStartedAt->toISOString(),
+                            'tests_by_type' => $this->options['tests_by_type'] ?? [],
+                            'estimated_total_tests' => $this->options['estimated_total_tests'] ?? count($this->testFiles),
+                            'test_files' => $this->normalizeTestFiles($this->testFiles),
                         ]
                     );
                 }
@@ -160,6 +168,9 @@ class ExecuteTestSuiteJob implements ShouldQueue
                     'options' => $this->options,
                     'command' => $this->baseCommand,
                     'started_at' => $runStartedAt->toISOString(),
+                    'tests_by_type' => $this->options['tests_by_type'] ?? [],
+                    'estimated_total_tests' => $this->options['estimated_total_tests'] ?? count($this->testFiles),
+                    'test_files' => $this->normalizeTestFiles($this->testFiles),
                 ]
             );
 
@@ -469,6 +480,35 @@ class ExecuteTestSuiteJob implements ShouldQueue
         $efficiency = ($serialDuration / ($totalDuration * $processes)) * 100;
 
         return round(min($efficiency, 100), 2);
+    }
+
+    /**
+     * Build metadata payload for the TestExecutionStarted event.
+     *
+     * @return array<string, mixed>
+     */
+    private function buildStartMetadata(): array
+    {
+        return [
+            'options' => $this->options,
+            'estimated_total_tests' => $this->options['estimated_total_tests'] ?? count($this->testFiles),
+            'tests_by_type' => $this->options['tests_by_type'] ?? [],
+            'test_files' => $this->normalizeTestFiles($this->testFiles),
+        ];
+    }
+
+    /**
+     * Normalise test file paths from mixed arrays/strings.
+     *
+     * @param array<int, mixed> $testFiles
+     * @return array<int, string>
+     */
+    private function normalizeTestFiles(array $testFiles): array
+    {
+        return array_values(array_filter(array_map(
+            static fn ($file) => is_array($file) ? ($file['file_path'] ?? '') : (string) $file,
+            $testFiles
+        )));
     }
 
     /**

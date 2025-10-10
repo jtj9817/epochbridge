@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\ProgressTrackingService;
 use App\Services\TestDiscoveryService;
 use App\Services\TestExecutionService;
 use App\Services\TestSelectionService;
@@ -50,6 +51,11 @@ class InteractiveTestRunnerCommand extends Command
     private TestExecutionService $executionService;
 
     /**
+     * Progress tracking service
+     */
+    private ProgressTrackingService $progressService;
+
+    /**
      * Selected test files for custom selection
      */
     private array $selectedTests = [];
@@ -57,13 +63,18 @@ class InteractiveTestRunnerCommand extends Command
     /**
      * Constructor - Inject services
      */
-    public function __construct(TestDiscoveryService $discoveryService, TestExecutionService $executionService)
+    public function __construct(
+        TestDiscoveryService $discoveryService,
+        TestExecutionService $executionService,
+        ProgressTrackingService $progressTrackingService
+    )
     {
         parent::__construct();
         
         $this->discoveryService = $discoveryService;
         $this->executionService = $executionService;
         $this->selectionService = new TestSelectionService($discoveryService, $this);
+        $this->progressService = $progressTrackingService;
     }
 
     /**
@@ -354,6 +365,19 @@ class InteractiveTestRunnerCommand extends Command
             $this->line("Test files: " . count($testFiles) . " files");
             $this->newLine();
 
+            $progressContext = $this->buildProgressContext($testSelection, $testFiles);
+
+            $options = array_merge(
+                $options,
+                [
+                    'estimated_total_tests' => $progressContext['estimated_total_tests'],
+                    'tests_by_type' => $progressContext['tests_by_type'],
+                    'test_files' => $progressContext['test_files'],
+                ]
+            );
+
+            app()->instance('interactive-test-runner.output', $this->output);
+
             // Start execution via service
             $commandId = $this->executionService->startTestExecution(
                 $testFiles,
@@ -366,6 +390,7 @@ class InteractiveTestRunnerCommand extends Command
             return $commandId;
 
         } catch (\Exception $e) {
+            app()->forgetInstance('interactive-test-runner.output');
             $this->error("Failed to start test execution: {$e->getMessage()}");
             return null;
         }
@@ -400,163 +425,231 @@ class InteractiveTestRunnerCommand extends Command
     }
 
     /**
-     * Display execution progress and wait for completion
+     * Build progress tracking context for the given selection.
      *
-     * @param string $commandId Command identifier
-     * @return void
+     * @param string $selection
+     * @param array<int, mixed> $testFiles
+     * @return array{estimated_total_tests:int, tests_by_type:array<string,int>, test_files:array<int,string>}
+     */
+    private function buildProgressContext(string $selection, array $testFiles): array
+    {
+        $statistics = $this->discoveryService->getTestStatistics();
+
+        $estimatedTotal = !empty($testFiles)
+            ? count($testFiles)
+            : (int) ($statistics['total'] ?? 0);
+
+        $testsByType = [
+            'unit' => 0,
+            'feature' => 0,
+            'livewire' => 0,
+            'browser' => 0,
+        ];
+
+        if (!empty($testFiles)) {
+            foreach ($testFiles as $file) {
+                $path = is_array($file) ? ($file['file_path'] ?? '') : $file;
+                $type = $this->progressService->determineTestType($path);
+                $testsByType[$type] = ($testsByType[$type] ?? 0) + 1;
+            }
+        } elseif ($selection === self::ALL_TESTS) {
+            $testsByType['unit'] = (int) ($statistics['unit'] ?? 0);
+            $testsByType['feature'] = (int) ($statistics['feature'] ?? 0);
+            $testsByType['livewire'] = (int) ($statistics['livewire'] ?? 0);
+            $testsByType['browser'] = (int) ($statistics['browser'] ?? 0);
+        }
+
+        $normalizedFiles = array_map(
+            static fn ($file) => is_array($file) ? ($file['file_path'] ?? '') : $file,
+            $testFiles
+        );
+
+        return [
+            'estimated_total_tests' => $estimatedTotal,
+            'tests_by_type' => $testsByType,
+            'test_files' => array_values(array_filter($normalizedFiles)),
+        ];
+    }
+
+    /**
+     * Display execution progress and wait for completion.
      */
     private function displayExecutionProgress(string $commandId): void
     {
+        $this->progressService->setActiveCommand($commandId);
+        $this->progressService->registerOutput($this->output);
+        app()->instance('interactive-test-runner.output', $this->output);
+
+        $this->displayProgressInterface();
+        $this->handleProgressUpdates($commandId);
+
+        app()->forgetInstance('interactive-test-runner.output');
+    }
+
+    /**
+     * Render the initial progress interface header.
+     */
+    private function displayProgressInterface(): void
+    {
         $this->newLine();
-        info('📊 Test Execution Progress');
+        $this->line('📊 <fg=cyan>Real-time Test Execution Progress</>');
         $this->line('Press Ctrl+C to cancel execution');
         $this->newLine();
+    }
 
-        $startTime = now();
-        $lastUpdate = 0;
+    /**
+     * Handle progress updates using a non-blocking polling loop.
+     */
+    private function handleProgressUpdates(string $commandId): void
+    {
+        $pollIntervalMicroseconds = 150000; // ~6Hz refresh
 
-        // Progress monitoring loop
         while (true) {
             try {
                 $progress = $this->executionService->trackProgress($commandId);
-                
+
                 if (!$progress) {
-                    warning('Lost connection to test execution.');
+                    warning('Progress tracking unavailable for this execution.');
                     break;
                 }
 
-                // Display progress every 5 seconds or when significant change occurs
-                if (time() - $lastUpdate >= 5 || $progress['status'] !== 'running') {
-                    $this->displayProgressUpdate($progress, $startTime);
-                    $lastUpdate = time();
-                }
+                $this->refreshProgressDisplay($commandId);
 
-                // Check if execution completed
-                if (in_array($progress['status'], ['completed', 'failed', 'cancelled'])) {
-                    $this->displayExecutionComplete($commandId, $progress);
+                $status = $progress['status'] ?? 'running';
+                if (in_array($status, ['completed', 'failed', 'cancelled', 'error'], true)) {
                     break;
                 }
 
-                // Sleep for 1 second before next check
-                sleep(1);
-
-            } catch (\Exception $e) {
-                $this->error("Error monitoring progress: {$e->getMessage()}");
+                usleep($pollIntervalMicroseconds);
+            } catch (\Exception $exception) {
+                $this->error("Error monitoring progress: {$exception->getMessage()}");
                 break;
             }
         }
+
+        $this->refreshProgressDisplay($commandId, true);
+        $this->showExecutionSummary($commandId);
     }
 
     /**
-     * Display a progress update
-     *
-     * @param array $progress Progress information
-     * @param \Carbon\Carbon $startTime Execution start time
-     * @return void
+     * Refresh the current progress display with the latest statistics.
      */
-    private function displayProgressUpdate(array $progress, \Carbon\Carbon $startTime): void
+    private function refreshProgressDisplay(string $commandId, bool $force = false): void
     {
-        $elapsed = $startTime->diffForHumans(null, true);
-        $percentage = number_format($progress['progress'] ?? 0, 1);
-        $completed = $progress['completed_tests'] ?? 0;
-        $total = $progress['total_tests'] ?? 0;
-        $status = $progress['status'] ?? 'unknown';
-        $eta = $progress['eta'] ?? 'calculating...';
-
-        $this->line("Status: <fg=cyan>{$status}</> | Progress: <fg=green>{$percentage}%</> ({$completed}/{$total}) | Elapsed: {$elapsed} | ETA: {$eta}");
-    }
-
-    /**
-     * Display execution completion summary
-     *
-     * @param string $commandId Command identifier
-     * @param array $progress Final progress information
-     * @return void
-     */
-    private function displayExecutionComplete(string $commandId, array $progress): void
-    {
-        $this->newLine();
-        
-        $report = $this->executionService->getExecutionReport($commandId);
-        
-        if (!$report) {
-            warning('Could not retrieve execution report.');
-            return;
-        }
-
-        $summary = $report['summary'] ?? [];
-        $status = $summary['status'] ?? 'unknown';
-
-        // Display header based on status
-        if ($status === 'passed') {
-            info('✅ Test Execution Completed Successfully!');
-        } else {
-            warning('❌ Test Execution Completed with Issues');
-        }
-
-        $this->newLine();
-
-        // Display summary table
-        $this->table(
-            ['Metric', 'Value'],
-            [
-                ['Status', $status === 'passed' ? '✅ PASSED' : '❌ FAILED'],
-                ['Total Tests', $summary['total_tests'] ?? 0],
-                ['Passed', $summary['total_passed'] ?? 0],
-                ['Failed', $summary['total_failed'] ?? 0],
-                ['Skipped', $summary['total_skipped'] ?? 0],
-                ['Success Rate', ($summary['success_rate'] ?? 0) . '%'],
-                ['Duration', $this->formatDuration($summary['total_duration'] ?? 0)],
-                ['Output File', $report['output_file'] ?? 'N/A'],
-            ]
-        );
-
-        // Display failures if any
-        if (!empty($summary['failures'])) {
-            $this->newLine();
-            warning('Test Failures:');
-            foreach (array_slice($summary['failures'], 0, 5) as $failure) {
-                $this->line("  • " . trim($failure));
-            }
-            
-            if (count($summary['failures']) > 5) {
-                $this->line("  ... and " . (count($summary['failures']) - 5) . " more failures");
-            }
-        }
-
-        // Display warnings if any
-        if (!empty($summary['warnings'])) {
-            $this->newLine();
-            $this->line('<fg=yellow>Warnings:</>');
-            foreach (array_slice($summary['warnings'], 0, 3) as $warning) {
-                $this->line("  • " . trim($warning));
-            }
-            
-            if (count($summary['warnings']) > 3) {
-                $this->line("  ... and " . (count($summary['warnings']) - 3) . " more warnings");
-            }
-        }
-
-        $this->newLine();
-        info("📄 Full report available at: {$report['output_file']}");
+        $this->progressService->displayCurrentStatus($this->output, $commandId, $force);
     }
 
     /**
      * Format duration for human reading
-     *
-     * @param float $seconds Duration in seconds
-     * @return string Formatted duration
      */
     private function formatDuration(float $seconds): string
     {
         if ($seconds < 1) {
             return number_format($seconds, 2) . 's';
-        } elseif ($seconds < 60) {
+        }
+
+        if ($seconds < 60) {
             return number_format($seconds, 1) . 's';
-        } else {
-            $minutes = floor($seconds / 60);
-            $remainingSeconds = $seconds % 60;
-            return $minutes . 'm ' . number_format($remainingSeconds, 1) . 's';
+        }
+
+        $minutes = floor($seconds / 60);
+        $remainingSeconds = $seconds % 60;
+
+        return $minutes . 'm ' . number_format($remainingSeconds, 1) . 's';
+    }
+
+    /**
+     * Output the final execution summary once testing completes.
+     */
+    private function showExecutionSummary(string $commandId): void
+    {
+        $this->progressService->registerOutput($this->output);
+        $this->progressService->displayCurrentStatus($this->output, $commandId, true);
+        $this->newLine();
+
+        $report = $this->executionService->getExecutionReport($commandId);
+        $statistics = $this->progressService->getStatistics($commandId);
+        $summary = $report['summary'] ?? $statistics['summary'] ?? [];
+
+        $status = $summary['status'] ?? 'unknown';
+        $statusLabel = match ($status) {
+            'passed' => '<fg=green>✅ PASSED</>',
+            'failed', 'error' => '<fg=red>❌ FAILED</>',
+            default => '<fg=yellow>ℹ️ COMPLETED</>',
+        };
+
+        $this->line(match ($status) {
+            'passed' => '<fg=green>✅ Test Execution Completed Successfully!</>',
+            'failed', 'error' => '<fg=red>❌ Test Execution Completed with Issues</>',
+            default => '<fg=yellow>ℹ️ Test Execution Completed</>',
+        });
+
+        $this->newLine();
+
+        $this->table(
+            ['Metric', 'Value'],
+            [
+                ['Status', $statusLabel],
+                ['Total Tests', $summary['total_tests'] ?? ($statistics['completed'] ?? 0)],
+                ['Passed', $summary['total_passed'] ?? ($statistics['passed'] ?? 0)],
+                ['Failed', $summary['total_failed'] ?? ($statistics['failed'] ?? 0)],
+                ['Skipped', $summary['total_skipped'] ?? ($statistics['skipped'] ?? 0)],
+                ['Success Rate', ($summary['success_rate'] ?? 0) . '%'],
+                ['Duration', $this->formatDuration($summary['total_duration'] ?? ($statistics['elapsed'] ?? 0))],
+                ['Average Test Duration', $this->formatDuration($statistics['average_duration'] ?? 0)],
+                ['Output File', $report['output_file'] ?? 'N/A'],
+            ]
+        );
+
+        $this->newLine();
+
+        if (!empty($statistics['by_type'])) {
+            $this->line('Breakdown by Test Type:');
+            $rows = [];
+
+            foreach ($statistics['by_type'] as $type => $data) {
+                $rows[] = [
+                    ucfirst($type),
+                    $data['total'],
+                    $data['completed'],
+                    $data['passed'],
+                    $data['failed'],
+                    $data['skipped'],
+                ];
+            }
+
+            $this->table(
+                ['Type', 'Total', 'Completed', 'Passed', 'Failed', 'Skipped'],
+                $rows
+            );
+
+            $this->newLine();
+        }
+
+        if (!empty($summary['failures'])) {
+            warning('Test Failures:');
+            foreach (array_slice($summary['failures'], 0, 5) as $failure) {
+                $this->line("  • " . trim($failure));
+            }
+            if (count($summary['failures']) > 5) {
+                $this->line('  ... additional failures omitted');
+            }
+            $this->newLine();
+        }
+
+        if (!empty($summary['warnings'])) {
+            $this->line('<fg=yellow>Warnings:</>');
+            foreach (array_slice($summary['warnings'], 0, 3) as $warningMessage) {
+                $this->line("  • " . trim($warningMessage));
+            }
+            if (count($summary['warnings']) > 3) {
+                $this->line('  ... additional warnings omitted');
+            }
+            $this->newLine();
+        }
+
+        if (isset($report['output_file'])) {
+            info("📄 Full report available at: {$report['output_file']}");
         }
     }
 }
