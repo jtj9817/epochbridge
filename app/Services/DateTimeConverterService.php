@@ -117,7 +117,7 @@ class DateTimeConverterService
                         $result[$key] = $service->fromGregorian($carbonDate);
                         $result[$key]['tags'] = $service->getTags();
                         $result[$key]['name'] = $service->getName();
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         $result[$key] = ['error' => $e->getMessage()];
                     }
                 }
@@ -143,7 +143,7 @@ class DateTimeConverterService
                     $result[$key] = $service->fromGregorian($carbonDate);
                     $result[$key]['tags'] = $service->getTags();
                     $result[$key]['name'] = $service->getName();
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     $result[$key] = ['error' => $e->getMessage()];
                 }
             }
