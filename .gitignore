@@ -45,3 +45,6 @@ Thumbs.db
 .claude/
 coding-prompts.md
 .aider*
+
+test_results_exec_example.txt
+pail_logs_*.txt
