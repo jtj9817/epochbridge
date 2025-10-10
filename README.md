@@ -136,6 +136,32 @@ php artisan dusk
 php artisan pail
 ```
 
+## Interactive Test Runner
+
+Run the parallel test workflow with real-time progress bars, recovery diagnostics, and Markdown reporting:
+
+```bash
+php artisan test:runner --output-file=storage/reports/test-report.md
+```
+
+- Live progress UI summarises per-suite completion, pass/fail counts, and ETAs.
+- Markdown reports land in `test-report.md` (configurable) with GitHub-flavoured tables and failure details.
+- Automatic recovery handles transient errors with exponential backoff and documents retry attempts in the final summary.
+
+### Configuration
+
+Key settings live in `config/test-runner.php` and can be overridden with environment variables:
+
+| Setting | Env Variable | Default |
+| --- | --- | --- |
+| Parallel mode | `TEST_RUNNER_PARALLEL` | `true` |
+| Processes | `TEST_RUNNER_PROCESSES` | `4` |
+| Timeout (seconds) | `TEST_RUNNER_TIMEOUT` | `300` |
+| Retry attempts | `TEST_RUNNER_RETRY_ATTEMPTS` | `1` |
+| Report file | `TEST_RUNNER_REPORT_FILE` | `test-report.md` |
+
+Use the `test-runner` config to customise paths, file patterns, and per-environment overrides (for example, the `ci` profile increases timeouts and disables retries). The `TestRunnerServiceProvider` applies these defaults automatically whenever the test services are resolved.
+
 ## Architecture
 
 ### Authentication

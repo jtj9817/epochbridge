@@ -21,11 +21,51 @@ class TestDiscoveryService
     /**
      * Test directory structure
      */
-    private const TEST_DIRECTORIES = [
+    private array $paths = [
         'unit' => 'tests/Unit',
         'feature' => 'tests/Feature',
+        'livewire' => 'tests/Feature/Livewire',
         'browser' => 'tests/Browser',
     ];
+
+    /**
+     * Pattern overrides for test discovery.
+     *
+     * @var array<string, string>
+     */
+    private array $patterns = [
+        'unit' => 'tests/Unit/*Test.php',
+        'feature' => 'tests/Feature/*Test.php',
+        'livewire' => 'tests/Feature/Livewire/*Test.php',
+        'browser' => 'tests/Browser/*Test.php',
+    ];
+
+    /**
+     * Apply discovery configuration provided by service provider.
+     *
+     * @param array<string, mixed> $configuration
+     * @return void
+     */
+    public function setDiscoveryConfiguration(array $configuration): void
+    {
+        if (!empty($configuration['paths']) && is_array($configuration['paths'])) {
+            foreach ($configuration['paths'] as $key => $path) {
+                if (isset($this->paths[$key]) && is_string($path) && $path !== '') {
+                    $this->paths[$key] = $path;
+                }
+            }
+        }
+
+        if (!empty($configuration['patterns']) && is_array($configuration['patterns'])) {
+            foreach ($configuration['patterns'] as $key => $pattern) {
+                if (is_string($pattern) && $pattern !== '') {
+                    $this->patterns[$key] = $pattern;
+                }
+            }
+        }
+
+        $this->clearCache();
+    }
 
     /**
      * Discover all test files in the project
@@ -81,7 +121,7 @@ class TestDiscoveryService
      */
     public function getUnitTests(): array
     {
-        return $this->scanDirectory(self::TEST_DIRECTORIES['unit'], 'unit');
+        return $this->scanDirectory($this->paths['unit'], 'unit');
     }
 
     /**
@@ -91,11 +131,18 @@ class TestDiscoveryService
      */
     public function getFeatureTests(): array
     {
-        $allFeatureTests = $this->scanDirectory(self::TEST_DIRECTORIES['feature'], 'feature');
-        
-        // Filter out Livewire tests from feature tests
-        return array_filter($allFeatureTests, function ($test) {
-            return !str_contains($test['relative_path'], 'Livewire');
+        $featurePath = $this->paths['feature'];
+        $allFeatureTests = $this->scanDirectory($featurePath, 'feature');
+
+        // Filter out Livewire tests from feature tests when configured
+        $livewireBase = rtrim(base_path($this->paths['livewire']), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+        if ($this->paths['livewire'] === '' || !File::isDirectory(base_path($this->paths['livewire']))) {
+            return $allFeatureTests;
+        }
+
+        return array_filter($allFeatureTests, function ($test) use ($livewireBase) {
+            return !str_starts_with($test['file_path'], $livewireBase);
         });
     }
 
@@ -106,9 +153,9 @@ class TestDiscoveryService
      */
     public function getLivewireTests(): array
     {
-        $livewireDirectory = self::TEST_DIRECTORIES['feature'] . '/Livewire';
-        
-        if (!File::isDirectory(base_path($livewireDirectory))) {
+        $livewireDirectory = $this->paths['livewire'];
+
+        if ($livewireDirectory === '' || !File::isDirectory(base_path($livewireDirectory))) {
             return [];
         }
 
@@ -122,7 +169,7 @@ class TestDiscoveryService
      */
     public function getBrowserTests(): array
     {
-        return $this->scanDirectory(self::TEST_DIRECTORIES['browser'], 'browser');
+        return $this->scanDirectory($this->paths['browser'], 'browser');
     }
 
     /**
@@ -143,8 +190,17 @@ class TestDiscoveryService
         $testFiles = [];
         $files = File::allFiles($fullPath);
 
+        $pattern = $this->patterns[$category] ?? null;
+
         foreach ($files as $file) {
             if ($this->validateTestFile($file->getPathname())) {
+                if ($pattern) {
+                    $relativeToBase = ltrim(str_replace(base_path() . DIRECTORY_SEPARATOR, '', $file->getPathname()), DIRECTORY_SEPARATOR);
+                    if (!fnmatch($pattern, $relativeToBase)) {
+                        continue;
+                    }
+                }
+                
                 $testInfo = $this->categorizeTestFile($file, $directory, $category);
                 if ($testInfo !== null) {
                     $testFiles[] = $testInfo;
@@ -168,7 +224,8 @@ class TestDiscoveryService
      */
     private function categorizeTestFile(\SplFileInfo $file, string $baseDirectory, string $category): ?array
     {
-        $relativePath = str_replace(base_path($baseDirectory) . '/', '', $file->getPathname());
+        $base = rtrim(base_path($baseDirectory), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $relativePath = ltrim(str_replace($base, '', $file->getPathname()), DIRECTORY_SEPARATOR);
         
         // Skip if not a PHP file
         if ($file->getExtension() !== 'php') {

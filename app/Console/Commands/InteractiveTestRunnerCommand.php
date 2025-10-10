@@ -18,7 +18,7 @@ class InteractiveTestRunnerCommand extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'test:runner {--output-file=test-report.md : The file to write the test report to}';
+    protected $signature = 'test:runner {--output-file= : The file to write the test report to}';
 
     /**
      * The console command description.
@@ -256,7 +256,7 @@ class InteractiveTestRunnerCommand extends Command
                     ['Test Type', ucfirst(str_replace('_', ' ', $selection))],
                     ['Description', $descriptions[$selection] ?? 'Unknown'],
                     ['Test Count', $testCount],
-                    ['Output File', $this->option('output-file')],
+                    ['Output File', $this->resolveOutputFile()],
                     ['Execution Mode', 'Interactive (Phase 2 implementation)'],
                 ]
             );
@@ -358,7 +358,7 @@ class InteractiveTestRunnerCommand extends Command
 
             // Determine test files to execute
             $testFiles = $this->getTestFilesForExecution($testSelection);
-            $outputFile = $this->option('output-file');
+            $outputFile = $this->resolveOutputFile();
 
             $this->line("Output file: <fg=cyan>{$outputFile}</>");
             $this->line("Execution mode: " . ($options['parallel'] ? 'Parallel' : 'Sequential'));
@@ -664,5 +664,13 @@ class InteractiveTestRunnerCommand extends Command
         if (isset($report['output_file'])) {
             info("📄 Full report available at: {$report['output_file']}");
         }
+    }
+
+    /**
+     * Resolve the desired output file using CLI option or configuration default.
+     */
+    private function resolveOutputFile(): string
+    {
+        return $this->option('output-file') ?: config('test-runner.report.output_file', 'test-report.md');
     }
 }

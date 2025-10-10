@@ -14,6 +14,52 @@ class TestExecutionService
     private array $activeExecutions = [];
 
     /**
+     * Default execution options.
+     *
+     * @var array<string, mixed>
+     */
+    private array $defaultOptions = [
+        'parallel' => true,
+        'processes' => 4,
+        'timeout' => 300,
+        'retry_attempts' => 1,
+        'report_file' => 'test-report.md',
+    ];
+
+    /**
+     * Update the default options used for new executions.
+     *
+     * @param array<string, mixed> $options
+     * @return void
+     */
+    public function setDefaultOptions(array $options): void
+    {
+        foreach ($options as $key => $value) {
+            if ($value === null) {
+                continue;
+            }
+
+            switch ($key) {
+                case 'parallel':
+                    $this->defaultOptions['parallel'] = (bool) $value;
+                    break;
+                case 'processes':
+                    $this->defaultOptions['processes'] = (int) $value;
+                    break;
+                case 'timeout':
+                    $this->defaultOptions['timeout'] = (int) $value;
+                    break;
+                case 'retry_attempts':
+                    $this->defaultOptions['retry_attempts'] = (int) $value;
+                    break;
+                case 'report_file':
+                    $this->defaultOptions['report_file'] = (string) $value;
+                    break;
+            }
+        }
+    }
+
+    /**
      * Start test execution with the given parameters
      *
      * @param array $testFiles Selected test files
@@ -23,6 +69,14 @@ class TestExecutionService
      */
     public function startTestExecution(array $testFiles, string $outputFile, array $options = []): string
     {
+        $options = array_merge($this->defaultOptions, $options);
+
+        if ($outputFile === '' || $outputFile === null) {
+            $outputFile = $options['report_file'] ?? $this->defaultOptions['report_file'];
+        }
+
+        $options['report_file'] = $outputFile;
+
         $commandId = $this->generateCommandId();
         
         Log::info("Starting test execution", [
@@ -33,6 +87,11 @@ class TestExecutionService
         ]);
 
         // Initialize tracking for this execution
+        $totalPlanned = count($testFiles);
+        if ($totalPlanned === 0 && isset($options['estimated_total_tests'])) {
+            $totalPlanned = (int) $options['estimated_total_tests'];
+        }
+
         $this->activeExecutions[$commandId] = [
             'id' => $commandId,
             'test_files' => $testFiles,
@@ -41,7 +100,7 @@ class TestExecutionService
             'status' => 'starting',
             'started_at' => now(),
             'completed_tests' => 0,
-            'total_tests' => count($testFiles),
+            'total_tests' => $totalPlanned,
             'progress' => 0.0,
         ];
 

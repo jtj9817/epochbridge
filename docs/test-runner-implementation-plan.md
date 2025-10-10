@@ -309,6 +309,8 @@ This document outlines the implementation plan for creating an interactive Larav
   - Include environment-specific configurations
   - Add customizable paths and file patterns
 
+✅ Added `config/test-runner.php` with defaults, env overrides, and discovery patterns for unit/feature/livewire/browser suites.
+
 #### 2. `app/Providers/TestRunnerServiceProvider.php`
 - **Purpose:** Service provider for test runner services
 - **Implementation:**
@@ -316,15 +318,21 @@ This document outlines the implementation plan for creating an interactive Larav
   - Bind interfaces to implementations
   - Configure event listeners and job handlers
 
+✅ `TestRunnerServiceProvider` now registers progress/report/recovery singletons and pushes config defaults into discovery and execution services.
+
 #### 3. Update `config/app.php`
 - **Modifications:**
   - Add `TestRunnerServiceProvider` to providers array
+
+✅ Provider registered in both `config/app.php` and `bootstrap/app.php` for seamless loading across environments.
 
 #### 4. `README.md` (Update)
 - **Modifications:**
   - Add section documenting test runner usage
   - Include command examples and configuration options
   - Document report output and interpretation
+
+✅ README now details the interactive runner workflow, configuration knobs, and Markdown reporting.
 
 ## Phase 8: Testing and Documentation
 

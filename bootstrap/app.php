@@ -21,5 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
         App\Providers\EventServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\VoltServiceProvider::class,
+        App\Providers\TestRunnerServiceProvider::class,
     ])
     ->create();
