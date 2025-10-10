@@ -154,7 +154,50 @@ components/
     └── layout.blade.php        # Settings page layout
 ```
 
-### 2. Service Layer
+### 2. Exception Layer
+**Location**: `app/Exceptions/`
+
+Custom exception handling for calendar conversion operations:
+
+#### Calendar Exception Hierarchy
+```php
+abstract class CalendarConversionException extends DateException
+{
+    // Base exception with calendar system context
+    public function __construct(
+        string $message = "",
+        string $calendarSystem = 'unknown',
+        ?array $dateComponents = null,
+        int $code = 0,
+        ?Throwable $previous = null
+    );
+}
+```
+
+**Specialized Exception Classes**:
+- **CalendarMalformedDateException** extends `DateMalformedStringException`
+  - Handles malformed date string input errors
+  - Used when date strings cannot be parsed or are in invalid format
+  
+- **CalendarRangeException** extends `DateRangeError`
+  - Handles date values outside valid calendar ranges
+  - Used when dates fall outside supported calendar system boundaries
+  
+- **CalendarCalculationException** extends `CalendarConversionException`
+  - Handles astronomical calculation failures and algorithm errors
+  - Used for complex calendar computations (lunar calculations, astronomical data)
+  
+- **CalendarValidationException** extends `CalendarConversionException`
+  - Handles date component validation failures
+  - Used when individual date components (year, month, day) are invalid
+
+**Features**:
+- Calendar system context in error messages with `[{calendarSystem}]` prefix
+- PSR-4 autoloading compliance with separate exception files
+- Hierarchical structure for specific error handling
+- Support for date component debugging information
+
+### 3. Service Layer
 **Location**: `app/Services/`
 
 Business logic is encapsulated in service classes:
@@ -180,7 +223,7 @@ class DateTimeConverterService
 - Lazy loading support for performance optimization
 - Comprehensive output with Julian Day Number backbone
 
-### 3. Repository Layer
+### 4. Repository Layer
 **Location**: `app/Models/`
 
 Data access through Eloquent ORM:
@@ -199,14 +242,14 @@ class User extends Authenticatable
 - Email verification
 - Standard Laravel authentication
 
-### 4. Controller Layer
+### 5. Controller Layer
 **Location**: `app/Http/Controllers/`
 
 Minimal controller usage due to Livewire architecture:
 - `Controller.php` - Base controller
 - `Auth/VerifyEmailController.php` - Email verification
 
-### 5. Provider Layer
+### 6. Provider Layer
 **Location**: `app/Providers/`
 
 Service providers for application configuration:
@@ -616,27 +659,44 @@ tests/
 ├── DuskTestCase.php            # Dusk browser test base
 ├── Feature/                    # Feature tests
 │   ├── Auth/                   # Authentication tests
+│   │   ├── AuthenticationTest.php           # Login/logout functionality
+│   │   ├── EmailVerificationTest.php        # Email verification flow
+│   │   ├── PasswordConfirmationTest.php     # Password confirmation
+│   │   ├── PasswordResetTest.php            # Password reset functionality
+│   │   ├── RegistrationTest.php             # User registration
+│   │   └── TwoFactorChallengeTest.php       # 2FA challenge flow
 │   ├── Settings/               # Settings functionality tests
+│   │   ├── PasswordUpdateTest.php           # Password change
+│   │   ├── ProfileUpdateTest.php            # Profile modification
+│   │   └── TwoFactorAuthenticationTest.php  # 2FA setup/management
 │   ├── Livewire/               # Livewire component tests
+│   │   ├── Components/         # Modular component tests
+│   │   │   ├── CalendarQuickActionsTest.php     # Quick action buttons
+│   │   │   ├── CalendarResultsGridTest.php      # Conversion display grid
+│   │   │   ├── CalendarSearchFilterTest.php     # Calendar filtering
+│   │   │   └── SavedConversionsSectionTest.php  # Saved conversions
 │   │   └── LandingPageTest.php # Main landing page component testing
 │   ├── DashboardTest.php       # Dashboard tests
 │   └── ExampleTest.php         # Example feature test
 ├── Unit/                       # Unit tests
 │   ├── Services/               # Service layer tests
-│   │   ├── CopticCalendarServiceTest.php     # Calendar service tests
-│   │   ├── EgyptianCalendarServiceTest.php
-│   │   ├── EthiopianCalendarServiceTest.php
-│   │   └── [Additional calendar service tests]
+│   │   ├── ChineseCalendarServiceTest.php   # Chinese calendar service
+│   │   ├── CopticCalendarServiceTest.php    # Coptic calendar service
+│   │   ├── DateTimeConverterServiceTest.php # Main converter service
+│   │   ├── EgyptianCalendarServiceTest.php  # Egyptian calendar service
+│   │   ├── EthiopianCalendarServiceTest.php # Ethiopian calendar service
+│   │   └── JapaneseCalendarServiceTest.php  # Japanese calendar service
 │   └── ExampleTest.php         # Example unit test
 └── Browser/                    # Dusk browser tests
-    ├── LandingPageTest.php     # Full page interaction tests
-    ├── Components/             # Component-specific browser tests
-    │   ├── CalendarQuickActionsTest.php
-    │   ├── CalendarResultsGridTest.php
-    │   ├── CalendarSearchFilterTest.php
-    │   └── SavedConversionsSectionTest.php
+    ├── Components/             # Component-specific browser tests (empty)
     ├── Pages/                  # Page object models
-    └── ExampleTest.php         # Example browser test
+    │   ├── HomePage.php        # Home page object model
+    │   └── Page.php           # Base page object model
+    ├── console/                # Browser test console logs
+    ├── screenshots/            # Test failure screenshots
+    ├── source/                 # HTML source dumps
+    ├── ExampleTest.php         # Example browser test
+    └── LandingPageTest.php     # Full page interaction tests
 ```
 
 ### Testing Strategy

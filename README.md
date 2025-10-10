@@ -153,6 +153,12 @@ php artisan pail
 ### Project Structure
 ```
 app/
+├── Exceptions/             # Custom exception handling
+│   ├── CalendarConversionException.php   # Base calendar exception (abstract)
+│   ├── CalendarMalformedDateException.php # Date format parsing errors
+│   ├── CalendarRangeException.php        # Date range validation errors
+│   ├── CalendarCalculationException.php  # Astronomical calculation failures
+│   └── CalendarValidationException.php   # Date component validation errors
 ├── Http/Controllers/        # HTTP controllers
 ├── Livewire/               # Livewire components
 ├── Models/                 # Eloquent models
@@ -254,7 +260,11 @@ The core functionality is powered by `DateTimeConverterService` and 15+ speciali
   - Astronomical data for lunar calendars
   - Historical era systems (Japanese, Roman, etc.)
   - Ancient calculation methods for historical calendars
-- **Input Validation**: Robust error handling with user-friendly messages
+- **Robust Error Handling**: Hierarchical exception system with specialized calendar exceptions:
+  - `CalendarMalformedDateException` for parsing errors
+  - `CalendarRangeException` for date boundary validation  
+  - `CalendarCalculationException` for astronomical failures
+  - `CalendarValidationException` for component validation
 - **Timezone Aware**: Consistent processing across time zones
 
 ### Supported Calendar Systems

@@ -5,6 +5,35 @@ All notable changes to EpochBridge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [October 09, 2025] - Exception Handling Architecture & Component Testing
+
+### Added
+- **Hierarchical Exception System**: Comprehensive calendar exception handling with PSR-4 compliance
+  - `CalendarConversionException.php` - Abstract base class extending `DateException`
+  - `CalendarMalformedDateException.php` - Handles malformed date string parsing errors
+  - `CalendarRangeException.php` - Manages date boundary and range validation errors
+  - `CalendarCalculationException.php` - Handles astronomical calculation failures
+  - `CalendarValidationException.php` - Manages date component validation errors
+  - Calendar system context in error messages with `[{calendarSystem}]` prefix
+  - Support for date component debugging information in exception constructors
+
+### Changed
+- **Exception Architecture Refactoring**: Separated monolithic exception into specialized classes
+  - Moved from single-file exception to individual files for better PSR-4 autoloading
+  - Enhanced error context with calendar system identification
+  - Improved debugging capabilities with date component tracking
+  - Better error categorization for specific handling scenarios
+
+### Fixed
+- **PSR-4 Autoloading**: Resolved autoloading issues with properly separated exception files
+- **Exception Inheritance**: Corrected exception hierarchy with proper PHP built-in exception extends
+
+### Technical Improvements
+- **Code Organization**: Clean separation of exception concerns into focused classes
+- **Error Handling**: Enhanced error context and debugging information
+- **Maintainability**: Individual exception files improve code maintainability
+- **Documentation**: Updated architecture documentation with complete exception hierarchy
+
 ## [October 09, 2025] - Component Architecture Modernization & Testing Enhancement
 
 ### Added
