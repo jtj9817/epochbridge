@@ -10,10 +10,10 @@ class JapaneseCalendarService extends CalendarConversionService
     public function fromGregorian(Carbon $date): array
     {
         $date = $this->ensureTimezone($date, 'Asia/Tokyo');
-        
+
         $era = JapaneseEra::findEraForDate($date);
-        
-        if (!$era) {
+
+        if (! $era) {
             $this->handleRangeError('No Japanese era found for the given date');
         }
 
@@ -42,7 +42,7 @@ class JapaneseCalendarService extends CalendarConversionService
         $month = $dateData['month'] ?? null;
         $day = $dateData['day'] ?? null;
 
-        if (!$eraName || !$year || !$month || !$day) {
+        if (! $eraName || ! $year || ! $month || ! $day) {
             $this->handleValidationError('Invalid Japanese date components');
         }
 
@@ -51,7 +51,7 @@ class JapaneseCalendarService extends CalendarConversionService
             ->orWhere('name_english', $eraName)
             ->first();
 
-        if (!$era) {
+        if (! $era) {
             $this->handleValidationError("Japanese era '{$eraName}' not found");
         }
 
@@ -59,12 +59,12 @@ class JapaneseCalendarService extends CalendarConversionService
         $candidateDate = Carbon::create($gregorianYear, $month, $day, 0, 0, 0, 'Asia/Tokyo');
 
         // Validate that the date is within the era's range
-        if ($candidateDate->lt($era->start_date) || 
+        if ($candidateDate->lt($era->start_date) ||
             ($era->end_date && $candidateDate->gt($era->end_date))) {
             $this->handleRangeError("Date {$eraName}{$year}/{$month}/{$day} is not within the era's valid range");
         }
 
-        if (!$this->validateDate($year, $month, $day)) {
+        if (! $this->validateDate($year, $month, $day)) {
             $this->handleValidationError("Invalid Japanese date: {$eraName}{$year}/{$month}/{$day}");
         }
 
@@ -105,6 +105,7 @@ class JapaneseCalendarService extends CalendarConversionService
         // Imperial year starts from the year of emperor's accession
         // For current era (Reiwa), it's year since 2019
         $era = JapaneseEra::findEraForDate($date);
+
         return $era ? $date->year - $era->start_date->year + 1 : $date->year;
     }
 

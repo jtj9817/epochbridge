@@ -11,12 +11,12 @@ class HebrewCalendarService extends CalendarConversionService
 
     public function __construct()
     {
-        $this->jewishCalendar = new JewishCalendar();
+        $this->jewishCalendar = new JewishCalendar;
     }
 
     private const HEBREW_MONTH_NAMES = [
         1 => 'Tishrei',
-        2 => 'Cheshvan', 
+        2 => 'Cheshvan',
         3 => 'Kislev',
         4 => 'Tevet',
         5 => 'Shevat',
@@ -43,14 +43,14 @@ class HebrewCalendarService extends CalendarConversionService
     public function fromGregorian(Carbon $date): array
     {
         $date = $this->ensureTimezone($date, 'Asia/Jerusalem');
-        
-        $jd = \GregorianToJD($date->month, $date->day, $date->year);
-        $hebrewDate = \JDToJewish($jd);
-        
-        list($month, $day, $year) = explode('/', $hebrewDate);
-        $month = (int)$month;
-        $day = (int)$day;
-        $year = (int)$year;
+
+        $jd = \gregoriantojd($date->month, $date->day, $date->year);
+        $hebrewDate = \jdtojewish($jd);
+
+        [$month, $day, $year] = explode('/', $hebrewDate);
+        $month = (int) $month;
+        $day = (int) $day;
+        $year = (int) $year;
 
         $dayOfWeek = \jddayofweek($jd, 0);
         $monthName = self::HEBREW_MONTH_NAMES[$month] ?? 'Unknown';
@@ -77,19 +77,19 @@ class HebrewCalendarService extends CalendarConversionService
         $month = $dateData['month'] ?? $dateData['hebrew_month'] ?? null;
         $day = $dateData['day'] ?? $dateData['hebrew_day'] ?? null;
 
-        if (!$year || !$month || !$day) {
+        if (! $year || ! $month || ! $day) {
             $this->handleValidationError('Invalid Hebrew date components');
         }
 
-        $jd = \JewishToJD($month, $day, $year);
-        $gregorian = \JDToGregorian($jd);
-        
+        $jd = \jewishtojd($month, $day, $year);
+        $gregorian = \jdtogregorian($jd);
+
         if ($gregorian === '0/0/0') {
             $this->handleInvalidDate('Invalid Hebrew date');
         }
 
-        list($month, $day, $year) = explode('/', $gregorian);
-        
+        [$month, $day, $year] = explode('/', $gregorian);
+
         return Carbon::create($year, $month, $day, 0, 0, 0, 'Asia/Jerusalem');
     }
 
@@ -111,11 +111,12 @@ class HebrewCalendarService extends CalendarConversionService
 
         // Check if month exists in this year (leap year handling)
         $isLeapYear = $this->jewishCalendar->isLeapYear($year);
-        if ($month === 7 && !$isLeapYear) {
+        if ($month === 7 && ! $isLeapYear) {
             return false; // Adar II only exists in leap years
         }
 
         $maxDays = $this->jewishCalendar->daysInMonth($year, $month);
+
         return $day <= $maxDays;
     }
 

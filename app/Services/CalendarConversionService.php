@@ -12,18 +12,20 @@ abstract class CalendarConversionService
 {
     /**
      * Convert a Gregorian date to this calendar system
-     * 
-     * @param Carbon $date The Gregorian date to convert
+     *
+     * @param  Carbon  $date  The Gregorian date to convert
      * @return array The converted date in this calendar system
+     *
      * @throws CalendarCalculationException When date conversion fails
      */
     abstract public function fromGregorian(Carbon $date): array;
 
     /**
      * Convert this calendar system to Gregorian
-     * 
-     * @param array $dateData The date data in this calendar system
+     *
+     * @param  array  $dateData  The date data in this calendar system
      * @return Carbon The converted Gregorian date
+     *
      * @throws CalendarValidationException|CalendarMalformedDateException|CalendarCalculationException
      */
     abstract public function toGregorian(array $dateData): Carbon;

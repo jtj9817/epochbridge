@@ -13,6 +13,7 @@ use Morilog\Jalali\Jalalian;
 class DateTimeConverterService
 {
     private array $calendarServices;
+
     private array $fastCalendars = ['julian', 'hebrew', 'islamic', 'coptic', 'ethiopian', 'french_republican'];
 
     /**
@@ -49,19 +50,19 @@ class DateTimeConverterService
     public function __construct()
     {
         $this->calendarServices = [
-            'julian' => new JulianDayService(),
-            'hebrew' => new HebrewCalendarService(),
-            'islamic' => new IslamicCalendarService(),
-            'french_republican' => new FrenchRepublicanService(),
-            'chinese' => new ChineseCalendarService(),
-            'japanese' => new JapaneseCalendarService(),
-            'babylonian' => new BabylonianCalendarService(),
-            'assyrian' => new AssyrianCalendarService(),
-            'macedonian' => new AncientMacedonianService(),
-            'coptic' => new CopticCalendarService(),
-            'egyptian' => new EgyptianCalendarService(),
-            'ethiopian' => new EthiopianCalendarService(),
-            'mayan' => new MayanCalendarService(),
+            'julian' => new JulianDayService,
+            'hebrew' => new HebrewCalendarService,
+            'islamic' => new IslamicCalendarService,
+            'french_republican' => new FrenchRepublicanService,
+            'chinese' => new ChineseCalendarService,
+            'japanese' => new JapaneseCalendarService,
+            'babylonian' => new BabylonianCalendarService,
+            'assyrian' => new AssyrianCalendarService,
+            'macedonian' => new AncientMacedonianService,
+            'coptic' => new CopticCalendarService,
+            'egyptian' => new EgyptianCalendarService,
+            'ethiopian' => new EthiopianCalendarService,
+            'mayan' => new MayanCalendarService,
         ];
     }
 
@@ -77,7 +78,7 @@ class DateTimeConverterService
             $carbonDate = $this->parseInputDate($dateString, $inputType);
 
             $jalaliDate = Jalalian::fromCarbon($carbonDate);
-            $julianDay = GregorianToJD($carbonDate->month, $carbonDate->day, $carbonDate->year)
+            $julianDay = gregoriantojd($carbonDate->month, $carbonDate->day, $carbonDate->year)
                  + ($carbonDate->hour / 24)
                  + ($carbonDate->minute / 1440)
                  + ($carbonDate->second / 86400);
@@ -147,6 +148,7 @@ class DateTimeConverterService
                     $result[$key] = ['error' => $e->getMessage()];
                 }
             }
+
             return $result;
         });
     }
@@ -173,22 +175,22 @@ class DateTimeConverterService
 
     private function convertFromCalendar(string $calendarType, string $dateString): Carbon
     {
-        if (!isset($this->calendarServices[$calendarType])) {
+        if (! isset($this->calendarServices[$calendarType])) {
             throw new InvalidArgumentException("Unsupported calendar type: {$calendarType}");
         }
 
         // Parse date string (expecting YYYY/MM/DD format)
-        if (!preg_match('/^(\d+)\/(\d+)\/(\d+)$/', $dateString, $matches)) {
+        if (! preg_match('/^(\d+)\/(\d+)\/(\d+)$/', $dateString, $matches)) {
             throw new CalendarMalformedDateException("Invalid date format for {$calendarType}. Use YYYY/MM/DD.", $calendarType);
         }
 
-        $year = (int)$matches[1];
-        $month = (int)$matches[2];
-        $day = (int)$matches[3];
+        $year = (int) $matches[1];
+        $month = (int) $matches[2];
+        $day = (int) $matches[3];
 
         $service = $this->calendarServices[$calendarType];
-        
-        if (!$service->validateDate($year, $month, $day)) {
+
+        if (! $service->validateDate($year, $month, $day)) {
             throw new CalendarValidationException("Invalid {$calendarType} date: {$dateString}", $calendarType);
         }
 
@@ -204,11 +206,11 @@ class DateTimeConverterService
      */
     public function convertBetweenCalendars(array $sourceDate, string $sourceCalendar, string $targetCalendar): array
     {
-        if (!isset($this->calendarServices[$sourceCalendar])) {
+        if (! isset($this->calendarServices[$sourceCalendar])) {
             throw new InvalidArgumentException("Unsupported source calendar: {$sourceCalendar}");
         }
 
-        if (!isset($this->calendarServices[$targetCalendar])) {
+        if (! isset($this->calendarServices[$targetCalendar])) {
             throw new InvalidArgumentException("Unsupported target calendar: {$targetCalendar}");
         }
 
@@ -217,7 +219,7 @@ class DateTimeConverterService
 
         // Convert source to Gregorian
         $gregorian = $sourceService->toGregorian($sourceDate);
-        
+
         // Convert Gregorian to target
         return $targetService->fromGregorian($gregorian);
     }

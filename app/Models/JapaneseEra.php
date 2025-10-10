@@ -12,7 +12,7 @@ class JapaneseEra extends Model
 
     protected $fillable = [
         'name_japanese',
-        'name_romanized', 
+        'name_romanized',
         'name_english',
         'start_date',
         'end_date',
@@ -32,7 +32,7 @@ class JapaneseEra extends Model
         return static::where('start_date', '<=', $date->format('Y-m-d'))
             ->where(function ($query) use ($date) {
                 $query->where('end_date', '>=', $date->format('Y-m-d'))
-                      ->orWhereNull('end_date');
+                    ->orWhereNull('end_date');
             })
             ->orderBy('start_date', 'desc')
             ->first();
@@ -62,7 +62,7 @@ class JapaneseEra extends Model
         return static::where('start_date', '<=', now()->format('Y-m-d'))
             ->where(function ($query) {
                 $query->where('end_date', '>=', now()->format('Y-m-d'))
-                      ->orWhereNull('end_date');
+                    ->orWhereNull('end_date');
             })
             ->get();
     }

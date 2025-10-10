@@ -2,11 +2,11 @@
 
 namespace Tests\Unit\Services;
 
-use Tests\TestCase;
-use App\Services\JapaneseCalendarService;
 use App\Models\JapaneseEra;
-use Illuminate\Support\Carbon;
+use App\Services\JapaneseCalendarService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Tests\TestCase;
 
 class JapaneseCalendarServiceTest extends TestCase
 {
@@ -17,8 +17,8 @@ class JapaneseCalendarServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new JapaneseCalendarService();
-        
+        $this->service = new JapaneseCalendarService;
+
         // Seed test eras
         $this->seedJapaneseEras();
     }

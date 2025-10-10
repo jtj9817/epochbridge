@@ -6,9 +6,9 @@ use App\Services\DateTimeConverterService;
 use Livewire\Volt\Volt;
 
 it('renders results grid with data', function () {
-    $service = new DateTimeConverterService();
+    $service = new DateTimeConverterService;
     $results = $service->convert('2024-01-01', 'gregorian');
-    
+
     Volt::test('components.calendar-results-grid', ['conversionResults' => $results])
         ->assertSee('Gregorian')
         ->assertSee('Jalali')
@@ -21,7 +21,7 @@ it('shows an error message when passed', function () {
 });
 
 it('filters results by search term', function () {
-    $service = new DateTimeConverterService();
+    $service = new DateTimeConverterService;
     $results = $service->convert('2024-01-01', 'gregorian');
 
     Volt::test('components.calendar-results-grid', ['conversionResults' => $results])
@@ -31,7 +31,7 @@ it('filters results by search term', function () {
 });
 
 it('filters results by type', function () {
-    $service = new DateTimeConverterService();
+    $service = new DateTimeConverterService;
     $results = $service->convert('2024-01-01', 'gregorian');
 
     // 'islamic' has 'lunar' tag. 'gregorian' does not.
@@ -43,12 +43,12 @@ it('filters results by type', function () {
 });
 
 it('shows loading skeletons when additional calendars are not loaded', function () {
-    $service = new DateTimeConverterService();
+    $service = new DateTimeConverterService;
     $results = $service->convert('2024-01-01', 'gregorian');
 
     Volt::test('components.calendar-results-grid', [
         'conversionResults' => $results,
-        'additionalCalendarsLoaded' => false
+        'additionalCalendarsLoaded' => false,
     ])
-    ->assertSeeHtmlInOrder(['<div', 'animate-pulse']);
+        ->assertSeeHtmlInOrder(['<div', 'animate-pulse']);
 });

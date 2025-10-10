@@ -37,25 +37,25 @@ class CopticCalendarService extends CalendarConversionService
     public function fromGregorian(Carbon $date): array
     {
         $date = $this->ensureTimezone($date, 'Africa/Cairo');
-        $jd = GregorianToJD($date->month, $date->day, $date->year);
+        $jd = gregoriantojd($date->month, $date->day, $date->year);
 
         $days = $jd - self::COPTIC_EPOCH;
         $year = floor((4 * $days + 1463) / 1461);
-        
+
         $jdc = self::COPTIC_EPOCH + 365 * ($year - 1) + floor(($year - 1) / 4);
         $dayOfYear = $jd - $jdc;
-        
+
         $month = floor($dayOfYear / 30) + 1;
         $day = $dayOfYear - (($month - 1) * 30);
 
         return [
-            'year' => (int)$year,
-            'month' => (int)$month,
-            'month_name' => self::COPTIC_MONTH_NAMES[(int)$month] ?? 'Unknown',
-            'day' => (int)$day,
+            'year' => (int) $year,
+            'month' => (int) $month,
+            'month_name' => self::COPTIC_MONTH_NAMES[(int) $month] ?? 'Unknown',
+            'day' => (int) $day,
             'day_of_week' => self::COPTIC_DAY_NAMES[jddayofweek($jd, 0)] ?? 'Unknown',
-            'full_date' => (int)$year . '/' . (int)$month . '/' . (int)$day,
-            'display' => (int)$day . ' ' . (self::COPTIC_MONTH_NAMES[(int)$month] ?? 'Unknown') . ' ' . (int)$year . ' AM',
+            'full_date' => (int) $year.'/'.(int) $month.'/'.(int) $day,
+            'display' => (int) $day.' '.(self::COPTIC_MONTH_NAMES[(int) $month] ?? 'Unknown').' '.(int) $year.' AM',
         ];
     }
 
@@ -64,15 +64,15 @@ class CopticCalendarService extends CalendarConversionService
         $year = $dateData['year'] ?? null;
         $month = $dateData['month'] ?? null;
         $day = $dateData['day'] ?? null;
-        
-        if (!$year || !$month || !$day) {
+
+        if (! $year || ! $month || ! $day) {
             $this->handleValidationError('Invalid Coptic date components');
         }
 
         $jd = self::COPTIC_EPOCH + ($year - 1) * 365 + floor($year / 4) + ($month - 1) * 30 + $day - 1;
-        
-        $gregorian = JDToGregorian($jd);
-        list($m, $d, $y) = explode('/', $gregorian);
+
+        $gregorian = jdtogregorian($jd);
+        [$m, $d, $y] = explode('/', $gregorian);
 
         return Carbon::create($y, $m, $d, 0, 0, 0, 'Africa/Cairo');
     }
@@ -97,6 +97,7 @@ class CopticCalendarService extends CalendarConversionService
         }
         // Month 13 (Epagomenai)
         $isLeap = ($year % 4) === 3;
+
         return $day <= ($isLeap ? 6 : 5);
     }
 
@@ -106,6 +107,7 @@ class CopticCalendarService extends CalendarConversionService
             return 30;
         }
         $isLeap = ($year % 4) === 3;
+
         return $isLeap ? 6 : 5;
     }
 

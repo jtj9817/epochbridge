@@ -20,35 +20,35 @@ class AncientMacedonianService extends CalendarConversionService
         11 => 'Gorpiaios',
         12 => 'Hyperberetaios',
     ];
-    
+
     public function fromGregorian(Carbon $date): array
     {
         // NOTE: This is a highly simplified approximation. The start of the
         // Macedonian year (Dios) was in autumn.
-        $jd = GregorianToJD($date->month, $date->day, $date->year);
+        $jd = gregoriantojd($date->month, $date->day, $date->year);
 
         // Approximate start of year to autumn equinox (Sep 22)
-        $yearStartJd = GregorianToJD(9, 22, $date->year);
+        $yearStartJd = gregoriantojd(9, 22, $date->year);
         if ($jd < $yearStartJd) {
-            $yearStartJd = GregorianToJD(9, 22, $date->year - 1);
+            $yearStartJd = gregoriantojd(9, 22, $date->year - 1);
         }
 
         $daysIntoYear = $jd - $yearStartJd;
-        
+
         // Approximate months as 29.5 days
         $month = floor($daysIntoYear / 29.5) + 1;
         $day = ($daysIntoYear % 29.5) + 1;
-        
+
         // Era is often Seleucid Era (starting 312 BC)
         $year = $date->year + 311;
 
         return [
             'year' => $year,
-            'month' => (int)$month,
-            'month_name' => self::MACEDONIAN_MONTH_NAMES[(int)$month] ?? 'Unknown',
-            'day' => (int)$day,
-            'full_date' => "{$year}/" . (int)$month . "/" . (int)$day,
-            'display' => (int)$day . " " . (self::MACEDONIAN_MONTH_NAMES[(int)$month] ?? 'Unknown') . " {$year} SE",
+            'month' => (int) $month,
+            'month_name' => self::MACEDONIAN_MONTH_NAMES[(int) $month] ?? 'Unknown',
+            'day' => (int) $day,
+            'full_date' => "{$year}/".(int) $month.'/'.(int) $day,
+            'display' => (int) $day.' '.(self::MACEDONIAN_MONTH_NAMES[(int) $month] ?? 'Unknown')." {$year} SE",
             'disclaimer' => 'This is a scholarly approximation. The calendar varied by region and era.',
         ];
     }
@@ -56,6 +56,7 @@ class AncientMacedonianService extends CalendarConversionService
     public function toGregorian(array $dateData): Carbon
     {
         $this->handleCalculationError('Conversion from Ancient Macedonian is not supported due to historical complexities.');
+
         // @codeCoverageIgnoreStart
         return Carbon::now(); // Should not be reached
         // @codeCoverageIgnoreEnd
@@ -70,7 +71,7 @@ class AncientMacedonianService extends CalendarConversionService
     {
         return 'Ancient Macedonian';
     }
-    
+
     public function validateDate(int $year, int $month, int $day): bool
     {
         return $month >= 1 && $month <= 12 && $day >= 1 && $day <= 30;

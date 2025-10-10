@@ -13,7 +13,7 @@ class EgyptianCalendarServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new EgyptianCalendarService();
+        $this->service = new EgyptianCalendarService;
     }
 
     public function test_converts_gregorian_to_egyptian()

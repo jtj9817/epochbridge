@@ -20,7 +20,7 @@ class JapaneseEraSeeder extends Seeder
             ],
             [
                 'name_japanese' => '平成',
-                'name_romanized' => 'Heisei', 
+                'name_romanized' => 'Heisei',
                 'name_english' => 'Heisei',
                 'start_date' => '1989-01-08',
                 'end_date' => '2019-04-30',
@@ -29,7 +29,7 @@ class JapaneseEraSeeder extends Seeder
             [
                 'name_japanese' => '昭和',
                 'name_romanized' => 'Shōwa',
-                'name_english' => 'Showa', 
+                'name_english' => 'Showa',
                 'start_date' => '1926-12-25',
                 'end_date' => '1989-01-07',
                 'historical_context' => 'Era of Enlightened Peace - Reign of Emperor Hirohito',

@@ -9,10 +9,10 @@ class JulianDayService extends CalendarConversionService
     public function fromGregorian(Carbon $date): array
     {
         $date = $this->ensureTimezone($date);
-        
-        $jd = GregorianToJD($date->month, $date->day, $date->year);
+
+        $jd = gregoriantojd($date->month, $date->day, $date->year);
         $mjd = $jd - 2400000.5;
-        
+
         // Calculate Julian DateTime (JD with fractional day)
         $fractionalDay = ($date->hour + $date->minute / 60 + $date->second / 3600) / 24;
         $julianDateTime = $jd + $fractionalDay;
@@ -35,13 +35,13 @@ class JulianDayService extends CalendarConversionService
             $this->handleValidationError('No Julian Day or Modified Julian Day provided');
         }
 
-        $gregorian = JDToGregorian($jd);
+        $gregorian = jdtogregorian($jd);
         if ($gregorian === '0/0/0') {
             $this->handleRangeError('Invalid Julian Day number');
         }
 
-        list($month, $day, $year) = explode('/', $gregorian);
-        
+        [$month, $day, $year] = explode('/', $gregorian);
+
         // Handle fractional day for time
         $fraction = $jd - floor($jd);
         $totalSeconds = (int) ($fraction * 86400);

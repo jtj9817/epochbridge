@@ -14,14 +14,14 @@ class LandingPageTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
-                    ->assertSee('EpochBridge')
-                    ->type('date-input-gregorian', '2024-10-27')
-                    ->press('Convert Date')
-                    ->waitForText('Conversion Results')
-                    ->assertSee('Gregorian')
-                    ->assertSee('2024-10-27')
-                    ->assertSee('Jalali')
-                    ->assertSee('1403/08/06');
+                ->assertSee('EpochBridge')
+                ->type('date-input-gregorian', '2024-10-27')
+                ->press('Convert Date')
+                ->waitForText('Conversion Results')
+                ->assertSee('Gregorian')
+                ->assertSee('2024-10-27')
+                ->assertSee('Jalali')
+                ->assertSee('1403/08/06');
         });
     }
 
@@ -30,10 +30,10 @@ class LandingPageTest extends DuskTestCase
         $this->browse(function (Browser $browser) {
             $today = now()->format('Y-m-d');
             $browser->visit('/')
-                    ->press('TODAY')
-                    ->press('Convert Date')
-                    ->waitForText('Conversion Results')
-                    ->assertSee($today);
+                ->press('TODAY')
+                ->press('Convert Date')
+                ->waitForText('Conversion Results')
+                ->assertSee($today);
         });
     }
 
@@ -41,20 +41,20 @@ class LandingPageTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/')
-                    ->type('date-input-gregorian', '2024-01-01')
-                    ->press('Convert Date')
-                    ->waitForText('Conversion Results')
-                    ->type('input[placeholder="Search calendars..."]', 'Jalali')
-                    ->assertSee('Jalali')
-                    ->assertDontSee('Gregorian')
-                    ->clear('input[placeholder="Search calendars..."]')
-                    ->press('Show Filters')
-                    ->check('selectedTypes[]', 'lunar')
-                    ->assertSee('Islamic')
-                    ->assertDontSee('Gregorian');
+                ->type('date-input-gregorian', '2024-01-01')
+                ->press('Convert Date')
+                ->waitForText('Conversion Results')
+                ->type('input[placeholder="Search calendars..."]', 'Jalali')
+                ->assertSee('Jalali')
+                ->assertDontSee('Gregorian')
+                ->clear('input[placeholder="Search calendars..."]')
+                ->press('Show Filters')
+                ->check('selectedTypes[]', 'lunar')
+                ->assertSee('Islamic')
+                ->assertDontSee('Gregorian');
         });
     }
-    
+
     public function test_guest_can_save_and_delete_conversions(): void
     {
         $this->browse(function (Browser $browser) {

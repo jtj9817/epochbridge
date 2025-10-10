@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Services;
 
-use Tests\TestCase;
 use App\Services\ChineseCalendarService;
 use Illuminate\Support\Carbon;
+use Tests\TestCase;
 
 class ChineseCalendarServiceTest extends TestCase
 {
@@ -13,7 +13,7 @@ class ChineseCalendarServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new ChineseCalendarService();
+        $this->service = new ChineseCalendarService;
     }
 
     public function test_converts_gregorian_to_chinese()

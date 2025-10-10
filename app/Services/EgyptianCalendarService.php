@@ -27,23 +27,23 @@ class EgyptianCalendarService extends CalendarConversionService
     public function fromGregorian(Carbon $date): array
     {
         $date = $this->ensureTimezone($date, 'Africa/Cairo');
-        $jd = GregorianToJD($date->month, $date->day, $date->year);
+        $jd = gregoriantojd($date->month, $date->day, $date->year);
 
         $daysSinceEpoch = $jd - self::EGYPTIAN_EPOCH;
         $year = floor($daysSinceEpoch / 365) + 1;
-        
+
         $dayOfYear = $daysSinceEpoch % 365;
-        
+
         $month = floor($dayOfYear / 30) + 1;
         $day = ($dayOfYear % 30) + 1;
 
         return [
-            'year' => (int)$year,
-            'month' => (int)$month,
-            'month_name' => self::EGYPTIAN_MONTH_NAMES[(int)$month] ?? 'Unknown',
-            'day' => (int)$day,
-            'full_date' => (int)$year . '/' . (int)$month . '/' . (int)$day,
-            'display' => (int)$day . ' ' . (self::EGYPTIAN_MONTH_NAMES[(int)$month] ?? 'Unknown') . ' ' . (int)$year,
+            'year' => (int) $year,
+            'month' => (int) $month,
+            'month_name' => self::EGYPTIAN_MONTH_NAMES[(int) $month] ?? 'Unknown',
+            'day' => (int) $day,
+            'full_date' => (int) $year.'/'.(int) $month.'/'.(int) $day,
+            'display' => (int) $day.' '.(self::EGYPTIAN_MONTH_NAMES[(int) $month] ?? 'Unknown').' '.(int) $year,
             'disclaimer' => 'Based on the 365-day Egyptian civil calendar (no leap years). Year is relative to the Nabonassar era (747 BCE).',
         ];
     }
@@ -54,15 +54,15 @@ class EgyptianCalendarService extends CalendarConversionService
         $month = $dateData['month'] ?? null;
         $day = $dateData['day'] ?? null;
 
-        if (!$year || !$month || !$day) {
+        if (! $year || ! $month || ! $day) {
             $this->handleInvalidDate('Invalid Egyptian date components');
         }
 
         $days = ($year - 1) * 365 + ($month - 1) * 30 + ($day - 1);
         $jd = self::EGYPTIAN_EPOCH + $days;
 
-        $gregorian = JDToGregorian($jd);
-        list($m, $d, $y) = explode('/', $gregorian);
+        $gregorian = jdtogregorian($jd);
+        [$m, $d, $y] = explode('/', $gregorian);
 
         return Carbon::create($y, $m, $d, 0, 0, 0, 'Africa/Cairo');
     }
@@ -85,6 +85,7 @@ class EgyptianCalendarService extends CalendarConversionService
         if ($month <= 12) {
             return $day <= 30;
         }
+
         // Month 13 (Epagomenal Days)
         return $day <= 5;
     }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->text('historical_context')->nullable();
             $table->timestamps();
-            
+
             $table->index(['start_date', 'end_date']);
         });
     }

@@ -37,18 +37,18 @@ class FrenchRepublicanService extends CalendarConversionService
     public function fromGregorian(Carbon $date): array
     {
         $date = $this->ensureTimezone($date, 'Europe/Paris');
-        
-        $jd = GregorianToJD($date->month, $date->day, $date->year);
-        $frenchDate = JDToFrench($jd);
-        
+
+        $jd = gregoriantojd($date->month, $date->day, $date->year);
+        $frenchDate = jdtofrench($jd);
+
         if ($frenchDate === '0/0/0') {
             $this->handleRangeError('Date outside French Republican calendar range');
         }
 
-        list($month, $day, $year) = explode('/', $frenchDate);
-        $month = (int)$month;
-        $day = (int)$day;
-        $year = (int)$year;
+        [$month, $day, $year] = explode('/', $frenchDate);
+        $month = (int) $month;
+        $day = (int) $day;
+        $year = (int) $year;
 
         $dayOfDecade = ($day - 1) % 10;
         $monthName = self::FRENCH_MONTH_NAMES[$month] ?? 'Unknown';
@@ -71,19 +71,19 @@ class FrenchRepublicanService extends CalendarConversionService
         $month = $dateData['month'] ?? $dateData['french_month'] ?? null;
         $day = $dateData['day'] ?? $dateData['french_day'] ?? null;
 
-        if (!$year || !$month || !$day) {
+        if (! $year || ! $month || ! $day) {
             $this->handleValidationError('Invalid French Republican date components');
         }
 
-        $jd = FrenchToJD($month, $day, $year);
-        $gregorian = JDToGregorian($jd);
-        
+        $jd = frenchtojd($month, $day, $year);
+        $gregorian = jdtogregorian($jd);
+
         if ($gregorian === '0/0/0') {
             $this->handleInvalidDate('Invalid French Republican date');
         }
 
-        list($month, $day, $year) = explode('/', $gregorian);
-        
+        [$month, $day, $year] = explode('/', $gregorian);
+
         return Carbon::create($year, $month, $day, 0, 0, 0, 'Europe/Paris');
     }
 
@@ -110,6 +110,7 @@ class FrenchRepublicanService extends CalendarConversionService
 
         // Month 13 contains complementary days (5-6 days)
         $isLeapYear = $this->isFrenchLeapYear($year);
+
         return $day <= ($isLeapYear ? 6 : 5);
     }
 

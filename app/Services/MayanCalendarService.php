@@ -12,6 +12,7 @@ class MayanCalendarService extends CalendarConversionService
     private const GMT_CORRELATION = 584283;
 
     private static ?array $haabData = null;
+
     private static ?array $tzolkinData = null;
 
     public function __construct()
@@ -28,7 +29,7 @@ class MayanCalendarService extends CalendarConversionService
 
     public function fromGregorian(Carbon $date): array
     {
-        $jd = GregorianToJD($date->month, $date->day, $date->year);
+        $jd = gregoriantojd($date->month, $date->day, $date->year);
         $longCount = $this->calculateLongCount($jd);
         $haab = $this->calculateHaab($jd);
         $tzolkin = $this->calculateTzolkin($jd);
@@ -45,6 +46,7 @@ class MayanCalendarService extends CalendarConversionService
     public function toGregorian(array $dateData): Carbon
     {
         $this->handleCalculationError('Direct conversion from Mayan components is not supported via this form. Please use Gregorian input.');
+
         // @codeCoverageIgnoreStart
         return Carbon::now(); // Should not be reached
         // @codeCoverageIgnoreEnd
@@ -75,16 +77,16 @@ class MayanCalendarService extends CalendarConversionService
     private function calculateLongCount(int $jd): array
     {
         $totalDays = $jd - self::GMT_CORRELATION;
-        
+
         $baktun = floor($totalDays / 144000);
         $remainder = $totalDays % 144000;
-        
+
         $katun = floor($remainder / 7200);
         $remainder %= 7200;
-        
+
         $tun = floor($remainder / 360);
         $remainder %= 360;
-        
+
         $winal = floor($remainder / 20);
         $kin = $remainder % 20;
 

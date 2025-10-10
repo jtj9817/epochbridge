@@ -33,29 +33,29 @@ class EthiopianCalendarService extends CalendarConversionService
         5 => 'Arb',         // Friday
         6 => 'Qədame',      // Saturday
     ];
-    
+
     public function fromGregorian(Carbon $date): array
     {
         $date = $this->ensureTimezone($date, 'Africa/Addis_Ababa');
-        $jd = GregorianToJD($date->month, $date->day, $date->year);
+        $jd = gregoriantojd($date->month, $date->day, $date->year);
 
         $days = $jd - self::ETHIOPIAN_EPOCH;
         $year = floor((4 * $days + 1463) / 1461);
-        
+
         $jdc = self::ETHIOPIAN_EPOCH + 365 * ($year - 1) + floor(($year - 1) / 4);
         $dayOfYear = $jd - $jdc;
-        
+
         $month = floor($dayOfYear / 30) + 1;
         $day = $dayOfYear - (($month - 1) * 30);
 
         return [
-            'year' => (int)$year,
-            'month' => (int)$month,
-            'month_name' => self::ETHIOPIAN_MONTH_NAMES[(int)$month] ?? 'Unknown',
-            'day' => (int)$day,
+            'year' => (int) $year,
+            'month' => (int) $month,
+            'month_name' => self::ETHIOPIAN_MONTH_NAMES[(int) $month] ?? 'Unknown',
+            'day' => (int) $day,
             'day_of_week' => self::ETHIOPIAN_DAY_NAMES[jddayofweek($jd, 0)] ?? 'Unknown',
-            'full_date' => (int)$year . '/' . (int)$month . '/' . (int)$day,
-            'display' => (int)$day . ' ' . (self::ETHIOPIAN_MONTH_NAMES[(int)$month] ?? 'Unknown') . ' ' . (int)$year,
+            'full_date' => (int) $year.'/'.(int) $month.'/'.(int) $day,
+            'display' => (int) $day.' '.(self::ETHIOPIAN_MONTH_NAMES[(int) $month] ?? 'Unknown').' '.(int) $year,
         ];
     }
 
@@ -65,14 +65,14 @@ class EthiopianCalendarService extends CalendarConversionService
         $month = $dateData['month'] ?? null;
         $day = $dateData['day'] ?? null;
 
-        if (!$year || !$month || !$day) {
+        if (! $year || ! $month || ! $day) {
             $this->handleInvalidDate('Invalid Ethiopian date components');
         }
 
         $jd = self::ETHIOPIAN_EPOCH + ($year - 1) * 365 + floor($year / 4) + ($month - 1) * 30 + $day - 1;
 
-        $gregorian = JDToGregorian($jd);
-        list($m, $d, $y) = explode('/', $gregorian);
+        $gregorian = jdtogregorian($jd);
+        [$m, $d, $y] = explode('/', $gregorian);
 
         return Carbon::create($y, $m, $d, 0, 0, 0, 'Africa/Addis_Ababa');
     }
@@ -97,6 +97,7 @@ class EthiopianCalendarService extends CalendarConversionService
         }
         // Month 13 (Ṗagʷəmen)
         $isLeap = ($year % 4) === 3;
+
         return $day <= ($isLeap ? 6 : 5);
     }
 
@@ -106,6 +107,7 @@ class EthiopianCalendarService extends CalendarConversionService
             return 30;
         }
         $isLeap = ($year % 4) === 3;
+
         return $isLeap ? 6 : 5;
     }
 

@@ -20,7 +20,7 @@ class AssyrianCalendarService extends CalendarConversionService
         11 => 'Shbat',
         12 => 'Adar',
     ];
-    
+
     public function fromGregorian(Carbon $date): array
     {
         // The modern Assyrian calendar is a solar calendar based on the Gregorian.
@@ -35,7 +35,7 @@ class AssyrianCalendarService extends CalendarConversionService
             'month_name' => self::ASSYRIAN_MONTH_NAMES[$month] ?? 'Unknown',
             'day' => $day,
             'full_date' => "{$assyrianYear}/{$month}/{$day}",
-            'display' => "{$day} " . (self::ASSYRIAN_MONTH_NAMES[$month] ?? 'Unknown') . " {$assyrianYear}",
+            'display' => "{$day} ".(self::ASSYRIAN_MONTH_NAMES[$month] ?? 'Unknown')." {$assyrianYear}",
             'disclaimer' => 'Based on the modern Assyrian calendar (solar). Ancient Assyrian calendar was lunisolar, similar to Babylonian.',
         ];
     }
@@ -66,7 +66,7 @@ class AssyrianCalendarService extends CalendarConversionService
     {
         return 'Assyrian Calendar';
     }
-    
+
     public function validateDate(int $year, int $month, int $day): bool
     {
         // Since it's based on Gregorian, validation is similar

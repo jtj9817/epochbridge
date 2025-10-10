@@ -34,9 +34,9 @@ it('refreshes conversions when conversion-saved event is dispatched', function (
 
     $component = Volt::test('components.saved-conversions-section');
     expect($component->get('savedConversions'))->toHaveCount(0);
-    
+
     SavedConversion::factory()->for($user)->create();
 
     $component->dispatch('conversion-saved')
-        ->assertSet('savedConversions', fn($conversions) => $conversions->count() === 1);
+        ->assertSet('savedConversions', fn ($conversions) => $conversions->count() === 1);
 });
