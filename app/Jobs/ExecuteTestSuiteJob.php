@@ -5,6 +5,8 @@ namespace App\Jobs;
 use App\Events\TestCompleted;
 use App\Events\TestExecutionCompleted;
 use App\Events\TestExecutionStarted;
+use App\Exceptions\TestExecutionException;
+use App\Services\ErrorRecoveryService;
 use App\Services\MarkdownReportService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -72,9 +74,20 @@ class ExecuteTestSuiteJob implements ShouldQueue
             'stop_on_failure' => false,
             'coverage' => false,
             'timeout' => 300, // 5 minutes default timeout
+            'retry_attempts' => 1,
         ], $options);
 
         $this->baseCommand = $this->buildTestCommand();
+    }
+
+    /**
+     * Determine the delay between queued retries.
+     *
+     * @return array<int>
+     */
+    public function backoff(): array
+    {
+        return [5, 15, 30, 60];
     }
 
     /**
@@ -84,6 +97,9 @@ class ExecuteTestSuiteJob implements ShouldQueue
      */
     public function handle(): void
     {
+        /** @var ErrorRecoveryService $errorRecoveryService */
+        $errorRecoveryService = app(ErrorRecoveryService::class);
+
         try {
             $runStartedAt = now();
 
@@ -111,19 +127,19 @@ class ExecuteTestSuiteJob implements ShouldQueue
             $startTime = microtime(true);
 
             if (empty($this->testFiles)) {
-                // Execute all tests
-                $suiteResult = $this->executeTestCommand();
+                // Execute all tests with recovery awareness
+                $suiteResult = $this->runTestWithRecovery(null, $errorRecoveryService);
                 $suiteResult['file'] = 'Full Test Suite';
                 $results[] = $suiteResult;
             } else {
                 // Execute specific test files
                 foreach ($this->testFiles as $testFile) {
-                    $result = $this->executeTestCommand([$testFile]);
+                    $result = $this->runTestWithRecovery($testFile, $errorRecoveryService);
                     $result['file'] = is_array($testFile)
                         ? ($testFile['file_path'] ?? 'unknown')
                         : $testFile;
                     $results[] = $result;
-                    
+
                     // Dispatch individual test completion event
                     TestCompleted::dispatch(
                         $testFile['file_path'] ?? $testFile,
@@ -140,6 +156,8 @@ class ExecuteTestSuiteJob implements ShouldQueue
                             'tests_by_type' => $this->options['tests_by_type'] ?? [],
                             'estimated_total_tests' => $this->options['estimated_total_tests'] ?? count($this->testFiles),
                             'test_files' => $this->normalizeTestFiles($this->testFiles),
+                            'attempt' => $result['attempts'] ?? 1,
+                            'recovery' => $result['recovery'] ?? null,
                         ]
                     );
                 }
@@ -174,7 +192,19 @@ class ExecuteTestSuiteJob implements ShouldQueue
                 ]
             );
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $errorRecoveryService->handleTestFailure($this->commandId, [
+                'job' => 'execute_test_suite',
+                'test_files' => $this->normalizeTestFiles($this->testFiles),
+                'attempt' => $this->attempts(),
+            ], $e instanceof TestExecutionException ? $e : new TestExecutionException(
+                $e->getMessage(),
+                TestExecutionException::CATEGORY_SYSTEM,
+                ['command_id' => $this->commandId],
+                (int) $e->getCode(),
+                $e
+            ));
+
             Log::error("Test execution failed", [
                 'command_id' => $this->commandId,
                 'error' => $e->getMessage(),
@@ -183,6 +213,61 @@ class ExecuteTestSuiteJob implements ShouldQueue
 
             throw $e;
         }
+    }
+
+    /**
+     * Execute a test (or suite) with recovery-aware retries.
+     *
+     * @param mixed $testFile
+     * @param ErrorRecoveryService $errorRecoveryService
+     * @return array<string, mixed>
+     */
+    private function runTestWithRecovery(mixed $testFile, ErrorRecoveryService $errorRecoveryService): array
+    {
+        $attempt = 0;
+        $maxAttempts = max(1, (int) ($this->options['retry_attempts'] ?? 0) + 1);
+        $result = [];
+
+        do {
+            $attempt++;
+            $result = $testFile === null
+                ? $this->executeTestCommand()
+                : $this->executeTestCommand([$testFile]);
+
+            if (($result['status'] ?? 'passed') !== 'error') {
+                $result['attempts'] = $attempt;
+                return $result;
+            }
+
+            $context = [
+                'test_file' => is_array($testFile)
+                    ? ($testFile['file_path'] ?? 'unknown')
+                    : ($testFile ?? 'full_suite'),
+                'attempt' => $attempt,
+            ];
+
+            $exception = new TestExecutionException(
+                $result['errors'] ?: 'Unknown test execution error.',
+                TestExecutionException::CATEGORY_SYSTEM,
+                $context
+            );
+
+            $recovery = $errorRecoveryService->handleTestFailure($this->commandId, $context, $exception);
+            $result['recovery'] = $recovery;
+
+            if (!($recovery['retry'] ?? false) || $attempt >= $maxAttempts) {
+                $result['attempts'] = $attempt;
+                return $result;
+            }
+
+            if (($delay = $recovery['delay'] ?? null) !== null) {
+                sleep((int) $delay);
+            }
+
+        } while ($attempt < $maxAttempts);
+
+        $result['attempts'] = $attempt;
+        return $result;
     }
 
     /**
@@ -376,6 +461,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
             'failures' => [],
             'warnings' => [],
             'executed_at' => now()->toISOString(),
+            'recovery_actions' => [],
         ];
 
         $serialDuration = 0.0;
@@ -394,6 +480,13 @@ class ExecuteTestSuiteJob implements ShouldQueue
 
             if (!empty($result['warnings'])) {
                 $summary['warnings'] = array_merge($summary['warnings'], $result['warnings']);
+            }
+
+            if (!empty($result['recovery'])) {
+                $summary['recovery_actions'][] = [
+                    'file' => $result['file'] ?? 'unknown',
+                    'details' => $result['recovery'],
+                ];
             }
 
             // If any result failed, mark overall status as failed
@@ -519,6 +612,18 @@ class ExecuteTestSuiteJob implements ShouldQueue
      */
     public function failed(\Throwable $exception): void
     {
+        app(ErrorRecoveryService::class)->handleTestFailure($this->commandId, [
+            'job' => 'execute_test_suite',
+            'stage' => 'failed_handler',
+            'test_files' => $this->normalizeTestFiles($this->testFiles),
+        ], $exception instanceof TestExecutionException ? $exception : new TestExecutionException(
+            $exception->getMessage(),
+            TestExecutionException::CATEGORY_SYSTEM,
+            ['command_id' => $this->commandId],
+            (int) $exception->getCode(),
+            $exception
+        ));
+
         Log::error("ExecuteTestSuiteJob failed permanently", [
             'command_id' => $this->commandId,
             'exception' => $exception->getMessage(),

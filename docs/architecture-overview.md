@@ -223,6 +223,10 @@ class DateTimeConverterService
 - Lazy loading support for performance optimization
 - Comprehensive output with Julian Day Number backbone
 
+#### Test Runner Support Services
+- **ProgressTrackingService** – Maintains real-time execution statistics, renders ANSI-friendly progress bars, and supplies the interactive console with per-suite metrics.
+- **ErrorRecoveryService** – Diagnoses test failures, coordinates exponential backoff retries, and logs contextual diagnostics through `TestExecutionException` metadata for resilient parallel execution.
+
 ### 4. Repository Layer
 **Location**: `app/Models/`
 

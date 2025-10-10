@@ -648,6 +648,19 @@ class InteractiveTestRunnerCommand extends Command
             $this->newLine();
         }
 
+        if (!empty($summary['recovery_actions'])) {
+            $this->line('<fg=cyan>Recovery Actions:</>');
+            foreach ($summary['recovery_actions'] as $recovery) {
+                $fileLabel = $recovery['file'] ?? 'unknown';
+                $details = $recovery['details'] ?? [];
+                $message = is_array($details)
+                    ? ($details['recovery']['message'] ?? $details['diagnosis']['reason'] ?? 'Recovery attempted')
+                    : (string) $details;
+                $this->line("  • {$fileLabel}: {$message}");
+            }
+            $this->newLine();
+        }
+
         if (isset($report['output_file'])) {
             info("📄 Full report available at: {$report['output_file']}");
         }
