@@ -14,8 +14,8 @@ $setToday = function () {
         'jalali' => Jalalian::fromCarbon(now())->format('Y/m/d'),
         'unix' => now()->startOfDay()->timestamp,
         'iso8601' => now()->startOfDay()->toIso8601String(),
-        'jd' => GregorianToJD(now()->month, now()->day, now()->year),
-        'mjd' => GregorianToJD(now()->month, now()->day, now()->year) - 2400000.5,
+        'jd' => gregoriantojd(now()->month, now()->day, now()->year),
+        'mjd' => gregoriantojd(now()->month, now()->day, now()->year) - 2400000.5,
         'hebrew', 'islamic', 'french_republican' => now()->format('Y/m/d'), // Will be converted by service
         default => now()->format('Y-m-d'),
     };
@@ -28,8 +28,8 @@ $setYesterday = function () {
         'jalali' => Jalalian::fromCarbon($date)->format('Y/m/d'),
         'unix' => $date->startOfDay()->timestamp,
         'iso8601' => $date->startOfDay()->toIso8601String(),
-        'jd' => GregorianToJD($date->month, $date->day, $date->year),
-        'mjd' => GregorianToJD($date->month, $date->day, $date->year) - 2400000.5,
+        'jd' => gregoriantojd($date->month, $date->day, $date->year),
+        'mjd' => gregoriantojd($date->month, $date->day, $date->year) - 2400000.5,
         'chinese' => $date->format('Y/m/d'), // Will be converted by service
         'japanese' => 'Reiwa' . (now()->year - 2018) . '/' . now()->format('m/d'), // Assuming Reiwa started 2019-05-01
         default => $date->format('Y-m-d'),
@@ -43,8 +43,8 @@ $setTomorrow = function () {
         'jalali' => Jalalian::fromCarbon($date)->format('Y/m/d'),
         'unix' => $date->startOfDay()->timestamp,
         'iso8601' => $date->startOfDay()->toIso8601String(),
-        'jd' => GregorianToJD($date->month, $date->day, $date->year),
-        'mjd' => GregorianToJD($date->month, $date->day, $date->year) - 2400000.5,
+        'jd' => gregoriantojd($date->month, $date->day, $date->year),
+        'mjd' => gregoriantojd($date->month, $date->day, $date->year) - 2400000.5,
         default => $date->format('Y-m-d'),
     };
     $this->setDate((string) $dateValue);
