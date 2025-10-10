@@ -14,7 +14,7 @@ class DateTimeConverterService
 {
     private array $calendarServices;
 
-    private array $fastCalendars = ['julian', 'hebrew', 'islamic', 'coptic', 'ethiopian', 'french_republican'];
+    private array $fastCalendars = ['hebrew', 'islamic', 'coptic', 'ethiopian', 'french_republican'];
 
     /**
      * Jalali month names transliterated to English.
@@ -78,7 +78,8 @@ class DateTimeConverterService
             $carbonDate = $this->parseInputDate($dateString, $inputType);
 
             $jalaliDate = Jalalian::fromCarbon($carbonDate);
-            $julianDay = gregoriantojd($carbonDate->month, $carbonDate->day, $carbonDate->year)
+            $julianDayNumber = gregoriantojd($carbonDate->month, $carbonDate->day, $carbonDate->year);
+            $julianDateTime = $julianDayNumber
                  + ($carbonDate->hour / 24)
                  + ($carbonDate->minute / 1440)
                  + ($carbonDate->second / 86400);
@@ -106,8 +107,8 @@ class DateTimeConverterService
                 ],
                 'unix' => $carbonDate->unix(),
                 'iso8601' => $carbonDate->clone()->utc()->toIso8601String(),
-                'jd' => $julianDay,
-                'mjd' => $julianDay - 2400000.5,
+                'julian-day' => $julianDayNumber,
+                'modified-julian-day' => $julianDateTime - 2400000.5,
             ];
 
             // Add fast calendar conversions
