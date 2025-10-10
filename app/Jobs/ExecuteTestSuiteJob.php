@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Events\TestCompleted;
 use App\Events\TestExecutionCompleted;
 use App\Events\TestExecutionStarted;
+use App\Services\MarkdownReportService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -38,6 +39,11 @@ class ExecuteTestSuiteJob implements ShouldQueue
     public array $options;
 
     /**
+     * Base command string used for execution
+     */
+    private string $baseCommand;
+
+    /**
      * The number of times the job may be attempted
      */
     public int $tries = 3;
@@ -67,6 +73,8 @@ class ExecuteTestSuiteJob implements ShouldQueue
             'coverage' => false,
             'timeout' => 300, // 5 minutes default timeout
         ], $options);
+
+        $this->baseCommand = $this->buildTestCommand();
     }
 
     /**
@@ -77,8 +85,10 @@ class ExecuteTestSuiteJob implements ShouldQueue
     public function handle(): void
     {
         try {
+            $runStartedAt = now();
+
             // Dispatch execution started event
-            TestExecutionStarted::dispatch($this->commandId, count($this->testFiles), now());
+            TestExecutionStarted::dispatch($this->commandId, count($this->testFiles), $runStartedAt);
 
             Log::info("Starting test execution", [
                 'command_id' => $this->commandId,
@@ -86,16 +96,27 @@ class ExecuteTestSuiteJob implements ShouldQueue
                 'options' => $this->options,
             ]);
 
+            app(MarkdownReportService::class)->initializeReport(
+                $this->outputFile,
+                $this->estimateTotalTests(),
+                $runStartedAt
+            );
+
             $results = [];
             $startTime = microtime(true);
 
             if (empty($this->testFiles)) {
                 // Execute all tests
-                $results[] = $this->executeTestCommand();
+                $suiteResult = $this->executeTestCommand();
+                $suiteResult['file'] = 'Full Test Suite';
+                $results[] = $suiteResult;
             } else {
                 // Execute specific test files
                 foreach ($this->testFiles as $testFile) {
                     $result = $this->executeTestCommand([$testFile]);
+                    $result['file'] = is_array($testFile)
+                        ? ($testFile['file_path'] ?? 'unknown')
+                        : $testFile;
                     $results[] = $result;
                     
                     // Dispatch individual test completion event
@@ -104,7 +125,14 @@ class ExecuteTestSuiteJob implements ShouldQueue
                         $result['status'],
                         $result['duration'],
                         $result['output'],
-                        $result['errors']
+                        $result['errors'],
+                        [
+                            'output_file' => $this->outputFile,
+                            'command_id' => $this->commandId,
+                            'options' => $this->options,
+                            'command' => $this->baseCommand,
+                            'started_at' => $runStartedAt->toISOString(),
+                        ]
                     );
                 }
             }
@@ -122,7 +150,18 @@ class ExecuteTestSuiteJob implements ShouldQueue
             ]);
 
             // Dispatch execution completed event
-            TestExecutionCompleted::dispatch($this->commandId, $summary, now());
+            TestExecutionCompleted::dispatch(
+                $this->commandId,
+                $summary,
+                now(),
+                [
+                    'output_file' => $this->outputFile,
+                    'command_id' => $this->commandId,
+                    'options' => $this->options,
+                    'command' => $this->baseCommand,
+                    'started_at' => $runStartedAt->toISOString(),
+                ]
+            );
 
         } catch (\Exception $e) {
             Log::error("Test execution failed", [
@@ -328,12 +367,15 @@ class ExecuteTestSuiteJob implements ShouldQueue
             'executed_at' => now()->toISOString(),
         ];
 
+        $serialDuration = 0.0;
+
         foreach ($results as $result) {
             $summary['total_tests'] += $result['tests_run'] ?? 0;
             $summary['total_passed'] += $result['tests_passed'] ?? 0;
             $summary['total_failed'] += $result['tests_failed'] ?? 0;
             $summary['total_skipped'] += $result['tests_skipped'] ?? 0;
             $summary['total_assertions'] += $result['assertions'] ?? 0;
+            $serialDuration += $result['duration'] ?? 0.0;
 
             if (!empty($result['failures'])) {
                 $summary['failures'] = array_merge($summary['failures'], $result['failures']);
@@ -357,7 +399,76 @@ class ExecuteTestSuiteJob implements ShouldQueue
             );
         }
 
+        $summary['average_duration'] = $summary['total_tests'] > 0
+            ? round($serialDuration / max(1, $summary['total_tests']), 2)
+            : null;
+
+        $summary['slowest_tests'] = $this->calculateSlowestTests($results);
+        $summary['processes'] = $this->options['processes'] ?? null;
+        $summary['parallel_efficiency'] = $this->calculateParallelEfficiency($serialDuration, $totalDuration);
+
         return $summary;
+    }
+
+    /**
+     * Estimate the total number of tests scheduled for execution.
+     *
+     * @return int
+     */
+    private function estimateTotalTests(): int
+    {
+        if (!empty($this->testFiles)) {
+            return count($this->testFiles);
+        }
+
+        return $this->options['estimated_total_tests'] ?? 0;
+    }
+
+    /**
+     * Determine the slowest executing tests.
+     *
+     * @param array $results
+     * @param int $limit
+     * @return array<int, array<string, mixed>>
+     */
+    private function calculateSlowestTests(array $results, int $limit = 5): array
+    {
+        $filtered = array_filter($results, static function ($result) {
+            return isset($result['duration']) && ($result['file'] ?? null);
+        });
+
+        usort($filtered, static function ($left, $right) {
+            return ($right['duration'] ?? 0) <=> ($left['duration'] ?? 0);
+        });
+
+        $filtered = array_slice($filtered, 0, $limit);
+
+        return array_map(static function ($result) {
+            return [
+                'file' => $result['file'] ?? 'unknown',
+                'duration' => $result['duration'] ?? 0.0,
+            ];
+        }, $filtered);
+    }
+
+    /**
+     * Calculate the parallel efficiency percentage.
+     *
+     * @param float $serialDuration
+     * @param float $totalDuration
+     * @return float|null
+     */
+    private function calculateParallelEfficiency(float $serialDuration, float $totalDuration): ?float
+    {
+        $processes = $this->options['processes'] ?? null;
+
+        if (!$processes || $processes <= 0 || $totalDuration <= 0.0) {
+            return null;
+        }
+
+        $efficiency = ($serialDuration / ($totalDuration * $processes)) * 100;
+
+        return round(min($efficiency, 100), 2);
     }
 
     /**
