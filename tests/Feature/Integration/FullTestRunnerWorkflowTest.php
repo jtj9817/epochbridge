@@ -1,5 +1,6 @@
 <?php
 
+use App\Contracts\TestProcessFactory;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -50,6 +51,8 @@ afterEach(function () {
         Config::set('test-runner', $this->originalRunnerConfig);
     }
 
+    app()->forgetInstance(TestProcessFactory::class);
+
     if (isset($this->integrationRoot) && File::exists($this->integrationRoot)) {
         File::deleteDirectory($this->integrationRoot);
     }
@@ -61,7 +64,6 @@ it('executes end-to-end workflow and generates markdown report', function () {
     $reportRelative = 'storage/framework/testing/'.Str::uuid()->toString().'.md';
     $reportAbsolute = base_path($reportRelative);
 
-    $processAlias = m::mock('alias:Symfony\Component\Process\Process');
     $process = m::mock(Process::class);
 
     $attempt = 0;
@@ -93,9 +95,15 @@ it('executes end-to-end workflow and generates markdown report', function () {
         return $responses[$attempt - 1]['exit'];
     });
 
-    $processAlias->shouldReceive('fromShellCommandline')
+    $factory = m::mock(TestProcessFactory::class);
+    $factory->shouldReceive('make')
         ->twice()
+        ->withArgs(function (string $command, ?string $cwd) {
+            return str_starts_with($command, 'php artisan test') && $cwd === base_path();
+        })
         ->andReturn($process);
+
+    app()->instance(TestProcessFactory::class, $factory);
 
     PromptSequence::seed([
         'custom',               // main menu

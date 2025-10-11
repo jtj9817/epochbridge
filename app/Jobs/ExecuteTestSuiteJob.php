@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Contracts\TestProcessFactory;
 use App\Events\TestCompleted;
 use App\Events\TestExecutionCompleted;
 use App\Events\TestExecutionStarted;
@@ -14,7 +15,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\Process\Process;
 
 class ExecuteTestSuiteJob implements ShouldQueue
 {
@@ -288,7 +288,9 @@ class ExecuteTestSuiteJob implements ShouldQueue
                 'test_files' => $testFiles,
             ]);
 
-            $process = Process::fromShellCommandline($command, base_path());
+            /** @var \App\Contracts\TestProcessFactory $factory */
+            $factory = app(TestProcessFactory::class);
+            $process = $factory->make($command, base_path());
             $process->setTimeout($this->options['timeout']);
             $process->run();
 

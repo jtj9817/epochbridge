@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Contracts\TestProcessFactory;
 use App\Services\ErrorRecoveryService;
 use App\Services\MarkdownReportService;
 use App\Services\ProgressTrackingService;
 use App\Services\TestDiscoveryService;
 use App\Services\TestExecutionService;
+use App\Support\TestProcessFactory as SymfonyProcessFactory;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +31,10 @@ class TestRunnerServiceProvider extends ServiceProvider
 
         $this->app->singleton(ErrorRecoveryService::class, function () {
             return new ErrorRecoveryService();
+        });
+
+        $this->app->singleton(TestProcessFactory::class, function () {
+            return new SymfonyProcessFactory();
         });
     }
 

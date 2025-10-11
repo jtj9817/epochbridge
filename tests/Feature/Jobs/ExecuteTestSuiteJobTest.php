@@ -3,6 +3,7 @@
 use App\Events\TestCompleted;
 use App\Events\TestExecutionCompleted;
 use App\Events\TestExecutionStarted;
+use App\Contracts\TestProcessFactory;
 use App\Jobs\ExecuteTestSuiteJob;
 use App\Services\ErrorRecoveryService;
 use App\Services\MarkdownReportService;
@@ -49,18 +50,21 @@ it('runs selected tests, emits events, and builds summary', function () {
         $mock->shouldReceive('handleTestFailure')->never();
     });
 
-    $processAlias = m::mock('alias:Symfony\Component\Process\Process');
-
-    $processMock = m::mock(\Symfony\Component\Process\Process::class);
+    $processMock = m::mock(Process::class);
     $processMock->shouldReceive('setTimeout')->twice()->andReturnNull();
     $processMock->shouldReceive('run')->twice()->andReturnNull();
     $processMock->shouldReceive('getOutput')->twice()->andReturn("Tests: 1 passed\nAssertions: 2");
     $processMock->shouldReceive('getErrorOutput')->twice()->andReturn('');
     $processMock->shouldReceive('getExitCode')->twice()->andReturn(0);
 
-    $processAlias->shouldReceive('fromShellCommandline')
-        ->twice()
-        ->andReturn($processMock);
+    $this->mock(TestProcessFactory::class, function (MockInterface $mock) use ($processMock) {
+        $mock->shouldReceive('make')
+            ->twice()
+            ->withArgs(function (string $command, ?string $cwd) {
+                return str_starts_with($command, 'php artisan test') && $cwd === base_path();
+            })
+            ->andReturn($processMock);
+    });
 
     $job = new ExecuteTestSuiteJob(
         [
@@ -95,18 +99,21 @@ it('invokes recovery service when process exits with failure', function () {
         'delay' => null,
     ]);
 
-    $processAlias = m::mock('alias:Symfony\Component\Process\Process');
-
-    $processMock = m::mock(\Symfony\Component\Process\Process::class);
+    $processMock = m::mock(Process::class);
     $processMock->shouldReceive('setTimeout')->once()->andReturnNull();
     $processMock->shouldReceive('run')->once()->andReturnNull();
     $processMock->shouldReceive('getOutput')->once()->andReturn('');
     $processMock->shouldReceive('getErrorOutput')->once()->andReturn('Failure');
     $processMock->shouldReceive('getExitCode')->once()->andReturn(1);
 
-    $processAlias->shouldReceive('fromShellCommandline')
-        ->once()
-        ->andReturn($processMock);
+    $this->mock(TestProcessFactory::class, function (MockInterface $mock) use ($processMock) {
+        $mock->shouldReceive('make')
+            ->once()
+            ->withArgs(function (string $command, ?string $cwd) {
+                return str_starts_with($command, 'php artisan test') && $cwd === base_path();
+            })
+            ->andReturn($processMock);
+    });
 
     $job = new ExecuteTestSuiteJob(
         [['file_path' => 'tests/Feature/FlakyTest.php']],
@@ -135,15 +142,18 @@ it('retries on process timeouts and stops after maximum attempts', function () {
         'delay' => 0,
     ]);
 
-    $processAlias = m::mock('alias:Symfony\Component\Process\Process');
-
-    $processMock = m::mock(\Symfony\Component\Process\Process::class);
+    $processMock = m::mock(Process::class);
     $processMock->shouldReceive('setTimeout')->andReturnNull();
     $processMock->shouldReceive('run')->andThrow(new ProcessTimedOutException(new \Symfony\Component\Process\Process(['php']), ProcessTimedOutException::TYPE_GENERAL));
 
-    $processAlias->shouldReceive('fromShellCommandline')
-        ->twice()
-        ->andReturn($processMock);
+    $this->mock(TestProcessFactory::class, function (MockInterface $mock) use ($processMock) {
+        $mock->shouldReceive('make')
+            ->twice()
+            ->withArgs(function (string $command, ?string $cwd) {
+                return str_starts_with($command, 'php artisan test') && $cwd === base_path();
+            })
+            ->andReturn($processMock);
+    });
 
     $job = new ExecuteTestSuiteJob(
         [['file_path' => 'tests/Feature/TimeoutTest.php']],
