@@ -8,7 +8,6 @@ use App\Services\MarkdownReportService;
 use App\Services\ProgressTrackingService;
 use App\Services\TestDiscoveryService;
 use App\Services\TestExecutionService;
-use App\Support\TestProcessFactory as SymfonyProcessFactory;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 
@@ -34,7 +33,7 @@ class TestRunnerServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(TestProcessFactory::class, function () {
-            return new SymfonyProcessFactory();
+            return new TestProcessFactory();
         });
     }
 
