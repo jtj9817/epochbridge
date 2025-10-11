@@ -12,7 +12,7 @@ beforeEach(function () {
     $this->mock(DateTimeConverterService::class, function (MockInterface $mock) {
         $mock->shouldReceive('convert')
             ->andReturnUsing(function (string $dateString) {
-                return match ($dateString) {
+                $baseData = match ($dateString) {
                     'not-a-valid-date' => throw new \InvalidArgumentException('Invalid date format provided for the selected input type.'),
                     '' => throw new \InvalidArgumentException('Input date cannot be empty.'),
                     '2024-01-01' => [
@@ -60,6 +60,56 @@ beforeEach(function () {
                         'iso8601' => '2024-09-01T00:00:00+00:00',
                     ],
                 };
+
+                return array_merge($baseData, [
+                    'julian-day' => 2460310,
+                    'modified-julian-day' => 60309.5,
+                    'hebrew' => [
+                        'name' => 'Hebrew',
+                        'full_date' => '5784/10/19',
+                        'tags' => ['modern', 'lunisolar'],
+                        'year' => 5784,
+                        'month_name' => 'Tevet',
+                        'day' => 19,
+                        'day_of_week' => 'Yom Sheni',
+                    ],
+                    'islamic' => [
+                        'name' => 'Islamic',
+                        'full_date' => '1445/06/19',
+                        'tags' => ['modern', 'lunar'],
+                        'year' => 1445,
+                        'month_name' => 'Jumada al-Thani',
+                        'day' => 19,
+                        'day_of_week' => 'Yawm al-Ithnayn',
+                    ],
+                    'coptic' => [
+                        'name' => 'Coptic',
+                        'full_date' => '1740/04/22',
+                        'tags' => ['historical', 'solar'],
+                        'year' => 1740,
+                        'month_name' => 'Tobi',
+                        'day' => 22,
+                        'day_of_week' => 'Pesnau',
+                    ],
+                    'ethiopian' => [
+                        'name' => 'Ethiopian',
+                        'full_date' => '2016/04/22',
+                        'tags' => ['historical', 'solar'],
+                        'year' => 2016,
+                        'month_name' => 'Ṭərr',
+                        'day' => 22,
+                        'day_of_week' => 'Maksäño',
+                    ],
+                    'french_republican' => [
+                        'name' => 'French Republican',
+                        'full_date' => '232/04/12',
+                        'tags' => ['historical', 'solar'],
+                        'year' => 232,
+                        'month_name' => 'Nivôse',
+                        'day' => 12,
+                        'day_of_week' => 'Quartidi',
+                    ],
+                ]);
             });
 
         $mock->shouldReceive('convertAdditional')->andReturn([]);
