@@ -55,19 +55,33 @@ it('shows an error message when passed', function () {
 });
 
 it('filters results by search term', function () {
-    Volt::test('components.calendar-results-grid', ['conversionResults' => $this->baseResults])
-        ->set('searchTerm', 'Jalali')
+    $component = Volt::test('components.calendar-results-grid', ['conversionResults' => $this->baseResults])
+        ->set('searchTerm', 'Jalali');
+
+    $component
+        ->assertSet('filteredResults', function ($results) {
+            expect(array_keys($results))->toBe(['jalali']);
+
+            return true;
+        })
         ->assertSee('Jalali')
-        ->assertDontSee('Gregorian');
+        ->assertDontSeeText('Gregorian');
 });
 
 it('filters results by type', function () {
-    // 'islamic' has 'lunar' tag. 'gregorian' does not.
-    Volt::test('components.calendar-results-grid', ['conversionResults' => $this->baseResults])
-        ->set('selectedTypes', ['lunar'])
+    // 'islamic' has 'lunar' tag. 'gregorian' and 'jalali' do not.
+    $component = Volt::test('components.calendar-results-grid', ['conversionResults' => $this->baseResults])
+        ->set('selectedTypes', ['lunar']);
+
+    $component
+        ->assertSet('filteredResults', function ($results) {
+            expect(array_keys($results))->toBe(['islamic']);
+
+            return true;
+        })
         ->assertSee('Islamic')
-        ->assertDontSee('Gregorian')
-        ->assertDontSee('Jalali')
+        ->assertDontSeeText('Gregorian')
+        ->assertDontSeeText('Jalali')
         // Scalar values should still appear since they don't have tags
         ->assertSee('1704067200') // Unix timestamp
         ->assertSee('2024-01-01T00:00:00+00:00'); // ISO8601

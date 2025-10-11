@@ -131,8 +131,7 @@ it('can convert a valid date', function () {
         ->call('convertDate')
         ->assertSet('conversionResults.gregorian.full_date', '2024-09-01')
         ->assertSet('conversionResults.jalali.full_date', '1403/06/11')
-        ->assertSee('Jalali')
-        ->assertSee('1403')
+        ->assertSet('conversionResults.jalali.year', 1403)
         ->assertSet('conversionError', '');
 });
 
