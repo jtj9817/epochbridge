@@ -138,29 +138,64 @@ php artisan pail
 
 ## Interactive Test Runner
 
-Run the parallel test workflow with real-time progress bars, recovery diagnostics, and Markdown reporting:
+EpochBridge features a comprehensive interactive test runner system with parallel execution, real-time progress tracking, error recovery, and detailed Markdown reporting.
+
+### Features
+
+- **Parallel Test Execution**: Run multiple test suites simultaneously with configurable process limits
+- **Real-time Progress Tracking**: Live progress bars showing completion status, pass/fail counts, and ETAs
+- **Interactive Test Selection**: Choose specific test suites or run comprehensive test workflows
+- **Error Recovery System**: Automatic retry logic with exponential backoff for transient failures
+- **Markdown Reporting**: Detailed GitHub-flavored reports with failure analysis and execution summaries
+- **Verbose Logging**: Comprehensive logging of test execution with configurable output levels
+
+### Usage
+
+Run the interactive test runner:
 
 ```bash
+# Interactive mode with menu selection
+php artisan test:runner
+
+# Direct execution with custom report file
 php artisan test:runner --output-file=storage/reports/test-report.md
+
+# Verbose mode with detailed logging
+php artisan test:runner --verbose
 ```
 
-- Live progress UI summarises per-suite completion, pass/fail counts, and ETAs.
-- Markdown reports land in `test-report.md` (configurable) with GitHub-flavoured tables and failure details.
-- Automatic recovery handles transient errors with exponential backoff and documents retry attempts in the final summary.
+### Test Runner Components
+
+The test runner system includes several specialized services:
+
+- **TestDiscoveryService**: Automatically discovers and categorizes test files across Unit, Feature, and Browser test suites
+- **TestExecutionService**: Handles parallel test execution with process management and result collection
+- **ProgressTrackingService**: Provides real-time progress updates with visual progress bars and statistics
+- **ErrorRecoveryService**: Implements retry logic and failure analysis for robust test execution
+- **MarkdownReportService**: Generates comprehensive test reports in Markdown format with detailed analysis
 
 ### Configuration
 
 Key settings live in `config/test-runner.php` and can be overridden with environment variables:
 
-| Setting | Env Variable | Default |
-| --- | --- | --- |
-| Parallel mode | `TEST_RUNNER_PARALLEL` | `true` |
-| Processes | `TEST_RUNNER_PROCESSES` | `4` |
-| Timeout (seconds) | `TEST_RUNNER_TIMEOUT` | `300` |
-| Retry attempts | `TEST_RUNNER_RETRY_ATTEMPTS` | `1` |
-| Report file | `TEST_RUNNER_REPORT_FILE` | `test-report.md` |
+| Setting | Env Variable | Default | Description |
+| --- | --- | --- | --- |
+| Parallel mode | `TEST_RUNNER_PARALLEL` | `true` | Enable parallel test execution |
+| Max processes | `TEST_RUNNER_PROCESSES` | `4` | Number of parallel test processes |
+| Timeout (seconds) | `TEST_RUNNER_TIMEOUT` | `300` | Maximum execution time per test suite |
+| Retry attempts | `TEST_RUNNER_RETRY_ATTEMPTS` | `1` | Number of retry attempts for failed tests |
+| Report file | `TEST_RUNNER_REPORT_FILE` | `test-report.md` | Output file for Markdown reports |
+| Verbose logging | `TEST_RUNNER_VERBOSE` | `false` | Enable detailed execution logging |
 
-Use the `test-runner` config to customise paths, file patterns, and per-environment overrides (for example, the `ci` profile increases timeouts and disables retries). The `TestRunnerServiceProvider` applies these defaults automatically whenever the test services are resolved.
+### Environment Profiles
+
+The test runner supports environment-specific configurations:
+
+- **Development**: Standard settings with retries enabled
+- **CI**: Increased timeouts, retries disabled, verbose logging
+- **Local**: Fast execution with minimal reporting
+
+Use the `test-runner` config to customize paths, file patterns, and per-environment overrides. The `TestRunnerServiceProvider` applies these defaults automatically whenever test services are resolved.
 
 ## Architecture
 
@@ -179,13 +214,27 @@ Use the `test-runner` config to customise paths, file patterns, and per-environm
 ### Project Structure
 ```
 app/
+├── Console/Commands/       # Artisan commands
+│   └── InteractiveTestRunnerCommand.php # Interactive test runner with parallel execution
+├── Contracts/              # Interfaces and contracts
+│   └── TestProcessFactory.php          # Process factory interface for testing
+├── Events/                 # Laravel events
+│   ├── TestCompleted.php              # Individual test completion event
+│   ├── TestExecutionCompleted.php     # Test suite completion event
+│   └── TestExecutionStarted.php       # Test execution start event
 ├── Exceptions/             # Custom exception handling
 │   ├── CalendarConversionException.php   # Base calendar exception (abstract)
 │   ├── CalendarMalformedDateException.php # Date format parsing errors
 │   ├── CalendarRangeException.php        # Date range validation errors
 │   ├── CalendarCalculationException.php  # Astronomical calculation failures
-│   └── CalendarValidationException.php   # Date component validation errors
+│   ├── CalendarValidationException.php   # Date component validation errors
+│   └── TestExecutionException.php        # Test runner execution errors
 ├── Http/Controllers/        # HTTP controllers
+├── Jobs/                   # Laravel jobs
+│   └── ExecuteTestSuiteJob.php        # Background test suite execution
+├── Listeners/              # Event listeners
+│   ├── UpdateMarkdownReport.php       # Updates test reports on completion
+│   └── UpdateProgressDisplay.php      # Updates real-time progress displays
 ├── Livewire/               # Livewire components
 ├── Models/                 # Eloquent models
 │   ├── User.php           # User model with saved conversions
@@ -194,23 +243,35 @@ app/
 │   ├── HistoricalCalendarData.php # Ancient calendar reference data
 │   └── MayanCalendarData.php # Mayan calendar calculations
 ├── Providers/              # Service providers
-└── Services/               # Calendar conversion services
-    ├── DateTimeConverterService.php    # Main conversion orchestrator with caching
-    ├── CalendarConversionService.php   # Base conversion utilities
-    ├── JulianDayService.php           # Julian Day calculations
-    ├── HebrewCalendarService.php      # Hebrew calendar
-    ├── IslamicCalendarService.php     # Islamic/Hijri calendar
-    ├── ChineseCalendarService.php     # Chinese lunisolar calendar
-    ├── JapaneseCalendarService.php    # Japanese era-based calendar
-    ├── FrenchRepublicanService.php    # French Revolutionary calendar
-    ├── CopticCalendarService.php      # Coptic calendar
-    ├── EthiopianCalendarService.php   # Ethiopian calendar
-    ├── EgyptianCalendarService.php    # Ancient Egyptian calendar
-    ├── BabylonianCalendarService.php  # Babylonian calendar
-    ├── AssyrianCalendarService.php    # Assyrian calendar
-    ├── AncientMacedonianService.php   # Ancient Macedonian calendar
-    ├── MayanCalendarService.php       # Mayan calendar system
-    └── AncientAstronomyService.php    # Astronomical calculations
+│   ├── EventServiceProvider.php      # Event and listener bindings
+│   └── TestRunnerServiceProvider.php # Test runner service bindings
+├── Services/               # Application services
+│   ├── Calendar Services/  # Calendar conversion services
+│   │   ├── DateTimeConverterService.php    # Main conversion orchestrator with caching
+│   │   ├── CalendarConversionService.php   # Base conversion utilities
+│   │   ├── JulianDayService.php           # Julian Day calculations
+│   │   ├── HebrewCalendarService.php      # Hebrew calendar
+│   │   ├── IslamicCalendarService.php     # Islamic/Hijri calendar
+│   │   ├── ChineseCalendarService.php     # Chinese lunisolar calendar
+│   │   ├── JapaneseCalendarService.php    # Japanese era-based calendar
+│   │   ├── FrenchRepublicanService.php    # French Revolutionary calendar
+│   │   ├── CopticCalendarService.php      # Coptic calendar
+│   │   ├── EthiopianCalendarService.php   # Ethiopian calendar
+│   │   ├── EgyptianCalendarService.php    # Ancient Egyptian calendar
+│   │   ├── BabylonianCalendarService.php  # Babylonian calendar
+│   │   ├── AssyrianCalendarService.php    # Assyrian calendar
+│   │   ├── AncientMacedonianService.php   # Ancient Macedonian calendar
+│   │   ├── MayanCalendarService.php       # Mayan calendar system
+│   │   └── AncientAstronomyService.php    # Astronomical calculations
+│   └── Test Runner Services/  # Test execution and management
+│       ├── TestDiscoveryService.php      # Discovers and categorizes tests
+│       ├── TestSelectionService.php      # Interactive test suite selection
+│       ├── TestExecutionService.php      # Parallel test execution management
+│       ├── ProgressTrackingService.php   # Real-time progress tracking and UI
+│       ├── ErrorRecoveryService.php      # Test failure recovery and retry logic
+│       └── MarkdownReportService.php     # Comprehensive test report generation
+└── Support/                # Support classes
+    └── TestProcessFactory.php           # Process factory implementation
 
 resources/
 ├── css/                    # Tailwind CSS files
@@ -263,12 +324,28 @@ database/
 
 tests/
 ├── Feature/               # Feature tests
-│   └── Livewire/         # Livewire component tests
+│   ├── Auth/             # Authentication flow tests
+│   ├── Console/          # Console command tests
+│   │   └── InteractiveTestRunnerCommandTest.php # Test runner command tests
+│   ├── Integration/      # Integration workflow tests
+│   │   └── FullTestRunnerWorkflowTest.php       # End-to-end test runner tests
+│   ├── Jobs/             # Background job tests
+│   │   └── ExecuteTestSuiteJobTest.php         # Test suite execution job tests
+│   ├── Livewire/         # Livewire component tests
+│   └── Settings/         # User settings tests
 ├── Unit/                  # Unit tests
-│   └── Services/         # Calendar service tests
-└── Browser/               # Dusk browser tests
-    ├── LandingPageTest.php      # Full page interaction tests
-    └── Components/              # Component-specific browser tests
+│   └── Services/         # Service layer tests
+│       ├── Calendar Services/                   # Calendar conversion service tests
+│       └── Test Runner Services/               # Test runner service tests
+│           ├── ErrorRecoveryServiceTest.php    # Error recovery logic tests
+│           ├── MarkdownReportServiceTest.php   # Report generation tests
+│           ├── ProgressTrackingServiceTest.php # Progress tracking tests
+│           └── TestDiscoveryServiceTest.php    # Test discovery tests
+├── Browser/               # Dusk browser tests
+│   ├── LandingPageTest.php      # Full page interaction tests
+│   └── Components/              # Component-specific browser tests
+└── Support/               # Test support utilities
+    └── PromptSequence.php      # Interactive command testing utilities
 ```
 
 ## Key Features

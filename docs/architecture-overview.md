@@ -223,9 +223,73 @@ class DateTimeConverterService
 - Lazy loading support for performance optimization
 - Comprehensive output with Julian Day Number backbone
 
-#### Test Runner Support Services
-- **ProgressTrackingService** – Maintains real-time execution statistics, renders ANSI-friendly progress bars, and supplies the interactive console with per-suite metrics.
-- **ErrorRecoveryService** – Diagnoses test failures, coordinates exponential backoff retries, and logs contextual diagnostics through `TestExecutionException` metadata for resilient parallel execution.
+#### Test Runner Services
+The application includes a comprehensive test execution system with specialized services:
+
+**TestDiscoveryService**
+```php
+class TestDiscoveryService
+{
+    public function discoverTests(array $paths): array
+    {
+        // Automatically discovers test files across Unit, Feature, Browser suites
+        // Returns: categorized test collections with metadata
+        // Supports: PHPUnit and PestPHP test formats
+    }
+}
+```
+
+**TestExecutionService**
+```php
+class TestExecutionService
+{
+    public function executeInParallel(array $testSuites): void
+    {
+        // Manages parallel test execution with configurable process limits
+        // Handles: process spawning, result collection, timeout management
+        // Features: queue integration, resource monitoring, graceful shutdown
+    }
+}
+```
+
+**ProgressTrackingService**
+```php
+class ProgressTrackingService
+{
+    public function updateProgress(TestSuiteResult $result): void
+    {
+        // Maintains real-time execution statistics and visual progress bars
+        // Provides: completion percentages, pass/fail counts, ETA calculations
+        // Renders: ANSI-friendly progress displays for terminal interfaces
+    }
+}
+```
+
+**ErrorRecoveryService**
+```php
+class ErrorRecoveryService
+{
+    public function handleTestFailure(TestExecutionException $exception): RecoveryAction
+    {
+        // Diagnoses test failures and coordinates retry logic
+        // Implements: exponential backoff, failure categorization, retry limits
+        // Logs: contextual diagnostics and recovery attempt metadata
+    }
+}
+```
+
+**MarkdownReportService**
+```php
+class MarkdownReportService
+{
+    public function generateReport(array $testResults): string
+    {
+        // Generates comprehensive GitHub-flavored Markdown reports
+        // Includes: execution summaries, failure analysis, performance metrics
+        // Features: customizable templates, detailed test breakdowns
+    }
+}
+```
 
 ### 4. Repository Layer
 **Location**: `app/Models/`
@@ -654,6 +718,29 @@ x-data="{
 - **Laravel Integration**: PestPHP Laravel plugin
 - **Browser Testing**: Laravel Dusk 8.2+
 - **Test Database**: Separate `testing` database
+- **Interactive Test Runner**: Custom parallel execution system with real-time reporting
+
+### Test Runner System Architecture
+
+The project features a comprehensive test runner system with the following components:
+
+#### Core Services
+- **TestDiscoveryService**: Automatically discovers and categorizes tests across Unit, Feature, and Browser suites
+- **TestExecutionService**: Manages parallel test execution with configurable process limits
+- **ProgressTrackingService**: Provides real-time progress updates with visual progress bars
+- **ErrorRecoveryService**: Implements retry logic with exponential backoff for robust execution
+- **MarkdownReportService**: Generates detailed test reports in GitHub-flavored Markdown format
+
+#### Command Interface
+- **InteractiveTestRunnerCommand**: `php artisan test:runner` - Interactive menu system for test execution
+- **Configuration**: Environment-specific settings via `config/test-runner.php`
+- **Background Processing**: Queue-based test execution via `ExecuteTestSuiteJob`
+
+#### Event System
+- **TestExecutionStarted**: Fired when test suite begins execution
+- **TestCompleted**: Individual test completion events
+- **TestExecutionCompleted**: Suite completion with results summary
+- **Real-time Updates**: Event listeners update progress displays and reports
 
 ### Test Structure
 ```
@@ -669,6 +756,12 @@ tests/
 │   │   ├── PasswordResetTest.php            # Password reset functionality
 │   │   ├── RegistrationTest.php             # User registration
 │   │   └── TwoFactorChallengeTest.php       # 2FA challenge flow
+│   ├── Console/                # Console command tests
+│   │   └── InteractiveTestRunnerCommandTest.php # Test runner command tests
+│   ├── Integration/            # Integration workflow tests
+│   │   └── FullTestRunnerWorkflowTest.php       # End-to-end test runner tests
+│   ├── Jobs/                   # Background job tests
+│   │   └── ExecuteTestSuiteJobTest.php         # Test suite execution job tests
 │   ├── Settings/               # Settings functionality tests
 │   │   ├── PasswordUpdateTest.php           # Password change
 │   │   ├── ProfileUpdateTest.php            # Profile modification
@@ -684,15 +777,23 @@ tests/
 │   └── ExampleTest.php         # Example feature test
 ├── Unit/                       # Unit tests
 │   ├── Services/               # Service layer tests
-│   │   ├── ChineseCalendarServiceTest.php   # Chinese calendar service
-│   │   ├── CopticCalendarServiceTest.php    # Coptic calendar service
-│   │   ├── DateTimeConverterServiceTest.php # Main converter service
-│   │   ├── EgyptianCalendarServiceTest.php  # Egyptian calendar service
-│   │   ├── EthiopianCalendarServiceTest.php # Ethiopian calendar service
-│   │   └── JapaneseCalendarServiceTest.php  # Japanese calendar service
+│   │   ├── Calendar Services/  # Calendar conversion service tests
+│   │   │   ├── ChineseCalendarServiceTest.php   # Chinese calendar service
+│   │   │   ├── CopticCalendarServiceTest.php    # Coptic calendar service
+│   │   │   ├── DateTimeConverterServiceTest.php # Main converter service
+│   │   │   ├── EgyptianCalendarServiceTest.php  # Egyptian calendar service
+│   │   │   ├── EthiopianCalendarServiceTest.php # Ethiopian calendar service
+│   │   │   └── JapaneseCalendarServiceTest.php  # Japanese calendar service
+│   │   └── Test Runner Services/ # Test runner service tests
+│   │       ├── ErrorRecoveryServiceTest.php    # Error recovery logic tests
+│   │       ├── MarkdownReportServiceTest.php   # Report generation tests
+│   │       ├── ProgressTrackingServiceTest.php # Progress tracking tests
+│   │       └── TestDiscoveryServiceTest.php    # Test discovery tests
 │   └── ExampleTest.php         # Example unit test
+├── Support/                    # Test support utilities
+│   └── PromptSequence.php      # Interactive command testing utilities
 └── Browser/                    # Dusk browser tests
-    ├── Components/             # Component-specific browser tests (empty)
+    ├── Components/             # Component-specific browser tests
     ├── Pages/                  # Page object models
     │   ├── HomePage.php        # Home page object model
     │   └── Page.php           # Base page object model
