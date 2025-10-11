@@ -631,8 +631,5 @@ Create user guide, developer documentation, architecture documentation, and upda
 - Use proper heading hierarchy (H1 for title, H2 for major sections)
 - Include timestamps and version information in documentation
 - Review documentation for clarity and completeness before finalizing
-- Test all documentation code examples to ensure they work
 - Use consistent terminology throughout all documentation
 - Provide both conceptual explanations and practical how-tos
-- Include troubleshooting for common issues with solutions
-- Add visual aids (diagrams, screenshots, ASCII art) where appropriate

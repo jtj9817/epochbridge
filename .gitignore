@@ -27,6 +27,9 @@ yarn-error.log
 /tests/Browser/screenshots
 /tests/Browser/source
 
+# Test temporary files
+/tests/tmp/
+
 # Laravel Sail
 /docker-compose.override.yml
 
