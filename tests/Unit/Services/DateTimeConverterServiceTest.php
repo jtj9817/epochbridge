@@ -33,11 +33,15 @@ it('returns comprehensive conversion payload for a valid gregorian date', functi
 it('caches repeated conversions for identical inputs', function () {
     $service = app(DateTimeConverterService::class);
 
-    Cache::spy();
+    Cache::shouldReceive('remember')
+        ->once()
+        ->andReturnUsing(function ($key, $ttl, $callback) {
+            expect($ttl)->toBe(3600);
+
+            return $callback();
+        });
 
     $service->convert('2024-01-15');
-
-    Cache::shouldHaveReceived('remember')->once();
 });
 
 it('throws an exception for an invalid date string', function () {

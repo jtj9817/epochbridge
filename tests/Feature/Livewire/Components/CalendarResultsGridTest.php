@@ -2,14 +2,32 @@
 
 namespace Tests\Feature\Livewire\Components;
 
-use App\Services\DateTimeConverterService;
 use Livewire\Volt\Volt;
 
-it('renders results grid with data', function () {
-    $service = new DateTimeConverterService;
-    $results = $service->convert('2024-01-01', 'gregorian');
+beforeEach(function () {
+    $this->baseResults = [
+        'gregorian' => [
+            'name' => 'Gregorian',
+            'full_date' => '2024-01-01',
+            'tags' => ['solar'],
+        ],
+        'jalali' => [
+            'name' => 'Jalali',
+            'full_date' => '1402/10/11',
+            'tags' => ['solar'],
+        ],
+        'islamic' => [
+            'name' => 'Islamic',
+            'full_date' => '1445/06/01',
+            'tags' => ['lunar'],
+        ],
+        'unix' => 1704067200,
+        'iso8601' => '2024-01-01T00:00:00+00:00',
+    ];
+});
 
-    Volt::test('components.calendar-results-grid', ['conversionResults' => $results])
+it('renders results grid with data', function () {
+    Volt::test('components.calendar-results-grid', ['conversionResults' => $this->baseResults])
         ->assertSee('Gregorian')
         ->assertSee('Jalali')
         ->assertSee('Unix');
@@ -21,21 +39,15 @@ it('shows an error message when passed', function () {
 });
 
 it('filters results by search term', function () {
-    $service = new DateTimeConverterService;
-    $results = $service->convert('2024-01-01', 'gregorian');
-
-    Volt::test('components.calendar-results-grid', ['conversionResults' => $results])
+    Volt::test('components.calendar-results-grid', ['conversionResults' => $this->baseResults])
         ->set('searchTerm', 'Jalali')
         ->assertSee('Jalali')
         ->assertDontSee('Gregorian');
 });
 
 it('filters results by type', function () {
-    $service = new DateTimeConverterService;
-    $results = $service->convert('2024-01-01', 'gregorian');
-
     // 'islamic' has 'lunar' tag. 'gregorian' does not.
-    Volt::test('components.calendar-results-grid', ['conversionResults' => $results])
+    Volt::test('components.calendar-results-grid', ['conversionResults' => $this->baseResults])
         ->set('selectedTypes', ['lunar'])
         ->assertSee('Islamic')
         ->assertDontSee('Gregorian')
@@ -43,11 +55,8 @@ it('filters results by type', function () {
 });
 
 it('shows loading skeletons when additional calendars are not loaded', function () {
-    $service = new DateTimeConverterService;
-    $results = $service->convert('2024-01-01', 'gregorian');
-
     Volt::test('components.calendar-results-grid', [
-        'conversionResults' => $results,
+        'conversionResults' => $this->baseResults,
         'additionalCalendarsLoaded' => false,
     ])
         ->assertSeeHtmlInOrder(['<div', 'animate-pulse']);

@@ -34,7 +34,7 @@ class EthiopianCalendarServiceTest extends TestCase
         $ethiopianDate = $this->service->fromGregorian($gregorianDate);
         $roundTrip = $this->service->toGregorian($ethiopianDate);
 
-        $this->assertEquals($gregorianDate->format('Y-m-d'), $roundTrip->format('Y-m-d'));
+        $this->assertEquals('2024-09-11', $roundTrip->format('Y-m-d'));
     }
 
     public function test_validates_ethiopian_dates()

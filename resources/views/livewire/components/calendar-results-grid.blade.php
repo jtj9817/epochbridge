@@ -106,7 +106,11 @@ $filteredResults = computed(function() {
         <div id="results-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             @if (!empty($this->filteredResults))
                 @foreach($this->filteredResults as $key => $data)
-                    @if(is_array($data) && !isset($data['error']))
+                    @php
+                        $shouldRender = is_array($data) && !isset($data['error']);
+                        $allowScalar = in_array($key, ['unix', 'iso8601', 'julian-day', 'modified-julian-day'], true) && is_scalar($data);
+                    @endphp
+                    @if($shouldRender || $allowScalar)
                         @switch($key)
                             @case('gregorian') <x-calendars.gregorian-card :data="$data" /> @break
                             @case('jalali') <x-calendars.jalali-card :data="$data" /> @break

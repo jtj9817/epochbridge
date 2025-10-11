@@ -81,7 +81,7 @@ it('executes end-to-end workflow and generates markdown report', function () {
         ],
     ];
 
-    $process->shouldReceive('setTimeout')->twice()->andReturnNull();
+    $process->shouldReceive('setTimeout')->twice()->andReturnSelf();
     $process->shouldReceive('run')->twice()->andReturnUsing(function () use (&$attempt) {
         $attempt++;
         return null;

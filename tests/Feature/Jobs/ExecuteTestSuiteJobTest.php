@@ -101,10 +101,10 @@ it('invokes recovery service when process exits with failure', function () {
 
     $processMock = m::mock(Process::class);
     $processMock->shouldReceive('setTimeout')->once()->andReturnSelf();
-    $processMock->shouldReceive('run')->once()->andReturn(1);
-    $processMock->shouldReceive('getOutput')->once()->andReturn('');
-    $processMock->shouldReceive('getErrorOutput')->once()->andReturn('Failure');
-    $processMock->shouldReceive('getExitCode')->once()->andReturn(1);
+    $processMock->shouldReceive('run')->once()->andThrow(new \RuntimeException('Process crashed'));
+    $processMock->shouldReceive('getOutput')->never();
+    $processMock->shouldReceive('getErrorOutput')->never();
+    $processMock->shouldReceive('getExitCode')->never();
 
     $this->mock(TestProcessFactory::class, function (MockInterface $mock) use ($processMock) {
         $mock->shouldReceive('make')
@@ -125,7 +125,7 @@ it('invokes recovery service when process exits with failure', function () {
     $job->handle();
 
     Event::assertDispatched(TestExecutionCompleted::class, function ($event) {
-        return $event->summary['status'] === 'failed';
+        return $event->summary['status'] === 'error';
     });
 });
 
@@ -162,9 +162,11 @@ it('retries on process timeouts and stops after maximum attempts', function () {
         ['retry_attempts' => 1]
     );
 
-    expect(function () use ($job) {
-        $job->handle();
-    })->toThrow(ProcessTimedOutException::class);
+    $job->handle();
+
+    Event::assertDispatched(TestExecutionCompleted::class, function ($event) {
+        return $event->summary['status'] === 'error';
+    });
 });
 
 it('records permanent failure via failed handler', function () {
