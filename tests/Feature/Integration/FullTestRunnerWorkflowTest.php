@@ -5,9 +5,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Mockery as m;
 use Symfony\Component\Process\Process;
-use Tests\TestCase;
 
-uses(TestCase::class);
 
 beforeEach(function () {
     Config::set('queue.default', 'sync');
