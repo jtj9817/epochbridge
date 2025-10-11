@@ -11,6 +11,7 @@ use Laravel\Prompts\ConfirmPrompt;
 use Laravel\Prompts\MultiSelectPrompt;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\SelectPrompt;
+use Laravel\Prompts\TextPrompt;
 use Mockery as m;
 use Mockery\MockInterface;
 use Tests\Support\PromptSequence;
@@ -30,6 +31,10 @@ beforeAll(function () {
 
     ConfirmPrompt::fallbackUsing(function (ConfirmPrompt $prompt) {
         return (bool) PromptSequence::pull($prompt->default ?? true);
+    });
+
+    TextPrompt::fallbackUsing(function (TextPrompt $prompt) {
+        return PromptSequence::pull($prompt->default ?? '');
     });
 });
 

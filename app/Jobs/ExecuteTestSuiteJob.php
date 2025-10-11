@@ -467,6 +467,8 @@ class ExecuteTestSuiteJob implements ShouldQueue
         ];
 
         $serialDuration = 0.0;
+        $encounteredFailure = false;
+        $encounteredError = false;
 
         foreach ($results as $result) {
             $summary['total_tests'] += $result['tests_run'] ?? 0;
@@ -491,10 +493,17 @@ class ExecuteTestSuiteJob implements ShouldQueue
                 ];
             }
 
-            // If any result failed, mark overall status as failed
-            if ($result['status'] === 'failed' || $result['status'] === 'error') {
-                $summary['status'] = 'failed';
+            if (($result['status'] ?? null) === 'error') {
+                $encounteredError = true;
+            } elseif (($result['status'] ?? null) === 'failed') {
+                $encounteredFailure = true;
             }
+        }
+
+        if ($encounteredError) {
+            $summary['status'] = 'error';
+        } elseif ($encounteredFailure) {
+            $summary['status'] = 'failed';
         }
 
         // Calculate success rate

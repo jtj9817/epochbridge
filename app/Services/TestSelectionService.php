@@ -8,6 +8,7 @@ use function Laravel\Prompts\info;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\search;
 use function Laravel\Prompts\select;
+use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
 class TestSelectionService
@@ -255,30 +256,38 @@ class TestSelectionService
         $selectedTests = [];
         $allTests = $this->discoveryService->discoverAllTests()['all'];
 
-        do {
-            $testPath = $this->command->ask('Enter test file path (relative to tests/ directory)');
-            
-            if ($testPath) {
-                // Find matching test
-                $matchingTest = collect($allTests)->first(function ($test) use ($testPath) {
-                    return str_contains($test['relative_path'], $testPath) ||
-                           str_contains($test['filename'], $testPath);
-                });
-
-                if ($matchingTest) {
-                    $selectedTests[] = $matchingTest;
-                    info("✓ Added: {$matchingTest['display_name']}");
-                } else {
-                    warning("❌ Test not found: {$testPath}");
-                }
-            }
-
-            $continueAdding = confirm(
-                label: 'Add another test?',
-                default: false
+        while (true) {
+            $testPath = text(
+                label: 'Enter test file path (relative to tests/ directory)',
+                placeholder: '',
+                default: '',
+                required: false,
+                validate: null,
+                hint: 'Leave blank to finish. Partial matches are accepted.'
             );
 
-        } while ($continueAdding);
+            $testPath = trim($testPath);
+
+            if ($testPath === '') {
+                break;
+            }
+
+            $matchingTest = collect($allTests)->first(function ($test) use ($testPath) {
+                return str_contains($test['relative_path'], $testPath) ||
+                       str_contains($test['filename'], $testPath);
+            });
+
+            if ($matchingTest) {
+                $selectedTests[] = $matchingTest;
+                info("✓ Added: {$matchingTest['display_name']}");
+            } else {
+                warning("❌ Test not found: {$testPath}");
+            }
+
+            if (! confirm(label: 'Add another test?', default: false)) {
+                break;
+            }
+        }
 
         return $selectedTests;
     }
