@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Js;
 use function Livewire\Volt\{state, computed};
 
 state([
@@ -60,21 +61,25 @@ $filteredResults = computed(function() {
          x-transition:enter-end="opacity-100 transform scale-100"
          class="max-w-4xl mx-auto mt-12">
 
+        @php
+            $copyLines = collect($this->filteredResults ?? [])
+                ->filter(fn ($data) => is_array($data) && !isset($data['error']))
+                ->map(function ($data, $key) {
+                    $label = $data['name'] ?? ucwords(str_replace('_', ' ', (string) $key));
+                    $value = $data['full_date'] ?? (is_scalar($data) ? $data : json_encode($data));
+
+                    return "{$label}: {$value}";
+                })
+                ->implode("\n");
+        @endphp
+
         <div class="flex items-center justify-between mb-6">
             <h2 id="conversion-results-heading" class="text-2xl font-bold text-theme-900 dark:text-theme-50">
                 Conversion Results
             </h2>
             <div class="flex items-center gap-4">
                 <button
-                    @click="copyToClipboard(
-                        `Gregorian: {{ $conversionResults['gregorian']['full_date'] ?? '' }}\n` +
-                        `Jalali: {{ $conversionResults['jalali']['full_date'] ?? '' }}\n` +
-                        `Unix: {{ $conversionResults['unix'] ?? '' }}\n` +
-                        `ISO 8601: {{ $conversionResults['iso8601'] ?? '' }}\n` +
-                        `Julian Day: {{ $conversionResults['jd'] ?? '' }}\n` +
-                        `Modified Julian Day: {{ $conversionResults['mjd'] ?? '' }}`,
-                        'all'
-                    )"
+                    @click="copyToClipboard({{ Js::from($copyLines) }}, 'all')"
                     class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline"
                     :class="{ 'text-green-500': copiedFeedback === 'all' }"
                     x-text="copiedFeedback === 'all' ? 'Copied!' : 'Copy All'">

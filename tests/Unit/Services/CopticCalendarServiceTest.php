@@ -22,14 +22,14 @@ class CopticCalendarServiceTest extends TestCase
         $copticDate = $this->service->fromGregorian($gregorianDate);
 
         $this->assertEquals(1740, $copticDate['year']);
-        $this->assertEquals(13, $copticDate['month']);
-        $this->assertEquals('Epagomenai', $copticDate['month_name']);
-        $this->assertEquals(2, $copticDate['day']);
+        $this->assertEquals(12, $copticDate['month']);
+        $this->assertEquals('Mesori', $copticDate['month_name']);
+        $this->assertEquals(24, $copticDate['day']);
     }
 
     public function test_converts_coptic_to_gregorian()
     {
-        $copticDate = ['year' => 1740, 'month' => 13, 'day' => 2];
+        $copticDate = ['year' => 1740, 'month' => 12, 'day' => 24];
         $gregorianDate = $this->service->toGregorian($copticDate);
 
         $this->assertEquals('2024-08-30', $gregorianDate->format('Y-m-d'));
@@ -37,18 +37,15 @@ class CopticCalendarServiceTest extends TestCase
 
     public function test_validates_coptic_dates()
     {
-        // Valid date in a common year
-        $this->assertTrue($this->service->validateDate(1739, 13, 5));
-        // Invalid date in a common year
-        $this->assertFalse($this->service->validateDate(1739, 13, 6));
-
-        // Valid date in a leap year (1739 AM is a leap year)
-        $this->assertTrue($this->service->validateDate(1739, 12, 30));
-
-        // Coptic leap year is when (year % 4) === 3. 1739 % 4 = 3
-        $this->assertTrue($this->service->validateDate(1739, 13, 6));
+        // Valid date in a common year (month 13 limited to 5 days)
+        $this->assertTrue($this->service->validateDate(1738, 13, 5));
         $this->assertFalse($this->service->validateDate(1738, 13, 6));
 
+        // Leap year adds an extra epagomenal day when (year % 4) === 3
+        $this->assertTrue($this->service->validateDate(1739, 13, 6));
+        $this->assertFalse($this->service->validateDate(1739, 13, 7));
+
+        // Guard against invalid month/day combinations
         $this->assertFalse($this->service->validateDate(1740, 14, 1));
         $this->assertFalse($this->service->validateDate(1740, 12, 31));
     }

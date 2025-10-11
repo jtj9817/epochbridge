@@ -51,8 +51,8 @@ it('runs selected tests, emits events, and builds summary', function () {
     });
 
     $processMock = m::mock(Process::class);
-    $processMock->shouldReceive('setTimeout')->twice()->andReturnNull();
-    $processMock->shouldReceive('run')->twice()->andReturnNull();
+    $processMock->shouldReceive('setTimeout')->twice()->andReturnSelf();
+    $processMock->shouldReceive('run')->twice()->andReturn(0);
     $processMock->shouldReceive('getOutput')->twice()->andReturn("Tests: 1 passed\nAssertions: 2");
     $processMock->shouldReceive('getErrorOutput')->twice()->andReturn('');
     $processMock->shouldReceive('getExitCode')->twice()->andReturn(0);
@@ -100,8 +100,8 @@ it('invokes recovery service when process exits with failure', function () {
     ]);
 
     $processMock = m::mock(Process::class);
-    $processMock->shouldReceive('setTimeout')->once()->andReturnNull();
-    $processMock->shouldReceive('run')->once()->andReturnNull();
+    $processMock->shouldReceive('setTimeout')->once()->andReturnSelf();
+    $processMock->shouldReceive('run')->once()->andReturn(1);
     $processMock->shouldReceive('getOutput')->once()->andReturn('');
     $processMock->shouldReceive('getErrorOutput')->once()->andReturn('Failure');
     $processMock->shouldReceive('getExitCode')->once()->andReturn(1);
@@ -143,7 +143,7 @@ it('retries on process timeouts and stops after maximum attempts', function () {
     ]);
 
     $processMock = m::mock(Process::class);
-    $processMock->shouldReceive('setTimeout')->andReturnNull();
+    $processMock->shouldReceive('setTimeout')->andReturnSelf();
     $processMock->shouldReceive('run')->andThrow(new ProcessTimedOutException(new \Symfony\Component\Process\Process(['php']), ProcessTimedOutException::TYPE_GENERAL));
 
     $this->mock(TestProcessFactory::class, function (MockInterface $mock) use ($processMock) {

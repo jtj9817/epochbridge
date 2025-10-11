@@ -13,6 +13,7 @@ use Laravel\Prompts\Prompt;
 use Laravel\Prompts\SelectPrompt;
 use Mockery as m;
 use Mockery\MockInterface;
+use Tests\Support\PromptSequence;
 
 beforeAll(function () {
     Prompt::fallbackWhen(true);
@@ -334,35 +335,6 @@ it('reports failure when execution service throws an exception', function () {
 
     Event::assertNothingDispatched();
 });
-
-/**
- * Helper to build prompt queue tokens.
- */
-class PromptSequence
-{
-    /**
-     * @var array<int, mixed>
-     */
-    private static array $values = [];
-
-    public static function reset(): void
-    {
-        self::$values = [];
-    }
-
-    /**
-     * @param array<int, mixed> $values
-     */
-    public static function seed(array $values): void
-    {
-        self::$values = $values;
-    }
-
-    public static function pull(mixed $default = null): mixed
-    {
-        return array_shift(self::$values) ?? $default;
-    }
-}
 
 /**
  * Prepare discovery dataset with default structure.

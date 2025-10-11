@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Mockery as m;
 use Symfony\Component\Process\Process;
+use Tests\Support\PromptSequence;
 
 
 beforeEach(function () {

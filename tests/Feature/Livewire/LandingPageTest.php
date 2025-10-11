@@ -3,7 +3,40 @@
 namespace Tests\Feature\Livewire;
 
 use App\Models\User;
+use App\Services\DateTimeConverterService;
 use Livewire\Volt\Volt;
+use Mockery;
+use Mockery\MockInterface;
+
+beforeEach(function () {
+    $this->mock(DateTimeConverterService::class, function (MockInterface $mock) {
+        $mock->shouldReceive('convert')
+            ->andReturnUsing(function (string $dateString) {
+                return match ($dateString) {
+                    'not-a-valid-date' => throw new \InvalidArgumentException('Invalid date format provided for the selected input type.'),
+                    '' => throw new \InvalidArgumentException('Input date cannot be empty.'),
+                    '2024-01-01' => [
+                        'gregorian' => ['full_date' => '2024-01-01', 'name' => 'Gregorian'],
+                        'jalali' => ['full_date' => '1402/10/11', 'name' => 'Jalali'],
+                        'unix' => 1704067200,
+                        'iso8601' => '2024-01-01T00:00:00+00:00',
+                    ],
+                    default => [
+                        'gregorian' => ['full_date' => '2024-09-01', 'name' => 'Gregorian'],
+                        'jalali' => ['full_date' => '1403/06/11', 'name' => 'Jalali'],
+                        'unix' => 1725148800,
+                        'iso8601' => '2024-09-01T00:00:00+00:00',
+                    ],
+                };
+            });
+
+        $mock->shouldReceive('convertAdditional')->andReturn([]);
+    });
+});
+
+afterEach(function () {
+    Mockery::close();
+});
 
 it('renders the landing page component', function () {
     $this->get('/')->assertSeeLivewire('landing');

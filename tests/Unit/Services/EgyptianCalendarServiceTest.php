@@ -18,20 +18,21 @@ class EgyptianCalendarServiceTest extends TestCase
 
     public function test_converts_gregorian_to_egyptian()
     {
-        $gregorianDate = Carbon::create(2024, 8, 30);
+        $gregorianDate = Carbon::create(2024, 2, 17);
         $egyptianDate = $this->service->fromGregorian($gregorianDate);
 
-        // Year relative to 747 BCE
-        $this->assertEquals(2771, $egyptianDate['year']);
-        $this->assertEquals('Thoth', $egyptianDate['month_name']);
+        // Year relative to the Nabonassar era (747 BCE)
+        $this->assertEquals(2772, $egyptianDate['year']);
+        $this->assertEquals(11, $egyptianDate['month']);
+        $this->assertEquals('Epiphi', $egyptianDate['month_name']);
+        $this->assertEquals(6, $egyptianDate['day']);
     }
 
     public function test_converts_egyptian_to_gregorian()
     {
-        $egyptianDate = ['year' => 2771, 'month' => 1, 'day' => 23];
+        $egyptianDate = ['year' => 2772, 'month' => 11, 'day' => 6];
         $gregorianDate = $this->service->toGregorian($egyptianDate);
 
-        // Note: This is an approximation. Reverse conversion is complex.
         $this->assertEquals('2024-02-17', $gregorianDate->format('Y-m-d'));
     }
 

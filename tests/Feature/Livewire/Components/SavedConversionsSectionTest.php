@@ -8,7 +8,11 @@ use Livewire\Volt\Volt;
 
 it('renders saved conversions for an authenticated user', function () {
     $user = User::factory()->create();
-    SavedConversion::factory()->for($user)->create(['original_input' => '2024-01-01']);
+    SavedConversion::factory()->for($user)->create([
+        'original_input' => '2024-01-01',
+        'gregorian_date' => '2024-01-01',
+        'jalali_date' => '1402/10/11',
+    ]);
 
     $this->actingAs($user);
 
@@ -18,7 +22,9 @@ it('renders saved conversions for an authenticated user', function () {
 
 it('can delete a conversion for an authenticated user', function () {
     $user = User::factory()->create();
-    $conversion = SavedConversion::factory()->for($user)->create();
+    $conversion = SavedConversion::factory()->for($user)->create([
+        'gregorian_date' => '2024-01-01',
+    ]);
 
     $this->actingAs($user);
 

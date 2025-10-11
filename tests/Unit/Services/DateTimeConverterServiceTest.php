@@ -1,36 +1,54 @@
 <?php
 
-namespace Tests\Unit\Services;
-
 use App\Services\DateTimeConverterService;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
+use Tests\TestCase;
 
-it('correctly converts a valid date string', function () {
-    $service = new DateTimeConverterService;
-    $dateString = '2024-01-15';
+uses(TestCase::class);
 
-    $expected = [
-        'gregorian' => '2024-01-15',
-        'jalali' => '1402-10-25',
-        'unix' => 1705276800,
-        'iso8601' => '2024-01-15T00:00:00+00:00',
-    ];
+beforeEach(function () {
+    Cache::flush();
+});
 
-    $result = $service->convert($dateString);
+it('returns comprehensive conversion payload for a valid gregorian date', function () {
+    $service = app(DateTimeConverterService::class);
 
-    expect($result)->toBe($expected);
+    $result = $service->convert('2024-01-15');
+
+    expect($result)->toHaveKeys([
+        'gregorian',
+        'jalali',
+        'unix',
+        'iso8601',
+        'julian-day',
+        'modified-julian-day',
+    ]);
+
+    expect($result['gregorian']['full_date'])->toBe('2024-01-15');
+    expect($result['jalali']['full_date'])->toBe('1402/10/25');
+    expect($result['unix'])->toBe(1705276800);
+    expect($result['iso8601'])->toBe('2024-01-15T00:00:00+00:00');
+});
+
+it('caches repeated conversions for identical inputs', function () {
+    $service = app(DateTimeConverterService::class);
+
+    Cache::spy();
+
+    $service->convert('2024-01-15');
+
+    Cache::shouldHaveReceived('remember')->once();
 });
 
 it('throws an exception for an invalid date string', function () {
-    $service = new DateTimeConverterService;
-    $dateString = 'not-a-valid-date';
+    $service = app(DateTimeConverterService::class);
 
-    $service->convert($dateString);
-})->throws(InvalidArgumentException::class, 'Invalid date format provided.');
+    $service->convert('not-a-valid-date');
+})->throws(InvalidArgumentException::class, 'Invalid date format provided for the selected input type.');
 
-it('throws an exception for an unparsable date string', function () {
-    $service = new DateTimeConverterService;
-    $dateString = '2024-99-99'; // Invalid month/day
+it('throws an exception for an empty date string', function () {
+    $service = app(DateTimeConverterService::class);
 
-    $service->convert($dateString);
-})->throws(InvalidArgumentException::class, 'Invalid date format provided.');
+    $service->convert('');
+})->throws(InvalidArgumentException::class, 'Input date cannot be empty.');

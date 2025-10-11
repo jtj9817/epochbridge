@@ -26,6 +26,15 @@ class JapaneseCalendarServiceTest extends TestCase
     private function seedJapaneseEras(): void
     {
         JapaneseEra::create([
+            'name_japanese' => '平成',
+            'name_romanized' => 'Heisei',
+            'name_english' => 'Heisei',
+            'start_date' => '1989-01-08',
+            'end_date' => '2019-04-30',
+            'historical_context' => 'Pre-Reiwa era',
+        ]);
+
+        JapaneseEra::create([
             'name_japanese' => '令和',
             'name_romanized' => 'Reiwa',
             'name_english' => 'Reiwa',
@@ -67,7 +76,7 @@ class JapaneseCalendarServiceTest extends TestCase
         $date = Carbon::create(2019, 4, 30);
         $result = $this->service->fromGregorian($date);
 
-        $this->assertNotEquals('Reiwa', $result['era_romanized']);
+        $this->assertEquals('Heisei', $result['era_romanized']);
     }
 
     public function test_validates_japanese_dates()

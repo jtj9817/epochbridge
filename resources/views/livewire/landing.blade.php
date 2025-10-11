@@ -44,16 +44,35 @@ mount(function () {
     $this->dateInput = now()->format('Y-m-d');
 });
 
+$resolveConverter = static fn (?DateTimeConverterService $service = null) => $service ?? app(DateTimeConverterService::class);
+
+$saveConversion = function () {
+    if (! Auth::check() || empty($this->conversionResults)) {
+        return;
+    }
+
+    Auth::user()->savedConversions()->create([
+        'original_input' => $this->dateInput,
+        'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
+        'jalali_date' => $this->conversionResults['jalali']['full_date'],
+        'unix_timestamp' => $this->conversionResults['unix'],
+        'iso8601_string' => $this->conversionResults['iso8601'],
+    ]);
+
+    $this->dispatch('conversion-saved');
+};
+
 on([
-    'date-selected' => function (string $date) {
+    'date-selected' => function (string $date, ?DateTimeConverterService $converter = null) use ($resolveConverter) {
         $this->dateInput = $date;
-        $this->convertDate();
+        $this->convertDate($resolveConverter($converter));
     },
     'input-updated' => function (string $dateInput, string $inputType) {
         $this->dateInput = $dateInput;
         $this->inputType = $inputType;
     },
-    'load-additional-calendars' => function (DateTimeConverterService $converter) {
+    'load-additional-calendars' => function (?DateTimeConverterService $converter = null) use ($resolveConverter) {
+        $converter = $resolveConverter($converter);
         if ($this->additionalCalendarsLoaded || empty($this->conversionResults)) {
             return;
         }
@@ -70,24 +89,11 @@ on([
         $this->searchTerm = $searchTerm;
         $this->selectedTypes = $selectedTypes;
     },
-    'save-conversion' => function () {
-        if (! Auth::check() || empty($this->conversionResults)) {
-            return;
-        }
-
-        Auth::user()->savedConversions()->create([
-            'original_input' => $this->dateInput,
-            'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
-            'jalali_date' => $this->conversionResults['jalali']['full_date'],
-            'unix_timestamp' => $this->conversionResults['unix'],
-            'iso8601_string' => $this->conversionResults['iso8601'],
-        ]);
-
-        $this->dispatch('conversion-saved');
-    }
+    'save-conversion' => $saveConversion,
 ]);
 
-$convertDate = function (DateTimeConverterService $converter) {
+$convertDate = function (?DateTimeConverterService $converter = null) use ($resolveConverter) {
+    $converter = $resolveConverter($converter);
     $this->reset('conversionResults', 'conversionError', 'additionalConversionResults', 'additionalCalendarsLoaded');
 
     try {

@@ -28,12 +28,13 @@ class EthiopianCalendarServiceTest extends TestCase
         $this->assertEquals(2, $ethiopianDate['day']);
     }
 
-    public function test_converts_ethiopian_to_gregorian()
+    public function test_round_trips_between_calendars()
     {
-        $ethiopianDate = ['year' => 2017, 'month' => 1, 'day' => 2];
-        $gregorianDate = $this->service->toGregorian($ethiopianDate);
+        $gregorianDate = Carbon::create(2024, 9, 12);
+        $ethiopianDate = $this->service->fromGregorian($gregorianDate);
+        $roundTrip = $this->service->toGregorian($ethiopianDate);
 
-        $this->assertEquals('2024-09-12', $gregorianDate->format('Y-m-d'));
+        $this->assertEquals($gregorianDate->format('Y-m-d'), $roundTrip->format('Y-m-d'));
     }
 
     public function test_validates_ethiopian_dates()

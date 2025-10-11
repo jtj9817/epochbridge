@@ -16,7 +16,9 @@ $deleteConversion = function (int $id) {
         $conversion = Auth::user()->savedConversions()->find($id);
         if ($conversion) {
             $conversion->delete();
-            $this->savedConversions = $this->savedConversions->except($id);
+            $this->savedConversions = $this->savedConversions
+                ->reject(fn ($item) => $item->id === $id)
+                ->values();
         }
     }
 };
