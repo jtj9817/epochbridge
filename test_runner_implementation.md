@@ -401,21 +401,20 @@ Create comprehensive configuration file `config/test-runner.php`, implement `Tes
 
 ---
 
-## Phase 8: Testing and Documentation
+## Phase 8: Comprehensive Testing
 
 ### GOAL
-Achieve comprehensive test coverage for the test runner system using meta-testing approaches, create both user-facing and developer documentation, validate reliability across different scenarios, and ensure the system is production-ready with proper error handling verification.
+Achieve comprehensive test coverage for the test runner system using meta-testing approaches, validate reliability across different scenarios, and ensure the system is production-ready with proper error handling verification.
 
 ### CONTEXT
 - Laravel 12 application using PestPHP for testing framework
 - Meta-testing challenge: testing a system that runs tests requires careful isolation and mocking
 - Existing test structure: `tests/Unit/`, `tests/Feature/`, `tests/Browser/`
 - Target coverage: >90% for critical paths (services, command logic, error handling)
-- Documentation audience: developers (contributors), users (test runners), operations (CI/CD)
 - Need to verify: parallel execution correctness, report generation accuracy, error recovery reliability, console output quality
 
 ### TASK
-Implement comprehensive unit tests for all service classes, feature tests for command interactions and workflows, integration tests for end-to-end scenarios, and create user guide and developer documentation that cover usage, architecture, extension points, and troubleshooting.
+Implement comprehensive unit tests for all service classes, feature tests for command interactions and workflows, and integration tests for end-to-end scenarios to validate system reliability and correctness.
 
 ### REQUIREMENTS
 
@@ -502,7 +501,42 @@ Implement comprehensive unit tests for all service classes, feature tests for co
 - Verify cleanup: no leftover processes, temp files removed
 - Performance test: measure execution time overhead of test runner vs direct `php artisan test`
 
-#### 5. User Documentation
+### GUIDELINES
+- Use PestPHP syntax throughout: `test()`, `it()`, `expect()`, `toBe()`
+- Follow existing test patterns in EpochBridge codebase for consistency
+- Use `Pest::faker()` for generating realistic test data
+- Implement proper test isolation: each test should be independent
+- Use test helpers: `actingAs()`, `withoutExceptionHandling()`, `withoutEvents()`
+- Mock external dependencies consistently using Laravel's testing utilities
+- Use factories for creating test data (User, SavedConversion models)
+- Follow AAA pattern: Arrange, Act, Assert in all tests
+- Use descriptive test names: `it('categorizes feature tests correctly')`
+- Group related tests using `describe()` for better organization
+- Use `beforeEach()` and `afterEach()` for setup/teardown
+- Test both happy paths and edge cases for each method
+- Verify not just success, but correct behavior and side effects
+- Use snapshot testing for complex outputs (Markdown reports)
+- Include performance benchmarks for critical paths (discovery, report generation)
+
+---
+
+## Phase 9: Documentation
+
+### GOAL
+Create comprehensive user-facing and developer documentation that enables effective use, understanding, and extension of the test runner system.
+
+### CONTEXT
+- Documentation audience: developers (contributors), users (test runners), operations (CI/CD)
+- Need to cover: usage instructions, architecture overview, extension points, troubleshooting
+- Target format: GitHub Flavored Markdown for maximum compatibility
+- Documentation must be practical with working examples
+
+### TASK
+Create user guide, developer documentation, architecture documentation, and update README with test runner information to provide complete documentation coverage.
+
+### REQUIREMENTS
+
+#### 1. User Documentation
 
 **`docs/test-runner-user-guide.md`:**
 - **Introduction**: Purpose, benefits, when to use test runner vs standard `php artisan test`
@@ -532,7 +566,7 @@ Implement comprehensive unit tests for all service classes, feature tests for co
 - **FAQ**: Frequently asked questions with practical answers
 - **Examples**: Real-world usage scenarios with step-by-step instructions
 
-#### 6. Developer Documentation
+#### 2. Developer Documentation
 
 **`docs/test-runner-developer-guide.md`:**
 - **Architecture Overview:**
@@ -567,22 +601,28 @@ Implement comprehensive unit tests for all service classes, feature tests for co
   - Memory usage patterns
   - Optimization strategies
 
+#### 3. Architecture Documentation
+
+**`docs/test-runner-architecture.md`:**
+- **System Overview**: High-level description of test runner architecture
+- **Component Diagrams**: Visual representation of services, jobs, events
+- **Data Flow**: How data moves through the system during execution
+- **Sequence Diagrams**: Key workflows (test execution, report generation, error recovery)
+- **Technology Stack**: Laravel, PestPHP, Symfony Process, queue system
+- **Design Patterns**: Service provider, repository, observer (events/listeners)
+- **Scalability Considerations**: Parallel execution limits, resource usage
+- **Security Considerations**: File permissions, process isolation, input validation
+
+#### 4. README Update
+
+**Update `README.md`:**
+- Add "Interactive Test Runner" section after existing Testing section
+- Include basic usage example: `php artisan test:runner`
+- Link to detailed guides in `docs/` directory
+- Highlight key features: parallel execution, real-time reporting, progress tracking
+- Quick start instructions for new users
+
 ### GUIDELINES
-- Use PestPHP syntax throughout: `test()`, `it()`, `expect()`, `toBe()`
-- Follow existing test patterns in EpochBridge codebase for consistency
-- Use `Pest::faker()` for generating realistic test data
-- Implement proper test isolation: each test should be independent
-- Use test helpers: `actingAs()`, `withoutExceptionHandling()`, `withoutEvents()`
-- Mock external dependencies consistently using Laravel's testing utilities
-- Use factories for creating test data (User, SavedConversion models)
-- Follow AAA pattern: Arrange, Act, Assert in all tests
-- Use descriptive test names: `it('categorizes feature tests correctly')`
-- Group related tests using `describe()` for better organization
-- Use `beforeEach()` and `afterEach()` for setup/teardown
-- Test both happy paths and edge cases for each method
-- Verify not just success, but correct behavior and side effects
-- Use snapshot testing for complex outputs (Markdown reports)
-- Include performance benchmarks for critical paths (discovery, report generation)
 - Write clear, concise documentation with practical examples
 - Use diagrams where helpful (Mermaid format for GitHub compatibility)
 - Include code examples in documentation with syntax highlighting
@@ -592,3 +632,7 @@ Implement comprehensive unit tests for all service classes, feature tests for co
 - Include timestamps and version information in documentation
 - Review documentation for clarity and completeness before finalizing
 - Test all documentation code examples to ensure they work
+- Use consistent terminology throughout all documentation
+- Provide both conceptual explanations and practical how-tos
+- Include troubleshooting for common issues with solutions
+- Add visual aids (diagrams, screenshots, ASCII art) where appropriate
