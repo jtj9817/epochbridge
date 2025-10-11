@@ -13,9 +13,6 @@ use Laravel\Prompts\Prompt;
 use Laravel\Prompts\SelectPrompt;
 use Mockery as m;
 use Mockery\MockInterface;
-use Tests\TestCase;
-
-uses(TestCase::class);
 
 beforeAll(function () {
     Prompt::fallbackWhen(true);
