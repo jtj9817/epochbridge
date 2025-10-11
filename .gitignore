@@ -51,3 +51,6 @@ coding-prompts.md
 
 test_results_exec_example.txt
 pail_logs_*.txt
+*test_suite_results*.txt
+
+TEST_RESULTS_FORMATTED.md
