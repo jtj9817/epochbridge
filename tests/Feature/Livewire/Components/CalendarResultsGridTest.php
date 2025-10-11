@@ -67,7 +67,10 @@ it('filters results by type', function () {
         ->set('selectedTypes', ['lunar'])
         ->assertSee('Islamic')
         ->assertDontSee('Gregorian')
-        ->assertDontSee('Jalali');
+        ->assertDontSee('Jalali')
+        // Scalar values should still appear since they don't have tags
+        ->assertSee('1704067200') // Unix timestamp
+        ->assertSee('2024-01-01T00:00:00+00:00'); // ISO8601
 });
 
 it('shows loading skeletons when additional calendars are not loaded', function () {

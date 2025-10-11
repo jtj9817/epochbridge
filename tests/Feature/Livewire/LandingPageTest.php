@@ -55,6 +55,7 @@ beforeEach(function () {
                             'day_of_week' => 'Yekshanbeh',
                             'day_of_week_en' => 'Sunday',
                             'year' => 1403,
+                            'tags' => ['solar'],
                         ],
                         'unix' => 1725148800,
                         'iso8601' => '2024-09-01T00:00:00+00:00',

@@ -20,14 +20,26 @@ $filteredResults = computed(function() {
     }
 
     return collect($allResults)->filter(function ($data, $key) {
+        // Handle scalar values (Unix, ISO8601, etc.)
+        $allowScalar = in_array($key, ['unix', 'iso8601', 'julian-day', 'modified-julian-day'], true);
+        if ($allowScalar && is_scalar($data)) {
+            // Scalar values should always pass search filter if no search term
+            $searchMatch = empty($this->searchTerm);
+            // Scalar values don't have tags, so they pass type filter only if no types selected
+            $typeMatch = empty($this->selectedTypes);
+            return $searchMatch && $typeMatch;
+        }
+
         if (!is_array($data)) return false;
 
         $name = $data['name'] ?? $key;
         $tags = $data['tags'] ?? [];
 
-        $searchMatch = empty($this->searchTerm) || str_contains(strtolower($name), strtolower($this->searchTerm));
+        $searchMatch = empty($this->searchTerm) || 
+                      str_contains(strtolower($name), strtolower($this->searchTerm));
 
-        $typeMatch = empty($this->selectedTypes) || !empty(array_intersect($this->selectedTypes, $tags));
+        $typeMatch = empty($this->selectedTypes) || 
+                    !empty(array_intersect($this->selectedTypes, $tags));
 
         return $searchMatch && $typeMatch;
     })->all();
