@@ -93,9 +93,9 @@ $filteredResults = computed(function() {
                 <button
                     @click="copyToClipboard({{ Js::from($copyLines) }}, 'all')"
                     class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline"
-                    :class="{ 'text-green-500': copiedFeedback === 'all' }"
-                    x-text="copiedFeedback === 'all' ? 'Copied!' : 'Copy All'">
-                    Copy All
+                    :class="{ 'text-green-500': copiedFeedback === 'all' }">
+                    <span x-show="copiedFeedback !== 'all'">Copy All</span>
+                    <span x-show="copiedFeedback === 'all'" x-cloak>Copied!</span>
                 </button>
                 @auth
                 <button
