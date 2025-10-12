@@ -13,7 +13,10 @@ state([
 ])->reactive();
 
 $filteredResults = computed(function() {
-    $allResults = array_merge($this->conversionResults, $this->additionalConversionResults);
+    $conversionResults = is_array($this->conversionResults) ? $this->conversionResults : [];
+    $additionalResults = is_array($this->additionalConversionResults) ? $this->additionalConversionResults : [];
+
+    $allResults = array_merge($conversionResults, $additionalResults);
 
     if (empty($this->searchTerm) && empty($this->selectedTypes)) {
         return $allResults;
@@ -67,7 +70,7 @@ $filteredResults = computed(function() {
 
     <!-- Conversion Results Section -->
     <div id="conversion-results-section"
-         x-show="Object.keys(@js($conversionResults)).length > 0"
+         x-show="Object.keys(@js($conversionResults ?? [])).length > 0"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 transform scale-95"
          x-transition:enter-end="opacity-100 transform scale-100"
@@ -99,14 +102,14 @@ $filteredResults = computed(function() {
                 </button>
                 @auth
                 <button
-                    x-show="Object.keys(@js($conversionResults)).length > 0"
+                    x-show="Object.keys(@js($conversionResults ?? [])).length > 0"
                     wire:click="$dispatch('save-conversion')"
                     class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
                     Save
                 </button>
                 @else
                 <button
-                    x-show="Object.keys(@js($conversionResults)).length > 0"
+                    x-show="Object.keys(@js($conversionResults ?? [])).length > 0"
                     @click="$dispatch('save-guest-conversion')"
                     class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
                     Save
