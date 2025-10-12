@@ -135,6 +135,15 @@ it('can convert a valid date', function () {
         ->assertSet('conversionError', '');
 });
 
+it('renders conversion cards in the results grid after converting a date', function () {
+    Volt::test('landing')
+        ->set('dateInput', '2024-09-01')
+        ->call('convertDate')
+        ->assertSee('Conversion Results')
+        ->assertSee('Copy All')
+        ->assertSee('1403/06/11');
+});
+
 it('shows an error message for an invalid date format', function () {
     Volt::test('landing')
         ->set('dateInput', 'not-a-valid-date')

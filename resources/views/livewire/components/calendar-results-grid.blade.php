@@ -10,7 +10,7 @@ state([
     'conversionError' => '',
     'searchTerm' => '',
     'selectedTypes' => [],
-]);
+])->reactive();
 
 $filteredResults = computed(function() {
     $allResults = array_merge($this->conversionResults, $this->additionalConversionResults);
