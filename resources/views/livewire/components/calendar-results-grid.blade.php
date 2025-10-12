@@ -128,6 +128,7 @@ $filteredResults = computed(function() {
                             @case('iso8601') <x-calendars.iso8601-card :data="$data" /> @break
                             @case('jd') <x-calendars.julian-day-card :data="$data" /> @break
                             @case('mjd') <x-calendars.modified-julian-day-card :data="$data" /> @break
+                            @case('julian') <x-card.julian-card :data="$data" /> @break
                             @default
                                 <x-dynamic-component :component="'calendars.' . str_replace('_', '-', $key) . '-card'" :data="$data" />
                         @endswitch

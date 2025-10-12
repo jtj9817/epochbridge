@@ -54,7 +54,7 @@ class JulianDayService extends CalendarConversionService
 
     public function getKey(): string
     {
-        return 'julian';
+        return 'julian_day';
     }
 
     public function getName(): string

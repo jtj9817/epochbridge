@@ -104,7 +104,17 @@ beforeEach(function () {
                 ]);
             });
 
-        $mock->shouldReceive('convertAdditional')->andReturn([]);
+        $mock->shouldReceive('convertAdditional')->andReturn([
+            'julian' => [
+                'year' => 2024,
+                'month' => 12,
+                'month_name' => 'December',
+                'day' => 19,
+                'day_of_week' => 'Thursday',
+                'full_date' => '2024/12/19',
+                'difference_label' => '13 days behind Gregorian',
+            ],
+        ]);
     });
 });
 
@@ -141,6 +151,16 @@ it('renders conversion cards in the results grid after converting a date', funct
         ->assertSee('1403/06/11', true, false)
         ->assertSee('1725148800', true, false)
         ->assertSee('2024-09-01T00:00:00+00:00', true, false);
+});
+
+it('loads additional julian calendar data when requested', function () {
+    Volt::test('landing')
+        ->set('dateInput', '2024-09-01')
+        ->call('convertDate')
+        ->dispatch('load-additional-calendars')
+        ->assertSee('Julian Calendar', true, false)
+        ->assertSee('Difference:', true, false)
+        ->assertSee('13 days behind Gregorian', true, false);
 });
 
 it('shows an error message for an invalid date format', function () {

@@ -50,7 +50,8 @@ class DateTimeConverterService
     public function __construct()
     {
         $this->calendarServices = [
-            'julian' => new JulianDayService,
+            'julian' => new JulianCalendarService,
+            'julian_day' => new JulianDayService,
             'hebrew' => new HebrewCalendarService,
             'islamic' => new IslamicCalendarService,
             'french_republican' => new FrenchRepublicanService,
@@ -140,6 +141,9 @@ class DateTimeConverterService
             $additionalCalendars = array_diff(array_keys($this->calendarServices), $this->fastCalendars);
 
             foreach ($additionalCalendars as $key) {
+                if ($key === 'julian_day') {
+                    continue;
+                }
                 $service = $this->calendarServices[$key];
                 try {
                     $result[$key] = $service->fromGregorian($carbonDate);
@@ -164,7 +168,7 @@ class DateTimeConverterService
                 'iso8601' => Carbon::parse($dateString),
                 'jd' => Carbon::createFromJulianDay((float) $dateString),
                 'mjd' => Carbon::createFromJulianDay((float) $dateString + 2400000.5),
-                'hebrew', 'islamic', 'french_republican', 'chinese', 'japanese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian', 'mayan' => $this->convertFromCalendar($inputType, $dateString),
+                'hebrew', 'islamic', 'french_republican', 'chinese', 'japanese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian', 'mayan', 'julian' => $this->convertFromCalendar($inputType, $dateString),
                 default => throw new InvalidArgumentException('Invalid input type provided.'),
             };
         } catch (CalendarConversionException $e) {
