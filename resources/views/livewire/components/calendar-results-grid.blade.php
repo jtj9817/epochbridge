@@ -69,12 +69,9 @@ $filteredResults = computed(function() {
     @endif
 
     <!-- Conversion Results Section -->
-    <div id="conversion-results-section"
-         x-show="Object.keys(@js($conversionResults ?? [])).length > 0"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform scale-95"
-         x-transition:enter-end="opacity-100 transform scale-100"
-         class="max-w-4xl mx-auto mt-12">
+    @if (!empty($conversionResults))
+        <div id="conversion-results-section"
+             class="max-w-4xl mx-auto mt-12">
 
         @php
             $copyLines = collect($this->filteredResults ?? [])
@@ -101,19 +98,17 @@ $filteredResults = computed(function() {
                     Copy All
                 </button>
                 @auth
-                <button
-                    x-show="Object.keys(@js($conversionResults ?? [])).length > 0"
-                    wire:click="$dispatch('save-conversion')"
-                    class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
-                    Save
-                </button>
+                    <button
+                        wire:click="$dispatch('save-conversion')"
+                        class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
+                        Save
+                    </button>
                 @else
-                <button
-                    x-show="Object.keys(@js($conversionResults ?? [])).length > 0"
-                    @click="$dispatch('save-guest-conversion')"
-                    class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
-                    Save
-                </button>
+                    <button
+                        @click="$dispatch('save-guest-conversion')"
+                        class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
+                        Save
+                    </button>
                 @endauth
             </div>
         </div>
@@ -140,13 +135,13 @@ $filteredResults = computed(function() {
                 @endforeach
             @endif
 
-            @if(empty($this->filteredResults) && (!empty($conversionResults)))
+            @if(empty($this->filteredResults))
                 <div class="md:col-span-2 lg:col-span-3 text-center py-8 text-theme-500 dark:text-theme-100">
                     No calendars match your search criteria.
                 </div>
             @endif
             
-            @if(!$additionalCalendarsLoaded && !empty($conversionResults))
+            @if(!$additionalCalendarsLoaded)
                 <div x-intersect.once="$wire.dispatch('load-additional-calendars')" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:col-span-2 lg:col-span-3">
                     @for ($i = 0; $i < 6; $i++)
                         <x-calendars.loading-skeleton />
@@ -154,5 +149,6 @@ $filteredResults = computed(function() {
                 </div>
             @endif
         </div>
-    </div>
+        </div>
+    @endif
 </div>

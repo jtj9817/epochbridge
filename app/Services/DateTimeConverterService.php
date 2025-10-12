@@ -14,7 +14,7 @@ class DateTimeConverterService
 {
     private array $calendarServices;
 
-    private array $fastCalendars = ['hebrew', 'islamic', 'coptic', 'ethiopian', 'french_republican'];
+    private array $fastCalendars = ['hebrew', 'islamic', 'coptic', 'ethiopian'];
 
     /**
      * Jalali month names transliterated to English.

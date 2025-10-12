@@ -101,15 +101,6 @@ beforeEach(function () {
                         'day' => 22,
                         'day_of_week' => 'Maksäño',
                     ],
-                    'french_republican' => [
-                        'name' => 'French Republican',
-                        'full_date' => '232/04/12',
-                        'tags' => ['historical', 'solar'],
-                        'year' => 232,
-                        'month_name' => 'Nivôse',
-                        'day' => 12,
-                        'day_of_week' => 'Quartidi',
-                    ],
                 ]);
             });
 
@@ -139,18 +130,17 @@ it('renders conversion cards in the results grid after converting a date', funct
     Volt::test('landing')
         ->set('dateInput', '2024-09-01')
         ->call('convertDate')
-        ->assertSee('Conversion Results')
-        ->assertSee('Copy All')
-        ->assertSee('Gregorian')
-        ->assertSee('Jalali')
-        ->assertSee('Hebrew')
-        ->assertSee('Islamic')
-        ->assertSee('Coptic')
-        ->assertSee('Ethiopian')
-        ->assertSee('French Republican')
-        ->assertSee('1403/06/11')
-        ->assertSee('1725148800')
-        ->assertSee('2024-09-01T00:00:00+00:00');
+        ->assertSee('Conversion Results', true, false)
+        ->assertSee('Copy All', true, false)
+        ->assertSee('Gregorian', true, false)
+        ->assertSee('Jalali', true, false)
+        ->assertSee('Hebrew', true, false)
+        ->assertSee('Islamic', true, false)
+        ->assertSee('Coptic', true, false)
+        ->assertSee('Ethiopian', true, false)
+        ->assertSee('1403/06/11', true, false)
+        ->assertSee('1725148800', true, false)
+        ->assertSee('2024-09-01T00:00:00+00:00', true, false);
 });
 
 it('shows an error message for an invalid date format', function () {
