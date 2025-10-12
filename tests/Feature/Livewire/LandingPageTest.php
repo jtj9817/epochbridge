@@ -141,7 +141,16 @@ it('renders conversion cards in the results grid after converting a date', funct
         ->call('convertDate')
         ->assertSee('Conversion Results')
         ->assertSee('Copy All')
-        ->assertSee('1403/06/11');
+        ->assertSee('Gregorian')
+        ->assertSee('Jalali')
+        ->assertSee('Hebrew')
+        ->assertSee('Islamic')
+        ->assertSee('Coptic')
+        ->assertSee('Ethiopian')
+        ->assertSee('French Republican')
+        ->assertSee('1403/06/11')
+        ->assertSee('1725148800')
+        ->assertSee('2024-09-01T00:00:00+00:00');
 });
 
 it('shows an error message for an invalid date format', function () {

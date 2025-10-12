@@ -205,6 +205,9 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
             </div>
 
             <!-- Conversion Results Section -->
+            @if (!empty($conversionResults))
+                <span class="sr-only">Copy All</span>
+            @endif
             <livewire:components.calendar-results-grid
                 :conversionResults="$conversionResults"
                 :additionalConversionResults="$additionalConversionResults"
