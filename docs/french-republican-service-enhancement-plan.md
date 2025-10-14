@@ -37,8 +37,15 @@
 - **Performance regression check**:
   - Add a smoke test ensuring multiple conversions in a loop reuse cached results (could assert on internal counter via a spy or expose metrics through the adapter).
 
-### 4. Documentation & Developer Experience
-- Update `docs/calendar-integration-guide.md` (or create a focused subsection) to describe the dependency injection approach, the Paris offset, and testing fixtures.
+### 4. Integration & UI Validation
+- **Livewire workflow tests**: Extend the existing Livewire feature specs (e.g., `tests/Feature/Livewire/LandingPageTest`) to:
+  - Submit a Gregorian date within the supported range and assert that the French Republican card renders the expected `display`, `day_of_week`, and complementary day labels.
+  - Toggle the new Paris offset configuration flag off and verify the UI reflects the shifted result (guarding that the offset logic is applied when enabled).
+  - Exercise autocomplete/quick actions to ensure cached conversions surface correctly in the interface.
+- Consider adding a Dusk scenario for full-stack verification if visual regression confidence is needed.
+
+### 5. Documentation & Developer Experience
+- Update `docs/calendar-integration-guide.md` (or create a focused subsection) to describe the dependency injection approach, the Paris offset, testing fixtures, and Livewire integration checks.
 - Provide code samples showing how to override the adapter for alternative calculation methods (e.g., astronomical table vs. arithmetic rule) if future work requires it.
 - Mention new configuration options in the README or appropriate docs.
 
@@ -47,7 +54,7 @@
 2. Add memoization and ensure existing tests still pass.
 3. Implement Paris mean solar offset helper and wire it into `fromGregorian`.
 4. Create historical equinox fixtures and expand unit tests (round trips, boundaries, formatting).
-5. Document changes and expose configuration toggles.
+5. Document changes and expose configuration toggles alongside UI/integration guidance.
 
 ## Testing Checklist
 - `./vendor/bin/pest tests/Unit/Services/FrenchRepublicanServiceTest.php`
