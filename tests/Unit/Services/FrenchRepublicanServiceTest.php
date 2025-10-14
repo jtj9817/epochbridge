@@ -7,13 +7,12 @@ use App\Exceptions\CalendarRangeException;
 use App\Services\FrenchRepublicanService;
 use App\Support\Calendars\FrenchRepublicanExtCalendarAdapter;
 use Carbon\Carbon;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class FrenchRepublicanServiceTest extends TestCase
 {
-    /**
-     * @dataProvider roundTripDataProvider
-     */
+    #[DataProvider('roundTripDataProvider')]
     public function test_round_trip_conversions(string $gregorianDate, array $expected): void
     {
         $service = $this->makeService();
@@ -124,9 +123,7 @@ class FrenchRepublicanServiceTest extends TestCase
         $this->assertTrue($service->validateDate(4, 13, 5));
     }
 
-    /**
-     * @dataProvider invalidDateProvider
-     */
+    #[DataProvider('invalidDateProvider')]
     public function test_validate_date_rejects_invalid_combinations(int $year, int $month, int $day): void
     {
         $service = $this->makeService();
