@@ -10,42 +10,57 @@ state([
     'conversionError' => '',
     'searchTerm' => '',
     'selectedTypes' => [],
-]);
+])->reactive();
 
-$filteredResults = computed(function() {
+$scalarResultKeys = ['unix', 'iso8601', 'julian-day', 'modified-julian-day'];
+
+$filteredResults = computed(function() use ($scalarResultKeys) {
     $conversionResults = is_array($this->conversionResults) ? $this->conversionResults : [];
     $additionalResults = is_array($this->additionalConversionResults) ? $this->additionalConversionResults : [];
 
     $allResults = array_merge($conversionResults, $additionalResults);
 
-    if (empty($this->searchTerm) && empty($this->selectedTypes)) {
-        return $allResults;
-    }
+    return collect($allResults)
+        ->reject(fn ($data, $key) => in_array($key, $scalarResultKeys, true))
+        ->filter(function ($data, $key) {
+            if (!is_array($data)) {
+                return false;
+            }
 
-    return collect($allResults)->filter(function ($data, $key) {
-        // Handle scalar values (Unix, ISO8601, etc.)
-        $allowScalar = in_array($key, ['unix', 'iso8601', 'julian-day', 'modified-julian-day'], true);
-        if ($allowScalar && is_scalar($data)) {
-            // Scalar values should always pass search filter if no search term
-            $searchMatch = empty($this->searchTerm);
-            // Scalar values don't have tags, so they pass type filter only if no types selected
-            $typeMatch = empty($this->selectedTypes);
+            $name = $data['name'] ?? $key;
+            $tags = $data['tags'] ?? [];
+
+            $searchMatch = empty($this->searchTerm) ||
+                str_contains(strtolower($name), strtolower($this->searchTerm));
+
+            $typeMatch = empty($this->selectedTypes) ||
+                !empty(array_intersect($this->selectedTypes, $tags));
+
             return $searchMatch && $typeMatch;
-        }
+        })
+        ->all();
+});
 
-        if (!is_array($data)) return false;
+$scalarResults = computed(function() use ($scalarResultKeys) {
+    $conversionResults = is_array($this->conversionResults) ? $this->conversionResults : [];
+    $additionalResults = is_array($this->additionalConversionResults) ? $this->additionalConversionResults : [];
 
-        $name = $data['name'] ?? $key;
-        $tags = $data['tags'] ?? [];
+    $allResults = array_merge($conversionResults, $additionalResults);
+    $searchTerm = strtolower((string) $this->searchTerm);
 
-        $searchMatch = empty($this->searchTerm) || 
-                      str_contains(strtolower($name), strtolower($this->searchTerm));
+    return collect($allResults)
+        ->filter(function ($data, $key) use ($scalarResultKeys, $searchTerm) {
+            if (!in_array($key, $scalarResultKeys, true) || !is_scalar($data)) {
+                return false;
+            }
 
-        $typeMatch = empty($this->selectedTypes) || 
-                    !empty(array_intersect($this->selectedTypes, $tags));
+            if ($searchTerm === '') {
+                return true;
+            }
 
-        return $searchMatch && $typeMatch;
-    })->all();
+            return str_contains(strtolower((string) $data), $searchTerm);
+        })
+        ->all();
 });
 
 ?>
@@ -74,14 +89,28 @@ $filteredResults = computed(function() {
              class="max-w-4xl mx-auto mt-12">
 
         @php
-            $copyLines = collect($this->filteredResults ?? [])
-                ->filter(fn ($data) => is_array($data) && !isset($data['error']))
-                ->map(function ($data, $key) {
-                    $label = $data['name'] ?? ucwords(str_replace('_', ' ', (string) $key));
-                    $value = $data['full_date'] ?? (is_scalar($data) ? $data : json_encode($data));
+            $displayResults = collect($this->filteredResults ?? [])
+                ->merge($this->scalarResults ?? [])
+                ->all();
 
-                    return "{$label}: {$value}";
+            $copyLines = collect($displayResults)
+                ->map(function ($data, $key) {
+                    if (is_array($data) && !isset($data['error'])) {
+                        $label = $data['name'] ?? ucwords(str_replace('_', ' ', (string) $key));
+                        $value = $data['full_date'] ?? json_encode($data);
+
+                        return "{$label}: {$value}";
+                    }
+
+                    if (is_scalar($data)) {
+                        $label = ucwords(str_replace(['_', '-'], ' ', (string) $key));
+
+                        return "{$label}: {$data}";
+                    }
+
+                    return null;
                 })
+                ->filter()
                 ->implode("\n");
         @endphp
 
@@ -114,8 +143,8 @@ $filteredResults = computed(function() {
         </div>
 
         <div id="results-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            @if (!empty($this->filteredResults))
-                @foreach($this->filteredResults as $key => $data)
+            @if (!empty($displayResults))
+                @foreach($displayResults as $key => $data)
                     @php
                         $shouldRender = is_array($data) && !isset($data['error']);
                         $allowScalar = in_array($key, ['unix', 'iso8601', 'julian-day', 'modified-julian-day'], true) && is_scalar($data);
@@ -136,7 +165,7 @@ $filteredResults = computed(function() {
                 @endforeach
             @endif
 
-            @if(empty($this->filteredResults))
+            @if(empty($displayResults))
                 <div class="md:col-span-2 lg:col-span-3 text-center py-8 text-theme-500 dark:text-theme-100">
                     No calendars match your search criteria.
                 </div>
