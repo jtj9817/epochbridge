@@ -24,4 +24,14 @@
     <div class="text-sm font-mono text-blue-500 dark:text-blue-500 mt-2">
         {{ $data['year'] ?? 'N/A' }}
     </div>
+    @if(!empty($data['display']))
+        <div class="mt-4 text-sm text-blue-700 dark:text-blue-200">
+            {{ $data['display'] }}
+        </div>
+    @endif
+    @if(!empty($data['full_date']))
+        <div class="text-xs text-blue-500 dark:text-blue-400 mt-1">
+            Full date: {{ $data['full_date'] }}
+        </div>
+    @endif
 </x-calendars.base-calendar-card>

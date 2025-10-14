@@ -12,6 +12,13 @@ use Tests\TestCase;
 
 class FrenchRepublicanServiceTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config()->set('calendars.french_republican.allow_proleptic', true);
+    }
+
     #[DataProvider('roundTripDataProvider')]
     public function test_round_trip_conversions(string $gregorianDate, array $expected): void
     {
@@ -123,6 +130,26 @@ class FrenchRepublicanServiceTest extends TestCase
         $this->assertTrue($service->validateDate(4, 13, 5));
     }
 
+    public function test_proleptic_conversion_round_trip_when_enabled(): void
+    {
+        $service = $this->makeService();
+
+        $date = Carbon::create(2025, 10, 15, 0, 0, 0, 'Europe/Paris');
+        $french = $service->fromGregorian($date);
+
+        $this->assertGreaterThan(14, $french['year']);
+        $this->assertGreaterThanOrEqual(1, $french['month']);
+        $this->assertLessThanOrEqual(13, $french['month']);
+
+        $roundTrip = $service->toGregorian([
+            'year' => $french['year'],
+            'month' => $french['month'],
+            'day' => $french['day'],
+        ]);
+
+        $this->assertSame('2025-10-15', $roundTrip->format('Y-m-d'));
+    }
+
     #[DataProvider('invalidDateProvider')]
     public function test_validate_date_rejects_invalid_combinations(int $year, int $month, int $day): void
     {
@@ -145,21 +172,31 @@ class FrenchRepublicanServiceTest extends TestCase
     public function test_rejects_gregorian_date_outside_supported_range(): void
     {
         $this->expectException(CalendarRangeException::class);
+        config()->set('calendars.french_republican.allow_proleptic', false);
         $service = $this->makeService();
 
-        $service->fromGregorian(Carbon::create(1806, 1, 1, 0, 0, 0, 'Europe/Paris'));
+        try {
+            $service->fromGregorian(Carbon::create(1806, 1, 1, 0, 0, 0, 'Europe/Paris'));
+        } finally {
+            config()->set('calendars.french_republican.allow_proleptic', true);
+        }
     }
 
     public function test_rejects_french_date_outside_supported_range(): void
     {
         $this->expectException(CalendarRangeException::class);
+        config()->set('calendars.french_republican.allow_proleptic', false);
         $service = $this->makeService();
 
-        $service->toGregorian([
-            'year' => 15,
-            'month' => 1,
-            'day' => 1,
-        ]);
+        try {
+            $service->toGregorian([
+                'year' => 15,
+                'month' => 1,
+                'day' => 1,
+            ]);
+        } finally {
+            config()->set('calendars.french_republican.allow_proleptic', true);
+        }
     }
 
     public function test_reuses_cached_results_for_identical_inputs(): void

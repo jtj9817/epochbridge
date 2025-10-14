@@ -20,6 +20,8 @@ class FrenchRepublicanService extends CalendarConversionService
      */
     private array $ymdToJdCache = [];
 
+    private const FRENCH_EPOCH_JD = 2375840;
+
     public function __construct(FrenchRepublicanCalendarAdapter $calendar)
     {
         $this->calendar = $calendar;
@@ -70,17 +72,30 @@ class FrenchRepublicanService extends CalendarConversionService
         $adjustedDate = $this->applyParisMeanSolarOffset($date);
         $jd = gregoriantojd($adjustedDate->month, $adjustedDate->day, $adjustedDate->year);
 
-        if ($jd < $this->calendar->jdStart() || $jd > $this->calendar->jdEnd()) {
-            $this->handleRangeError('Date outside French Republican calendar range');
+        $jdStart = $this->calendar->jdStart();
+        $jdEnd = $this->calendar->jdEnd();
+        $prolepticEnabled = $this->prolepticEnabled();
+        $useFallback = false;
+
+        if ($jd < $jdStart || $jd > $jdEnd) {
+            if (! $prolepticEnabled || $jd < self::FRENCH_EPOCH_JD) {
+                $this->handleRangeError('Date outside French Republican calendar range');
+            }
+
+            $useFallback = true;
         }
 
         if (isset($this->jdToYmdCache[$jd])) {
             [$year, $month, $day] = $this->jdToYmdCache[$jd];
         } else {
-            try {
-                [$year, $month, $day] = $this->calendar->jdToYmd($jd);
-            } catch (InvalidArgumentException $exception) {
-                $this->handleCalculationError('Unable to convert date to French Republican calendar', $exception);
+            if ($useFallback) {
+                [$year, $month, $day] = $this->fallbackJdToYmd($jd);
+            } else {
+                try {
+                    [$year, $month, $day] = $this->calendar->jdToYmd($jd);
+                } catch (InvalidArgumentException $exception) {
+                    $this->handleCalculationError('Unable to convert date to French Republican calendar', $exception);
+                }
             }
 
             $this->jdToYmdCache[$jd] = [$year, $month, $day];
@@ -91,7 +106,7 @@ class FrenchRepublicanService extends CalendarConversionService
         $dayName = $month === 13
             ? (self::COMPLEMENTARY_DAY_NAMES[$day] ?? 'Complementary Day')
             : (self::FRENCH_DAY_NAMES[$dayOfDecade] ?? 'Unknown');
-        $isLeapYear = $this->calendar->isLeapYear($year);
+        $isLeapYear = $this->isFrenchLeapYear($year);
 
         return [
             'year' => $year,
@@ -126,20 +141,30 @@ class FrenchRepublicanService extends CalendarConversionService
 
         $ymdKey = "{$year}-{$month}-{$day}";
 
+        $jdStart = $this->calendar->jdStart();
+        $jdEnd = $this->calendar->jdEnd();
+        $prolepticEnabled = $this->prolepticEnabled();
+
         if (isset($this->ymdToJdCache[$ymdKey])) {
             $jd = $this->ymdToJdCache[$ymdKey];
         } else {
             try {
                 $jd = $this->calendar->ymdToJd($year, $month, $day);
             } catch (InvalidArgumentException $exception) {
-                $this->handleInvalidDate('Invalid French Republican date');
+                if (! $prolepticEnabled) {
+                    $this->handleInvalidDate('Invalid French Republican date');
+                }
+
+                $jd = $this->fallbackYmdToJd($year, $month, $day);
+            }
+
+            if ($prolepticEnabled && ($jd < $jdStart || $jd > $jdEnd)) {
+                $jd = $this->fallbackYmdToJd($year, $month, $day);
+            } elseif ($jd < $jdStart || $jd > $jdEnd) {
+                $this->handleRangeError('Date outside French Republican calendar range');
             }
 
             $this->ymdToJdCache[$ymdKey] = $jd;
-        }
-
-        if ($jd < $this->calendar->jdStart() || $jd > $this->calendar->jdEnd()) {
-            $this->handleRangeError('Date outside French Republican calendar range');
         }
 
         $gregorian = jdtogregorian($jd);
@@ -187,8 +212,83 @@ class FrenchRepublicanService extends CalendarConversionService
 
     private function isFrenchLeapYear(int $year): bool
     {
-        // Leap years were historically observed in Years III, VII, and XI (year % 4 === 3)
-        return $this->calendar->isLeapYear($year);
+        return $year % 4 === 3;
+    }
+
+    private function prolepticEnabled(): bool
+    {
+        return (bool) config('calendars.french_republican.allow_proleptic', false);
+    }
+
+    /**
+     * @return array{0:int,1:int,2:int}
+     */
+    private function fallbackJdToYmd(int $julianDay): array
+    {
+        if ($julianDay < self::FRENCH_EPOCH_JD) {
+            $this->handleRangeError('Date outside French Republican calendar range');
+        }
+
+        $low = 1;
+        $high = max(1, intdiv($julianDay - self::FRENCH_EPOCH_JD, 365) + 2);
+        $year = 1;
+
+        while ($low <= $high) {
+            $mid = intdiv($low + $high, 2);
+            $start = $this->fallbackYearStartJd($mid);
+
+            if ($start <= $julianDay) {
+                $year = $mid;
+                $low = $mid + 1;
+            } else {
+                $high = $mid - 1;
+            }
+        }
+
+        $yearStart = $this->fallbackYearStartJd($year);
+        $dayOfYear = $julianDay - $yearStart;
+
+        if ($dayOfYear < 360) {
+            $month = intdiv($dayOfYear, 30) + 1;
+            $day = ($dayOfYear % 30) + 1;
+        } else {
+            $month = 13;
+            $day = ($dayOfYear - 360) + 1;
+        }
+
+        return [$year, $month, $day];
+    }
+
+    private function fallbackYearStartJd(int $year): int
+    {
+        if ($year < 1) {
+            $this->handleRangeError('Date outside French Republican calendar range');
+        }
+
+        $yearsBefore = $year - 1;
+        $leapYears = $this->countFallbackLeapYears($yearsBefore);
+
+        return self::FRENCH_EPOCH_JD + ($yearsBefore * 365) + $leapYears;
+    }
+
+    private function countFallbackLeapYears(int $years): int
+    {
+        if ($years < 0) {
+            return 0;
+        }
+
+        return intdiv($years + 1, 4);
+    }
+
+    private function fallbackYmdToJd(int $year, int $month, int $day): int
+    {
+        $yearStart = $this->fallbackYearStartJd($year);
+
+        if ($month <= 12) {
+            return $yearStart + (($month - 1) * 30) + ($day - 1);
+        }
+
+        return $yearStart + 360 + ($day - 1);
     }
 
     private function applyParisMeanSolarOffset(Carbon $date): Carbon
