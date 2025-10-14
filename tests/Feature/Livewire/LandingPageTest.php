@@ -62,6 +62,28 @@ beforeEach(function () {
                     ],
                 };
 
+                $frenchData = config('calendars.french_republican.apply_paris_offset', true)
+                    ? [
+                        'name' => 'French Republican',
+                        'full_date' => '8/2/18',
+                        'display' => '18 Brumaire An 8',
+                        'tags' => ['historical', 'solar'],
+                        'year' => 8,
+                        'month_name' => 'Brumaire',
+                        'day' => 18,
+                        'day_of_week' => 'Octidi',
+                    ]
+                    : [
+                        'name' => 'French Republican',
+                        'full_date' => '1/13/5',
+                        'display' => '5 Sansculottides An 1',
+                        'tags' => ['historical', 'solar'],
+                        'year' => 1,
+                        'month_name' => 'Sansculottides',
+                        'day' => 5,
+                        'day_of_week' => 'Jour des Récompenses',
+                    ];
+
                 return array_merge($baseData, [
                     'julian-day' => 2460310,
                     'modified-julian-day' => 60309.5,
@@ -83,6 +105,7 @@ beforeEach(function () {
                         'day' => 19,
                         'day_of_week' => 'Yawm al-Ithnayn',
                     ],
+                    'french_republican' => $frenchData,
                     'coptic' => [
                         'name' => 'Coptic',
                         'full_date' => '1740/04/22',
@@ -144,6 +167,7 @@ it('renders conversion cards in the results grid after converting a date', funct
         ->assertSee('Copy All', true, false)
         ->assertSee('Gregorian', true, false)
         ->assertSee('Jalali', true, false)
+        ->assertSee('French Republican', true, false)
         ->assertSee('Hebrew', true, false)
         ->assertSee('Islamic', true, false)
         ->assertSee('Coptic', true, false)
@@ -151,6 +175,26 @@ it('renders conversion cards in the results grid after converting a date', funct
         ->assertSee('1403/06/11', true, false)
         ->assertSee('1725148800', true, false)
         ->assertSee('2024-09-01T00:00:00+00:00', true, false);
+});
+
+it('renders french republican calendar details', function () {
+    Volt::test('landing')
+        ->set('dateInput', '2024-09-01')
+        ->call('convertDate')
+        ->assertSee('18 Brumaire An 8', true, false)
+        ->assertSee('Octidi', true, false);
+});
+
+it('reflects paris offset toggle in UI output', function () {
+    config()->set('calendars.french_republican.apply_paris_offset', false);
+
+    Volt::test('landing')
+        ->set('dateInput', '2024-09-01')
+        ->call('convertDate')
+        ->assertSee('5 Sansculottides An 1', true, false)
+        ->assertSee('Jour des Récompenses', true, false);
+
+    config()->set('calendars.french_republican.apply_paris_offset', true);
 });
 
 it('loads additional julian calendar data when requested', function () {
