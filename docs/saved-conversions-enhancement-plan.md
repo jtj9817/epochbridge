@@ -102,27 +102,38 @@ The `DateTimeConverterService` already generates all calendar data, but the land
 
 ### Files Affected:
 - `resources/views/livewire/landing.blade.php` (modify saveConversion function)
-- `app/Services/DateTimeConverterService.php` (optional: add save-specific method)
+- `app/Services/DateTimeConverterService.php` (add getFullConversionResults method)
 
 ### Implementation Details:
 
-#### Updated Save Logic:
+#### Service Layer Enhancement:
+To improve separation of concerns, a new method will be added to `DateTimeConverterService` to handle the consolidation of all conversion results.
+
 ```php
-$saveConversion = function () {
+// In app/Services/DateTimeConverterService.php
+public function getFullConversionResults(string $dateString, string $inputType = 'gregorian'): array
+{
+    $primary = $this->convert($dateString, $inputType);
+    $additional = $this->convertAdditional($dateString, $inputType);
+    return array_merge($primary, $additional);
+}
+```
+
+#### Updated Save Logic:
+The Livewire component will then use this service method, simplifying its own logic.
+
+```php
+$saveConversion = function (DateTimeConverterService $converter) {
     if (! Auth::check() || empty($this->conversionResults)) {
         return;
     }
 
-    // Combine primary and additional results
-    $allResults = array_merge(
-        $this->conversionResults,
-        $this->additionalConversionResults
-    );
+    $allResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
 
     Auth::user()->savedConversions()->create([
         'original_input' => $this->dateInput,
         'conversion_data' => $allResults,
-        // Keep old fields for backward compatibility
+        // Keep old fields for backward compatibility during transition
         'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
         'jalali_date' => $this->conversionResults['jalali']['full_date'],
         'unix_timestamp' => $this->conversionResults['unix'],
@@ -290,41 +301,45 @@ Comprehensive testing is needed to verify the new storage format works for both 
 ## Phase 6: Performance Optimization
 
 ### GOAL:
-Optimize the storage and retrieval of comprehensive conversion data.
+Optimize the storage and retrieval of comprehensive conversion data, ensuring the UI remains fast for users with many saved items.
 
 ### CONTEXT:
-Storing all calendar data as JSON will increase storage requirements and potentially affect query performance.
+Storing all calendar data as JSON will increase storage requirements. The primary performance risk is fetching and rendering a large number of saved conversions for a single user.
 
 ### TASK:
-1. Add database indexes for common queries
-2. Implement JSON column indexing if needed
-3. Optimize the display components for performance
-4. Add caching for frequently accessed conversions
+1. Implement pagination for the saved conversions list.
+2. Add database indexes for common queries (`user_id`, `created_at`).
+3. Monitor query performance and implement JSON column indexing only if a specific bottleneck is identified.
+4. Add caching for frequently accessed conversions.
 
 ### REQUIREMENTS:
-- Maintain fast query performance for user conversion lists
-- Optimize JSON data size without losing information
-- Implement efficient rendering of multiple calendar systems
-- Add monitoring for storage usage
+- Maintain fast query performance for user conversion lists, especially for users with many saved items.
+- Implement efficient rendering of multiple calendar systems.
+- Optimize JSON data size without losing information.
+- Add monitoring for storage usage.
 
 ### GUIDELINES:
-- Use Laravel's JSON query capabilities efficiently
-- Consider compressing large JSON data if needed
-- Implement pagination for users with many saved conversions
-- Add database monitoring and alerts
+- Prioritize implementing pagination as the most critical performance enhancement.
+- Use Laravel's built-in pagination features for both the backend query and frontend display.
+- Defer advanced optimizations like JSON indexing until real-world data shows it is necessary.
+- Consider compressing large JSON data if needed.
 
 ### Files Affected:
+- `resources/views/livewire/components/saved-conversions-section.blade.php` (implement pagination)
+- `app/Models/SavedConversion.php` (update query to use pagination)
 - `database/migrations/xxxx_xx_xx_xxxxxx_add_indexes_to_saved_conversions_table.php` (new)
-- `app/Models/SavedConversion.php` (query optimization)
-- `resources/views/livewire/components/saved-conversions-section.blade.php` (pagination)
 
 ### Optimization Strategies:
 ```php
-// Add indexes for common queries
-$table->index(['user_id', 'created_at']);
-$table->index('user_id');
+// 1. Implement pagination in the Livewire component (Primary Optimization)
+// In saved-conversions-section.blade.php's state definition
+state(['savedConversions' => fn () => Auth::check() ? Auth::user()->savedConversions()->paginate(10) : collect()]);
 
-// JSON column indexing (MySQL 5.7+)
+// 2. Add indexes for common queries (Essential)
+$table->index(['user_id', 'created_at']);
+
+// 3. JSON column indexing (Conditional - implement only if needed after monitoring)
+// This is a secondary optimization for MySQL 5.7+ if JSON queries are slow.
 $table->json('conversion_data')->virtualAs('JSON_EXTRACT(conversion_data, "$.gregorian")');
 ```
 
@@ -340,8 +355,9 @@ $table->json('conversion_data')->virtualAs('JSON_EXTRACT(conversion_data, "$.gre
 | Phase 4: Guest Storage | 1 day | Phase 1, 2 |
 | Phase 5: Testing | 2-3 days | All previous phases |
 | Phase 6: Performance | 1-2 days | Phase 5 |
+| Phase 7: Cleanup | 1 day | Post-deployment |
 
-**Total Estimated Time: 8-13 days**
+**Total Estimated Time: 9-14 days**
 
 ---
 
@@ -397,6 +413,36 @@ If issues arise during implementation:
 
 ## Conclusion
 
-This comprehensive plan addresses the core limitation of saved conversions by implementing a scalable JSON-based storage system that captures all calendar systems while maintaining backward compatibility and optimizing for performance. The phased approach allows for incremental implementation, testing, and validation at each stage.
+This comprehensive plan addresses the core limitation of saved conversions by implementing a scalable JSON-based storage system that captures all calendar systems while maintaining backward compatibility and optimizing for performance. The phased approach allows for incremental implementation, testing, and validation at each stage, concluding with a final cleanup phase to remove deprecated structures and ensure long-term maintainability.
 
 The solution ensures that users can save and view complete conversion data across all supported calendar systems, enhancing the overall utility and user experience of the EpochBridge platform.
+---
+
+## Phase 7: Deprecate and Remove Old Structure
+
+### GOAL:
+Remove the deprecated columns and backward-compatibility code to finalize the migration and reduce long-term technical debt.
+
+### CONTEXT:
+After the new JSON-based system has been deployed and verified as stable in production, the old, flat-column structure (`gregorian_date`, `jalali_date`, etc.) and the corresponding model accessors are no longer needed. Keeping them creates clutter and potential for misuse.
+
+### TASK:
+1. Create a migration to drop the old, deprecated columns from the `saved_conversions` table.
+2. Remove the backward-compatibility accessors from the `SavedConversion` model.
+3. Update the save logic to stop populating the deprecated fields.
+4. Ensure all parts of the application exclusively use the new `conversion_data` JSON field.
+
+### REQUIREMENTS:
+- The feature must be stable and confirmed working in production before this phase begins.
+- A full database backup should be performed before running the cleanup migration.
+- All tests must pass after removing the old code paths.
+
+### GUIDELINES:
+- This phase should be executed in a separate deployment, some time after the main feature is live.
+- Communicate the change to the development team to ensure everyone stops using the deprecated fields.
+- The `down()` method of the cleanup migration should ideally be able to restore the columns (without data) for emergency rollbacks.
+
+### Files Affected:
+- `database/migrations/xxxx_xx_xx_xxxxxx_cleanup_saved_conversions_table.php` (new)
+- `app/Models/SavedConversion.php` (modify to remove accessors and fillable fields)
+- `resources/views/livewire/landing.blade.php` (modify save logic)
