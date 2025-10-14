@@ -79,6 +79,19 @@ it('filters results by type', function () {
 
             return true;
         })
+        ->assertSet('displayResults', function ($results) {
+            expect(array_keys($results))->toBe([
+                'islamic',
+                'unix',
+                'iso8601',
+                'julian-day',
+                'modified-julian-day',
+            ]);
+
+            return true;
+        })
+        ->assertSet('displayResults.unix', 1704067200)
+        ->assertSet('displayResults.iso8601', '2024-01-01T00:00:00+00:00')
         ->assertSee('Islamic')
         ->assertDontSeeText('Gregorian')
         ->assertDontSeeText('Jalali')

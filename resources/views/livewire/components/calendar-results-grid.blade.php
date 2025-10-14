@@ -18,49 +18,62 @@ $filteredResults = computed(function() use ($scalarResultKeys) {
     $conversionResults = is_array($this->conversionResults) ? $this->conversionResults : [];
     $additionalResults = is_array($this->additionalConversionResults) ? $this->additionalConversionResults : [];
 
-    $allResults = array_merge($conversionResults, $additionalResults);
+    $allResults = array_merge([], $conversionResults, $additionalResults);
+    $searchTerm = strtolower((string) $this->searchTerm);
+    $selectedTypes = is_array($this->selectedTypes) ? $this->selectedTypes : [];
+    $results = [];
 
-    return collect($allResults)
-        ->reject(fn ($data, $key) => in_array($key, $scalarResultKeys, true))
-        ->filter(function ($data, $key) {
-            if (!is_array($data)) {
-                return false;
-            }
+    foreach ($allResults as $key => $data) {
+        if (in_array($key, $scalarResultKeys, true)) {
+            continue;
+        }
 
-            $name = $data['name'] ?? $key;
-            $tags = $data['tags'] ?? [];
+        if (! is_array($data)) {
+            continue;
+        }
 
-            $searchMatch = empty($this->searchTerm) ||
-                str_contains(strtolower($name), strtolower($this->searchTerm));
+        $name = strtolower((string) ($data['name'] ?? $key));
+        $tags = is_array($data['tags'] ?? null) ? $data['tags'] : [];
 
-            $typeMatch = empty($this->selectedTypes) ||
-                !empty(array_intersect($this->selectedTypes, $tags));
+        $searchMatch = $searchTerm === '' || str_contains($name, $searchTerm);
+        $typeMatch = empty($selectedTypes) || ! empty(array_intersect($selectedTypes, $tags));
 
-            return $searchMatch && $typeMatch;
-        })
-        ->all();
+        if ($searchMatch && $typeMatch) {
+            $results[$key] = $data;
+        }
+    }
+
+    return $results;
 });
 
 $scalarResults = computed(function() use ($scalarResultKeys) {
     $conversionResults = is_array($this->conversionResults) ? $this->conversionResults : [];
     $additionalResults = is_array($this->additionalConversionResults) ? $this->additionalConversionResults : [];
 
-    $allResults = array_merge($conversionResults, $additionalResults);
+    $allResults = array_merge([], $conversionResults, $additionalResults);
     $searchTerm = strtolower((string) $this->searchTerm);
+    $results = [];
 
-    return collect($allResults)
-        ->filter(function ($data, $key) use ($scalarResultKeys, $searchTerm) {
-            if (!in_array($key, $scalarResultKeys, true) || !is_scalar($data)) {
-                return false;
-            }
+    foreach ($allResults as $key => $data) {
+        if (! in_array($key, $scalarResultKeys, true) || ! is_scalar($data)) {
+            continue;
+        }
 
-            if ($searchTerm === '') {
-                return true;
-            }
+        if ($searchTerm !== '' && ! str_contains(strtolower((string) $data), $searchTerm)) {
+            continue;
+        }
 
-            return str_contains(strtolower((string) $data), $searchTerm);
-        })
-        ->all();
+        $results[$key] = $data;
+    }
+
+    return $results;
+});
+
+$displayResults = computed(function() {
+    $structured = is_array($this->filteredResults) ? $this->filteredResults : [];
+    $scalars = is_array($this->scalarResults) ? $this->scalarResults : [];
+
+    return array_merge([], $structured, $scalars);
 });
 
 ?>
@@ -89,29 +102,25 @@ $scalarResults = computed(function() use ($scalarResultKeys) {
              class="max-w-4xl mx-auto mt-12">
 
         @php
-            $displayResults = collect($this->filteredResults ?? [])
-                ->merge($this->scalarResults ?? [])
-                ->all();
+            $displayResults = is_array($this->displayResults) ? $this->displayResults : [];
+            $copyLines = [];
 
-            $copyLines = collect($displayResults)
-                ->map(function ($data, $key) {
-                    if (is_array($data) && !isset($data['error'])) {
-                        $label = $data['name'] ?? ucwords(str_replace('_', ' ', (string) $key));
-                        $value = $data['full_date'] ?? json_encode($data);
+            foreach ($displayResults as $key => $data) {
+                if (is_array($data) && ! isset($data['error'])) {
+                    $label = $data['name'] ?? ucwords(str_replace('_', ' ', (string) $key));
+                    $value = $data['full_date'] ?? json_encode($data);
 
-                        return "{$label}: {$value}";
-                    }
+                    $copyLines[] = "{$label}: {$value}";
+                    continue;
+                }
 
-                    if (is_scalar($data)) {
-                        $label = ucwords(str_replace(['_', '-'], ' ', (string) $key));
+                if (is_scalar($data)) {
+                    $label = ucwords(str_replace(['_', '-'], ' ', (string) $key));
+                    $copyLines[] = "{$label}: {$data}";
+                }
+            }
 
-                        return "{$label}: {$data}";
-                    }
-
-                    return null;
-                })
-                ->filter()
-                ->implode("\n");
+            $copyLines = implode("\n", array_filter($copyLines));
         @endphp
 
         <div class="flex items-center justify-between mb-6">
@@ -147,7 +156,7 @@ $scalarResults = computed(function() use ($scalarResultKeys) {
                 @foreach($displayResults as $key => $data)
                     @php
                         $shouldRender = is_array($data) && !isset($data['error']);
-                        $allowScalar = in_array($key, ['unix', 'iso8601', 'julian-day', 'modified-julian-day'], true) && is_scalar($data);
+                        $allowScalar = in_array($key, $scalarResultKeys, true) && is_scalar($data);
                     @endphp
                     @if($shouldRender || $allowScalar)
                         @switch($key)
