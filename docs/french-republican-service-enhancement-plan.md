@@ -11,6 +11,7 @@
 - Historical equinox reference data (e.g., start dates for Years I–XIV) can be stored locally (fixture or config) so tests do not require external network calls.
 - Carbon’s timezone handling is sufficient once the Paris mean solar offset is applied during JDN conversion.
 - Pest remains the primary test runner.
+- We do not need a global precomputed lookup table; per-instance memoization is sufficient for the expected request volumes.
 
 ## Work Breakdown
 
@@ -22,7 +23,7 @@
 
 ### 2. Paris Mean Solar Offset Handling
 - **Offset utility**: Create a helper method (or dedicated utility class) that transforms a `Carbon` instance by adding the 561-second Paris mean solar offset before JDN calculation.
-- **Documentation & configuration**: Expose a configuration flag (e.g., `calendars.french_republican.apply_paris_offset`) defaulting to true for historical accuracy, with docs explaining implications.
+- **Documentation & configuration**: Expose a feature flag (e.g., `calendars.french_republican.apply_paris_offset`) defaulting to true for historical accuracy, with docs explaining implications and how downstream code can toggle it.
 - **Edge-case handling**: Verify behavior around equinox boundary days (Sept 20–24) and ensure range exceptions still trigger when outside Years I–XIV.
 
 ### 3. Expanded Testing Strategy
@@ -45,9 +46,9 @@
 - Consider adding a Dusk scenario for full-stack verification if visual regression confidence is needed.
 
 ### 5. Documentation & Developer Experience
-- Update `docs/calendar-integration-guide.md` (or create a focused subsection) to describe the dependency injection approach, the Paris offset, testing fixtures, and Livewire integration checks.
+- Update `docs/calendar-integration-guide.md` (or create a focused subsection) to describe the dependency injection approach, the Paris offset feature flag, testing fixtures, and Livewire integration checks.
 - Provide code samples showing how to override the adapter for alternative calculation methods (e.g., astronomical table vs. arithmetic rule) if future work requires it.
-- Mention new configuration options in the README or appropriate docs.
+- Mention new configuration options and feature flags in the README or appropriate docs.
 
 ## Sequencing
 1. Define adapter contract and update service/provider bindings.
@@ -62,6 +63,6 @@
 - Optional smoke test for multi-calendar conversions: `./vendor/bin/pest tests/Unit/Services/DateTimeConverterServiceTest.php`
 
 ## Open Questions
-- Should we support alternative equinox data beyond Year XIV (e.g., proleptic extension) behind a feature flag?
+- Should we support alternative equinox data beyond Year XIV in the future by wiring a second adapter behind an additional feature flag?
 - Do we need integration tests that drive the Livewire UI to confirm the new display/offset behavior?
-- Is a cached lookup table preferable to on-the-fly Paris offset adjustments for large batch conversions?
+- If batch conversion volume grows significantly, should we revisit cached lookup tables or other performance optimizations?
