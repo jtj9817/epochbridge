@@ -14,7 +14,7 @@ class FrenchRepublicanServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new FrenchRepublicanService;
+        $this->service = app(FrenchRepublicanService::class);
     }
 
     public function test_converts_gregorian_to_french_republican(): void

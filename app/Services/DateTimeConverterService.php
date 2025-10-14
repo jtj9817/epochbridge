@@ -50,20 +50,20 @@ class DateTimeConverterService
     public function __construct()
     {
         $this->calendarServices = [
-            'julian' => new JulianCalendarService,
-            'julian_day' => new JulianDayService,
-            'hebrew' => new HebrewCalendarService,
-            'islamic' => new IslamicCalendarService,
-            'french_republican' => new FrenchRepublicanService,
-            'chinese' => new ChineseCalendarService,
-            'japanese' => new JapaneseCalendarService,
-            'babylonian' => new BabylonianCalendarService,
-            'assyrian' => new AssyrianCalendarService,
-            'macedonian' => new AncientMacedonianService,
-            'coptic' => new CopticCalendarService,
-            'egyptian' => new EgyptianCalendarService,
-            'ethiopian' => new EthiopianCalendarService,
-            'mayan' => new MayanCalendarService,
+            'julian' => app(JulianCalendarService::class),
+            'julian_day' => app(JulianDayService::class),
+            'hebrew' => app(HebrewCalendarService::class),
+            'islamic' => app(IslamicCalendarService::class),
+            'french_republican' => app(FrenchRepublicanService::class),
+            'chinese' => app(ChineseCalendarService::class),
+            'japanese' => app(JapaneseCalendarService::class),
+            'babylonian' => app(BabylonianCalendarService::class),
+            'assyrian' => app(AssyrianCalendarService::class),
+            'macedonian' => app(AncientMacedonianService::class),
+            'coptic' => app(CopticCalendarService::class),
+            'egyptian' => app(EgyptianCalendarService::class),
+            'ethiopian' => app(EthiopianCalendarService::class),
+            'mayan' => app(MayanCalendarService::class),
         ];
     }
 

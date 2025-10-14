@@ -2,17 +2,27 @@
 
 namespace App\Services;
 
+use App\Contracts\Calendar\FrenchRepublicanCalendarAdapter;
 use Carbon\Carbon;
-use Fisharebest\ExtCalendar\FrenchCalendar;
 use InvalidArgumentException;
 
 class FrenchRepublicanService extends CalendarConversionService
 {
-    private FrenchCalendar $calendar;
+    private FrenchRepublicanCalendarAdapter $calendar;
 
-    public function __construct()
+    /**
+     * @var array<int, array{0:int,1:int,2:int}>
+     */
+    private array $jdToYmdCache = [];
+
+    /**
+     * @var array<string, int>
+     */
+    private array $ymdToJdCache = [];
+
+    public function __construct(FrenchRepublicanCalendarAdapter $calendar)
     {
-        $this->calendar = new FrenchCalendar;
+        $this->calendar = $calendar;
     }
 
     private const FRENCH_MONTH_NAMES = [
@@ -57,16 +67,23 @@ class FrenchRepublicanService extends CalendarConversionService
     {
         $date = $this->ensureTimezone($date, 'Europe/Paris');
 
-        $jd = gregoriantojd($date->month, $date->day, $date->year);
+        $adjustedDate = $this->applyParisMeanSolarOffset($date);
+        $jd = gregoriantojd($adjustedDate->month, $adjustedDate->day, $adjustedDate->year);
 
         if ($jd < $this->calendar->jdStart() || $jd > $this->calendar->jdEnd()) {
             $this->handleRangeError('Date outside French Republican calendar range');
         }
 
-        try {
-            [$year, $month, $day] = $this->calendar->jdToYmd($jd);
-        } catch (InvalidArgumentException $exception) {
-            $this->handleCalculationError('Unable to convert date to French Republican calendar', $exception);
+        if (isset($this->jdToYmdCache[$jd])) {
+            [$year, $month, $day] = $this->jdToYmdCache[$jd];
+        } else {
+            try {
+                [$year, $month, $day] = $this->calendar->jdToYmd($jd);
+            } catch (InvalidArgumentException $exception) {
+                $this->handleCalculationError('Unable to convert date to French Republican calendar', $exception);
+            }
+
+            $this->jdToYmdCache[$jd] = [$year, $month, $day];
         }
 
         $dayOfDecade = $month === 13 ? null : (($day - 1) % 10);
@@ -107,10 +124,18 @@ class FrenchRepublicanService extends CalendarConversionService
             $this->handleValidationError('Invalid French Republican date components');
         }
 
-        try {
-            $jd = $this->calendar->ymdToJd($year, $month, $day);
-        } catch (InvalidArgumentException $exception) {
-            $this->handleInvalidDate('Invalid French Republican date');
+        $ymdKey = "{$year}-{$month}-{$day}";
+
+        if (isset($this->ymdToJdCache[$ymdKey])) {
+            $jd = $this->ymdToJdCache[$ymdKey];
+        } else {
+            try {
+                $jd = $this->calendar->ymdToJd($year, $month, $day);
+            } catch (InvalidArgumentException $exception) {
+                $this->handleInvalidDate('Invalid French Republican date');
+            }
+
+            $this->ymdToJdCache[$ymdKey] = $jd;
         }
 
         if ($jd < $this->calendar->jdStart() || $jd > $this->calendar->jdEnd()) {
@@ -164,6 +189,15 @@ class FrenchRepublicanService extends CalendarConversionService
     {
         // Leap years were historically observed in Years III, VII, and XI (year % 4 === 3)
         return $this->calendar->isLeapYear($year);
+    }
+
+    private function applyParisMeanSolarOffset(Carbon $date): Carbon
+    {
+        if (! config('calendars.french_republican.apply_paris_offset', true)) {
+            return $date;
+        }
+
+        return $date->copy()->addSeconds(561);
     }
 
     public function getTags(): array
