@@ -7,9 +7,10 @@ A comprehensive calendar conversion platform built with Laravel 12 and the TALL 
 ### Calendar Conversion System
 - **15+ Calendar Systems**: Comprehensive support including:
   - **Modern**: Gregorian, Persian/Jalali, Islamic (Hijri), Hebrew
-  - **Historical**: Julian, French Republican, Coptic, Ethiopian, Egyptian
+  - **Historical**: Julian, French Republican (with proleptic support), Coptic, Ethiopian, Egyptian
   - **Ancient**: Babylonian, Assyrian, Ancient Macedonian, Mayan
   - **East Asian**: Chinese Lunisolar, Japanese Era-based
+- **Extensible Architecture**: Adapter pattern with dependency injection for calendar service customization
 - **Multi-Format Output**: Unix timestamps, ISO 8601, Julian Day Numbers, and detailed calendar components
 - **Real-time Conversion**: Instant conversion between any supported calendar systems
 - **Historical Accuracy**: Authentic calculations with astronomical data integration
@@ -217,6 +218,8 @@ app/
 ├── Console/Commands/       # Artisan commands
 │   └── InteractiveTestRunnerCommand.php # Interactive test runner with parallel execution
 ├── Contracts/              # Interfaces and contracts
+│   ├── Calendar/          # Calendar adapter interfaces
+│   │   └── FrenchRepublicanCalendarAdapter.php # French Republican adapter interface
 │   └── TestProcessFactory.php          # Process factory interface for testing
 ├── Events/                 # Laravel events
 │   ├── TestCompleted.php              # Individual test completion event
@@ -249,12 +252,13 @@ app/
 │   ├── Calendar Services/  # Calendar conversion services
 │   │   ├── DateTimeConverterService.php    # Main conversion orchestrator with caching
 │   │   ├── CalendarConversionService.php   # Base conversion utilities
-│   │   ├── JulianDayService.php           # Julian Day calculations
+│   │   ├── JulianDayService.php           # Julian Day Number calculations (astronomical)
+│   ├── JulianCalendarService.php      # Julian calendar (historical dates)
 │   │   ├── HebrewCalendarService.php      # Hebrew calendar
 │   │   ├── IslamicCalendarService.php     # Islamic/Hijri calendar
 │   │   ├── ChineseCalendarService.php     # Chinese lunisolar calendar
 │   │   ├── JapaneseCalendarService.php    # Japanese era-based calendar
-│   │   ├── FrenchRepublicanService.php    # French Revolutionary calendar
+│   │   ├── FrenchRepublicanService.php    # French Revolutionary calendar with DI
 │   │   ├── CopticCalendarService.php      # Coptic calendar
 │   │   ├── EthiopianCalendarService.php   # Ethiopian calendar
 │   │   ├── EgyptianCalendarService.php    # Ancient Egyptian calendar
@@ -271,6 +275,8 @@ app/
 │       ├── ErrorRecoveryService.php      # Test failure recovery and retry logic
 │       └── MarkdownReportService.php     # Comprehensive test report generation
 └── Support/                # Support classes
+    ├── Calendars/         # Calendar adapter implementations
+    │   └── FrenchRepublicanExtCalendarAdapter.php # Concrete FR adapter
     └── TestProcessFactory.php           # Process factory implementation
 
 resources/
@@ -311,6 +317,12 @@ resources/
     │   ├── auth/                          # Authentication forms
     │   └── settings/                      # User settings pages
     └── pages/             # Page-level Volt components
+
+config/
+└── calendars.php         # Calendar-specific configuration
+    └── french_republican  # French Republican settings
+        ├── apply_paris_offset (default: true)
+        └── allow_proleptic (default: true)
 
 database/
 ├── migrations/            # Database schema
@@ -358,7 +370,8 @@ The core functionality is powered by `DateTimeConverterService` and 15+ speciali
   - Year, month name, day, day of week in native scripts
   - English transliterations and romanizations
   - Cultural and historical context
-  - Unix timestamps, ISO 8601, and Julian Day Numbers
+  - Unix timestamps, ISO 8601, and Julian Day Numbers (astronomical reference)
+- **Adapter Pattern Architecture**: Dependency injection for extensible calendar implementations
 - **Historical Accuracy**: Authentic calculations using:
   - Astronomical data for lunar calendars
   - Historical era systems (Japanese, Roman, etc.)
@@ -379,8 +392,8 @@ The core functionality is powered by `DateTimeConverterService` and 15+ speciali
 - **Hebrew**: Jewish calendar with lunar-solar calculations
 
 #### Historical Calendars
-- **Julian**: Roman calendar, predecessor to Gregorian
-- **French Republican**: Revolutionary calendar (1793-1805)
+- **Julian**: Roman calendar, predecessor to Gregorian (historical date representation)
+- **French Republican**: Revolutionary calendar (1793-1805) with proleptic extension and Paris mean solar offset
 - **Coptic**: Egyptian Christian calendar
 - **Ethiopian**: Traditional calendar of Ethiopia
 - **Egyptian**: Ancient Egyptian civil calendar

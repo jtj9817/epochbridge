@@ -477,12 +477,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 app/Services/
 ├── DateTimeConverterService.php    # Main orchestrator
 ├── CalendarConversionService.php   # Base conversion utilities
-├── JulianDayService.php           # Universal Julian Day conversions
+├── JulianDayService.php           # Universal Julian Day Number conversions (astronomical)
+├── JulianCalendarService.php      # Julian calendar (historical dates)
 ├── HebrewCalendarService.php      # Jewish calendar (lunar-solar)
 ├── IslamicCalendarService.php     # Hijri lunar calendar
 ├── ChineseCalendarService.php     # Chinese lunisolar with zodiac
 ├── JapaneseCalendarService.php    # Imperial era-based calendar
-├── FrenchRepublicanService.php    # Revolutionary calendar (1793-1805)
+├── FrenchRepublicanService.php    # Revolutionary calendar with DI & proleptic support
 ├── CopticCalendarService.php      # Egyptian Christian calendar
 ├── EthiopianCalendarService.php   # Traditional Ethiopian calendar
 ├── EgyptianCalendarService.php    # Ancient Egyptian civil calendar
@@ -491,6 +492,12 @@ app/Services/
 ├── AncientMacedonianService.php   # Ancient Macedonian calendar
 ├── MayanCalendarService.php       # Complex Mesoamerican system
 └── AncientAstronomyService.php    # Astronomical calculations
+
+app/Contracts/Calendar/
+└── FrenchRepublicanCalendarAdapter.php # Adapter interface for FR calendar
+
+app/Support/Calendars/
+└── FrenchRepublicanExtCalendarAdapter.php # Concrete FR adapter implementation
 ```
 
 #### Universal Conversion Process Flow
@@ -505,7 +512,7 @@ Julian Day Number calculation (universal backbone)
     ↓
 Parallel conversion to all 15+ calendar systems:
 ├── Modern Calendars (Gregorian, Persian, Hebrew, Islamic)
-├── Historical Calendars (Julian, French Republican, Coptic, Ethiopian, Egyptian)
+├── Historical Calendars (Julian calendar, French Republican, Coptic, Ethiopian, Egyptian)
 ├── Ancient Calendars (Babylonian, Assyrian, Ancient Macedonian, Mayan)
 └── East Asian Calendars (Chinese Lunisolar, Japanese Era-based)
     ↓
@@ -514,9 +521,13 @@ Comprehensive output with:
 ├── Cultural names in original scripts
 ├── English transliterations
 ├── Historical context and era information
-├── Julian Day Numbers
+├── Julian Day Numbers (astronomical reference)
 ├── Unix timestamps
 └── ISO 8601 formatting
+
+Note: Julian calendar and Julian Day Numbers are separate concepts:
+- Julian calendar: Historical calendar system (date representation)
+- Julian Day Number: Astronomical day count used as conversion backbone
 ```
 
 #### Calendar Data Models
@@ -533,7 +544,98 @@ database/migrations/
 ├── *_create_japanese_eras_table.php
 ├── *_create_historical_calendar_data_table.php
 └── *_create_mayan_calendar_data_table.php
+
+config/calendars.php
+└── french_republican            # Configuration for French Republican calendar
+    ├── apply_paris_offset: true  # Apply Paris mean solar offset (UT1 + 00:09:21)
+    └── allow_proleptic: true     # Extend calendar beyond historical 1792-1805 range
 ```
+
+### Adapter Pattern for Calendar Services
+
+The French Republican calendar implementation uses the **Adapter Pattern** with **Dependency Injection** to enable flexible calendar calculation strategies and improve testability.
+
+#### Architecture Components
+
+**1. Adapter Interface**
+```php
+// app/Contracts/Calendar/FrenchRepublicanCalendarAdapter.php
+interface FrenchRepublicanCalendarAdapter
+{
+    public function jdToYmd(int $julianDay): array;  // Convert JD to year/month/day
+    public function ymdToJd(int $year, int $month, int $day): int;  // Convert date to JD
+    public function jdStart(): int;  // Calendar epoch start
+    public function jdEnd(): int;    // Calendar epoch end
+    public function isLeapYear(int $year): bool;  // Leap year calculation
+}
+```
+
+**2. Concrete Implementation**
+```php
+// app/Support/Calendars/FrenchRepublicanExtCalendarAdapter.php
+class FrenchRepublicanExtCalendarAdapter implements FrenchRepublicanCalendarAdapter
+{
+    // Wraps fisharebest/ext-calendar FrenchCalendar class
+    // Implements caching for repeated conversions
+    // Applies Paris mean solar offset (UT1 + 00:09:21) for historical accuracy
+}
+```
+
+**3. Service with Dependency Injection**
+```php
+// app/Services/FrenchRepublicanService.php
+class FrenchRepublicanService
+{
+    public function __construct(
+        private FrenchRepublicanCalendarAdapter $adapter
+    ) {}
+    
+    public function fromGregorian(Carbon $date): array
+    {
+        // Uses injected adapter for conversions
+        // Supports proleptic extension beyond 1792-1805
+        // Configurable Paris offset application
+    }
+}
+```
+
+**4. Service Provider Binding**
+```php
+// app/Providers/AppServiceProvider.php
+public function register(): void
+{
+    $this->app->bind(
+        FrenchRepublicanCalendarAdapter::class,
+        FrenchRepublicanExtCalendarAdapter::class
+    );
+}
+```
+
+#### Benefits of Adapter Pattern
+
+- **Testability**: Easy to mock adapter for unit tests
+- **Flexibility**: Swap calculation strategies (astronomical vs arithmetic)
+- **Maintainability**: Decoupled from specific library implementation
+- **Performance**: Per-instance memoization/caching without global state
+- **Extensibility**: Add alternative adapters without modifying service code
+
+#### Configuration Options
+
+French Republican calendar behavior is configurable via `config/calendars.php`:
+
+```php
+'french_republican' => [
+    // Apply Paris mean solar offset (UT1 + 00:09:21) for historical accuracy
+    'apply_paris_offset' => env('FRENCH_REPUBLICAN_PARIS_OFFSET', true),
+    
+    // Allow proleptic extension beyond historical 1792-1805 range
+    'allow_proleptic' => env('FRENCH_REPUBLICAN_ALLOW_PROLEPTIC', true),
+],
+```
+
+**Paris Mean Solar Offset**: The French Republican calendar was based on astronomical observations at the Paris Observatory. This offset aligns conversions with historical equinox observations.
+
+**Proleptic Support**: Extends calendar calculations beyond the official usage period (1792-1805) using mathematical rules, allowing conversion of any date.
 
 ## Database Architecture
 
@@ -999,6 +1101,17 @@ php artisan view:cache    # Cache views
 - Accurate historical date calculations
 - Active community maintenance
 - Laravel ecosystem compatibility
+
+### ADR-005: Adapter Pattern for Calendar Services
+**Decision**: Use adapter pattern with dependency injection for complex calendar implementations
+**Rationale**:
+- Improved testability with mockable interfaces
+- Flexibility to swap calculation strategies (astronomical vs arithmetic)
+- Decoupling from specific library implementations
+- Per-instance caching without global state
+- Extensibility for alternative calendar calculation methods
+**Initial Implementation**: French Republican calendar service
+**Future Applicability**: Can extend to other complex calendars (Chinese, Islamic, Hebrew)
 
 ### ADR-004: Docker Development Environment
 **Decision**: Use Laravel Sail for development

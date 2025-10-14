@@ -5,6 +5,122 @@ All notable changes to EpochBridge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [October 14, 2025] - Calendar Architecture Enhancements & Test Improvements
+
+### Added
+- **Julian Calendar System**: Complete historical calendar implementation alongside Julian Day calculations
+  - `app/Services/JulianCalendarService.php` - Historical Julian calendar date conversions
+  - Separate from Julian Day Number astronomical calculations for clarity
+  - `resources/views/components/card/julian-card.blade.php` - UI component for Julian calendar display
+  - Comprehensive test coverage in feature tests
+  
+- **Adapter Pattern with Dependency Injection**: Extensible architecture for complex calendar systems
+  - `app/Contracts/Calendar/FrenchRepublicanCalendarAdapter.php` - Adapter interface defining calendar operations
+  - `app/Support/Calendars/FrenchRepublicanExtCalendarAdapter.php` - Concrete implementation with caching
+  - Per-instance memoization for improved performance without global state
+  - Container binding in `AppServiceProvider` for proper dependency injection
+  
+- **French Republican Calendar Enhancements**: Complete feature implementation per enhancement plan
+  - **Proleptic Calendar Support**: Mathematical extension beyond historical 1792-1805 range
+  - **Paris Mean Solar Offset**: Configurable UT1 + 00:09:21 offset for historical accuracy
+  - **Configuration System**: `config/calendars.php` with feature flags
+    - `apply_paris_offset` (default: true) - Apply historical Paris Observatory offset
+    - `allow_proleptic` (default: true) - Enable extended date range calculations
+  - Historical equinox verification with test fixtures in `tests/__fixtures/french_republican_year_starts.php`
+  
+- **Component Test Infrastructure**: Enhanced testing for Livewire components
+  - `tests/Feature/Livewire/Components/CalendarResultsGridTest.php` - Dedicated calendar grid tests
+  - Proper test isolation following Livewire 3 testing patterns
+  - Mock data alignment with service contracts
+
+### Changed
+- **FrenchRepublicanService Architecture**: Refactored to use dependency injection
+  - Constructor injection of `FrenchRepublicanCalendarAdapter` interface
+  - Resolved from container via `app()` helper in `DateTimeConverterService`
+  - Enhanced testability with mockable adapter interface
+  
+- **DateTimeConverterService**: Updated to support new calendar services
+  - Added `JulianCalendarService` to available calendars
+  - French Republican service now resolved from container for DI support
+  - Distinction between Julian calendar (historical) and Julian Day Number (astronomical)
+
+- **Test Architecture**: Improved component test patterns
+  - Parent component tests validate state changes rather than child output
+  - Proper Livewire Volt component hierarchy handling
+  - Fixed test isolation issues for reliable test execution
+
+### Fixed
+- **Livewire Component Test Isolation**: Resolved hierarchy testing issues
+  - Parent tests now properly validate state rather than rendered child components
+  - Follows Livewire 3 patterns where child components aren't rendered in parent tests
+  - `tests/Feature/Livewire/LandingPageTest.php` refactored for proper isolation
+  
+- **French Republican Year Calculation**: Corrected historical data
+  - Fixed Year 11 start date in test fixtures
+  - Validated against known Paris equinox observations
+  - Proper handling of complementary days in leap vs common years
+
+- **Calendar Results Grid Filtering**: Enhanced null and scalar value handling
+  - Proper filtering for scalar calendar values
+  - Updated mock data to match service contracts
+  - Improved component rendering reliability
+
+### Technical Improvements
+- **Extensible Architecture**: Adapter pattern demonstrates best practices for complex calendars
+  - Easy to mock for unit tests
+  - Swap calculation strategies (astronomical vs arithmetic)
+  - Decouple from specific library implementations
+  - Per-instance caching improves performance
+  
+- **Configuration Management**: Centralized calendar-specific settings
+  - `config/calendars.php` provides single source of truth
+  - Environment variable support for deployment flexibility
+  - Feature flags enable/disable specific behaviors
+  
+- **Historical Accuracy**: Enhanced calendar calculations
+  - Paris mean solar offset for French Republican calendar
+  - Historical equinox data validation
+  - Proleptic extensions with mathematical rigor
+
+### Documentation
+- **Architecture Documentation**: Comprehensive updates to reflect new patterns
+  - Added "Adapter Pattern for Calendar Services" section in `docs/architecture-overview.md`
+  - New ADR-005: Adapter Pattern for Calendar Services
+  - Detailed explanation of Julian calendar vs Julian Day Number distinction
+  
+- **Integration Guide**: Extensive adapter pattern documentation
+  - Step-by-step guide for implementing adapter pattern in `docs/calendar-integration-guide.md`
+  - Code examples for interface definition, concrete implementation, DI setup
+  - Testing patterns with mocked adapters
+  - Real-world French Republican calendar example
+  
+- **Enhancement Plan Completion**: Marked all French Republican objectives as completed
+  - Updated `docs/french-republican-service-enhancement-plan.md` with implementation details
+  - Documented all completed tasks with commit references
+  - Added resolved questions and future enhancement suggestions
+  
+- **README Updates**: Reflected new features and architecture
+  - Updated project structure with `Contracts/Calendar/` and `Support/Calendars/`
+  - Added configuration documentation
+  - Clarified Julian calendar vs Julian Day Number
+  - Mentioned proleptic support and adapter pattern
+
+### Testing
+- **Unit Tests**: Expanded French Republican calendar test coverage
+  - Round-trip conversion tests across date ranges
+  - Boundary condition testing (epoch start/end, month boundaries)
+  - Complementary day validation (leap vs common years)
+  - Display formatting assertions
+  
+- **Feature Tests**: Enhanced Livewire component testing
+  - Calendar results grid component tests
+  - Landing page refactored for proper component isolation
+  - Configuration behavior validation
+  
+- **Test Fixtures**: Historical reference data for validation
+  - `tests/__fixtures/french_republican_year_starts.php` with Years I-XIV equinox dates
+  - Enables verification against known historical observations
+
 ## [October 11, 2025] - Interactive Test Runner System Implementation
 
 ### Added
