@@ -65,23 +65,23 @@ beforeEach(function () {
                 $frenchData = config('calendars.french_republican.apply_paris_offset', true)
                     ? [
                         'name' => 'French Republican',
-                        'full_date' => '8/2/18',
-                        'display' => '18 Brumaire An 8',
+                        'full_date' => '232/12/16',
+                        'display' => '16 Fructidor An 232',
                         'tags' => ['historical', 'solar'],
-                        'year' => 8,
-                        'month_name' => 'Brumaire',
-                        'day' => 18,
-                        'day_of_week' => 'Octidi',
+                        'year' => 232,
+                        'month_name' => 'Fructidor',
+                        'day' => 16,
+                        'day_of_week' => 'Quartidi',
                     ]
                     : [
                         'name' => 'French Republican',
-                        'full_date' => '1/13/5',
-                        'display' => '5 Sansculottides An 1',
+                        'full_date' => '232/12/15',
+                        'display' => '15 Fructidor An 232',
                         'tags' => ['historical', 'solar'],
-                        'year' => 1,
-                        'month_name' => 'Sansculottides',
-                        'day' => 5,
-                        'day_of_week' => 'Jour des Récompenses',
+                        'year' => 232,
+                        'month_name' => 'Fructidor',
+                        'day' => 15,
+                        'day_of_week' => 'Tridi',
                     ];
 
                 return array_merge($baseData, [
@@ -159,52 +159,53 @@ it('can convert a valid date', function () {
         ->assertSet('conversionError', '');
 });
 
-it('renders conversion cards in the results grid after converting a date', function () {
+it('sets conversion results state after converting a date', function () {
     Volt::test('landing')
         ->set('dateInput', '2024-09-01')
         ->call('convertDate')
-        ->assertSee('Conversion Results', true, false)
-        ->assertSee('Copy All', true, false)
-        ->assertSee('Gregorian', true, false)
-        ->assertSee('Jalali', true, false)
-        ->assertSee('French Republican', true, false)
-        ->assertSee('Hebrew', true, false)
-        ->assertSee('Islamic', true, false)
-        ->assertSee('Coptic', true, false)
-        ->assertSee('Ethiopian', true, false)
-        ->assertSee('1403/06/11', true, false)
-        ->assertSee('1725148800', true, false)
-        ->assertSee('2024-09-01T00:00:00+00:00', true, false);
+        ->assertSet('conversionResults.gregorian.full_date', '2024-09-01')
+        ->assertSet('conversionResults.jalali.full_date', '1403/06/11')
+        ->assertSet('conversionResults.french_republican.full_date', '232/12/16')
+        ->assertSet('conversionResults.hebrew.full_date', '5784/10/19')
+        ->assertSet('conversionResults.islamic.full_date', '1445/06/19')
+        ->assertSet('conversionResults.coptic.full_date', '1740/04/22')
+        ->assertSet('conversionResults.ethiopian.full_date', '2016/04/22')
+        ->assertSet('conversionResults.unix', 1725148800)
+        ->assertSet('conversionResults.iso8601', '2024-09-01T00:00:00+00:00')
+        ->assertSet('conversionError', '');
 });
 
-it('renders french republican calendar details', function () {
+it('sets french republican calendar data in state', function () {
     Volt::test('landing')
         ->set('dateInput', '2024-09-01')
         ->call('convertDate')
-        ->assertSee('18 Brumaire An 8', true, false)
-        ->assertSee('Octidi', true, false);
+        ->assertSet('conversionResults.french_republican.display', '16 Fructidor An 232')
+        ->assertSet('conversionResults.french_republican.day_of_week', 'Quartidi')
+        ->assertSet('conversionResults.french_republican.month_name', 'Fructidor')
+        ->assertSet('conversionResults.french_republican.year', 232);
 });
 
-it('reflects paris offset toggle in UI output', function () {
+it('reflects paris offset toggle in conversion state', function () {
     config()->set('calendars.french_republican.apply_paris_offset', false);
 
     Volt::test('landing')
         ->set('dateInput', '2024-09-01')
         ->call('convertDate')
-        ->assertSee('5 Sansculottides An 1', true, false)
-        ->assertSee('Jour des Récompenses', true, false);
+        ->assertSet('conversionResults.french_republican.display', '15 Fructidor An 232')
+        ->assertSet('conversionResults.french_republican.day_of_week', 'Tridi')
+        ->assertSet('conversionResults.french_republican.day', 15);
 
     config()->set('calendars.french_republican.apply_paris_offset', true);
 });
 
-it('loads additional julian calendar data when requested', function () {
+it('loads additional julian calendar data when event dispatched', function () {
     Volt::test('landing')
         ->set('dateInput', '2024-09-01')
         ->call('convertDate')
         ->dispatch('load-additional-calendars')
-        ->assertSee('Julian Calendar', true, false)
-        ->assertSee('Difference:', true, false)
-        ->assertSee('13 days behind Gregorian', true, false);
+        ->assertSet('additionalCalendarsLoaded', true)
+        ->assertSet('additionalConversionResults.julian.full_date', '2024/12/19')
+        ->assertSet('additionalConversionResults.julian.difference_label', '13 days behind Gregorian');
 });
 
 it('shows an error message for an invalid date format', function () {

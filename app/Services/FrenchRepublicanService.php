@@ -212,7 +212,11 @@ class FrenchRepublicanService extends CalendarConversionService
 
     private function isFrenchLeapYear(int $year): bool
     {
-        return $year % 4 === 3;
+        if ($year <= 14) {
+            return $this->calendar->isLeapYear($year);
+        }
+
+        return $this->isRommeLeapYear($year);
     }
 
     private function prolepticEnabled(): bool
@@ -266,18 +270,9 @@ class FrenchRepublicanService extends CalendarConversionService
         }
 
         $yearsBefore = $year - 1;
-        $leapYears = $this->countFallbackLeapYears($yearsBefore);
+        $leapYears = $this->rommeLeapYearsCount($yearsBefore);
 
         return self::FRENCH_EPOCH_JD + ($yearsBefore * 365) + $leapYears;
-    }
-
-    private function countFallbackLeapYears(int $years): int
-    {
-        if ($years < 0) {
-            return 0;
-        }
-
-        return intdiv($years + 1, 4);
     }
 
     private function fallbackYmdToJd(int $year, int $month, int $day): int
@@ -286,6 +281,12 @@ class FrenchRepublicanService extends CalendarConversionService
 
         if ($month <= 12) {
             return $yearStart + (($month - 1) * 30) + ($day - 1);
+        }
+
+        $maxComplementary = $this->isRommeLeapYear($year) ? 6 : 5;
+
+        if ($day > $maxComplementary) {
+            $this->handleValidationError('Invalid French Republican date components');
         }
 
         return $yearStart + 360 + ($day - 1);
@@ -303,5 +304,34 @@ class FrenchRepublicanService extends CalendarConversionService
     public function getTags(): array
     {
         return ['historical', 'solar'];
+    }
+
+    private function isRommeLeapYear(int $year): bool
+    {
+        if ($year % 4000 === 0) {
+            return false;
+        }
+
+        if ($year % 400 === 0) {
+            return true;
+        }
+
+        if ($year % 100 === 0) {
+            return false;
+        }
+
+        return $year % 4 === 0;
+    }
+
+    private function rommeLeapYearsCount(int $years): int
+    {
+        if ($years <= 0) {
+            return 0;
+        }
+
+        return intdiv($years, 4)
+            - intdiv($years, 100)
+            + intdiv($years, 400)
+            - intdiv($years, 4000);
     }
 }

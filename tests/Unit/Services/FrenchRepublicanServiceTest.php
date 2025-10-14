@@ -137,9 +137,15 @@ class FrenchRepublicanServiceTest extends TestCase
         $date = Carbon::create(2025, 10, 15, 0, 0, 0, 'Europe/Paris');
         $french = $service->fromGregorian($date);
 
-        $this->assertGreaterThan(14, $french['year']);
-        $this->assertGreaterThanOrEqual(1, $french['month']);
-        $this->assertLessThanOrEqual(13, $french['month']);
+        $this->assertSame(234, $french['year']);
+        $this->assertSame(1, $french['month']);
+        $this->assertSame(24, $french['day']);
+        $this->assertSame('Vendémiaire', $french['month_name']);
+        $this->assertSame('Quartidi', $french['day_of_week']);
+        $this->assertSame(4, $french['decade_day']);
+        $this->assertFalse($french['is_leap_year']);
+        $this->assertSame('234/1/24', $french['full_date']);
+        $this->assertSame('24 Vendémiaire An 234', $french['display']);
 
         $roundTrip = $service->toGregorian([
             'year' => $french['year'],

@@ -94,3 +94,76 @@ it('shows loading skeletons when additional calendars are not loaded', function 
     ])
         ->assertSeeHtmlInOrder(['<div', 'animate-pulse']);
 });
+
+it('renders french republican calendar details with display format', function () {
+    $mockData = [
+        'french_republican' => [
+            'name' => 'French Republican',
+            'full_date' => '232/12/16',
+            'display' => '16 Fructidor An 232',
+            'month_name' => 'Fructidor',
+            'day' => 16,
+            'day_of_week' => 'Quartidi',
+            'year' => 232,
+            'tags' => ['historical', 'solar'],
+        ],
+    ];
+
+    Volt::test('components.calendar-results-grid', ['conversionResults' => $mockData])
+        ->assertSee('French Republican')
+        ->assertSee('16 Fructidor An 232')
+        ->assertSee('Quartidi')
+        ->assertSee('Fructidor');
+});
+
+it('renders french republican calendar with paris offset disabled', function () {
+    $mockData = [
+        'french_republican' => [
+            'name' => 'French Republican',
+            'full_date' => '232/12/15',
+            'display' => '15 Fructidor An 232',
+            'month_name' => 'Fructidor',
+            'day' => 15,
+            'day_of_week' => 'Tridi',
+            'year' => 232,
+            'tags' => ['historical', 'solar'],
+        ],
+    ];
+
+    Volt::test('components.calendar-results-grid', ['conversionResults' => $mockData])
+        ->assertSee('French Republican')
+        ->assertSee('15 Fructidor An 232')
+        ->assertSee('Tridi');
+});
+
+it('renders additional calendar data when loaded', function () {
+    $baseData = [
+        'gregorian' => [
+            'name' => 'Gregorian',
+            'full_date' => '2024-09-01',
+            'year' => 2024,
+        ],
+    ];
+
+    $additionalData = [
+        'julian' => [
+            'name' => 'Julian Calendar',
+            'year' => 2024,
+            'month' => 12,
+            'month_name' => 'December',
+            'day' => 19,
+            'day_of_week' => 'Thursday',
+            'full_date' => '2024/12/19',
+            'difference_label' => '13 days behind Gregorian',
+        ],
+    ];
+
+    Volt::test('components.calendar-results-grid', [
+        'conversionResults' => $baseData,
+        'additionalConversionResults' => $additionalData,
+        'additionalCalendarsLoaded' => true,
+    ])
+        ->assertSee('Julian Calendar')
+        ->assertSee('Difference:')
+        ->assertSee('13 days behind Gregorian');
+});
