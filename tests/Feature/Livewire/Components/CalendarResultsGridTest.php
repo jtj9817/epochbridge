@@ -141,7 +141,11 @@ it('renders additional calendar data when loaded', function () {
         'gregorian' => [
             'name' => 'Gregorian',
             'full_date' => '2024-09-01',
+            'tags' => ['solar'],
             'year' => 2024,
+            'month_name' => 'September',
+            'day' => 1,
+            'day_of_week' => 'Sunday',
         ],
     ];
 

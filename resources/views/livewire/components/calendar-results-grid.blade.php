@@ -10,7 +10,7 @@ state([
     'conversionError' => '',
     'searchTerm' => '',
     'selectedTypes' => [],
-])->reactive();
+]);
 
 $filteredResults = computed(function() {
     $conversionResults = is_array($this->conversionResults) ? $this->conversionResults : [];
