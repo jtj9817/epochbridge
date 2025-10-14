@@ -3,9 +3,18 @@
 namespace App\Services;
 
 use Carbon\Carbon;
+use Fisharebest\ExtCalendar\FrenchCalendar;
+use InvalidArgumentException;
 
 class FrenchRepublicanService extends CalendarConversionService
 {
+    private FrenchCalendar $calendar;
+
+    public function __construct()
+    {
+        $this->calendar = new FrenchCalendar;
+    }
+
     private const FRENCH_MONTH_NAMES = [
         1 => 'Vendémiaire',
         2 => 'Brumaire',
@@ -19,6 +28,7 @@ class FrenchRepublicanService extends CalendarConversionService
         10 => 'Messidor',
         11 => 'Thermidor',
         12 => 'Fructidor',
+        13 => 'Sansculottides',
     ];
 
     private const FRENCH_DAY_NAMES = [
@@ -34,25 +44,37 @@ class FrenchRepublicanService extends CalendarConversionService
         9 => 'Décadi',
     ];
 
+    private const COMPLEMENTARY_DAY_NAMES = [
+        1 => 'Jour de la Vertu',
+        2 => 'Jour du Génie',
+        3 => 'Jour du Travail',
+        4 => 'Jour de l\'Opinion',
+        5 => 'Jour des Récompenses',
+        6 => 'Jour de la Révolution',
+    ];
+
     public function fromGregorian(Carbon $date): array
     {
         $date = $this->ensureTimezone($date, 'Europe/Paris');
 
         $jd = gregoriantojd($date->month, $date->day, $date->year);
-        $frenchDate = jdtofrench($jd);
 
-        if ($frenchDate === '0/0/0') {
+        if ($jd < $this->calendar->jdStart() || $jd > $this->calendar->jdEnd()) {
             $this->handleRangeError('Date outside French Republican calendar range');
         }
 
-        [$month, $day, $year] = explode('/', $frenchDate);
-        $month = (int) $month;
-        $day = (int) $day;
-        $year = (int) $year;
+        try {
+            [$year, $month, $day] = $this->calendar->jdToYmd($jd);
+        } catch (InvalidArgumentException $exception) {
+            $this->handleCalculationError('Unable to convert date to French Republican calendar', $exception);
+        }
 
-        $dayOfDecade = ($day - 1) % 10;
+        $dayOfDecade = $month === 13 ? null : (($day - 1) % 10);
         $monthName = self::FRENCH_MONTH_NAMES[$month] ?? 'Unknown';
-        $dayName = self::FRENCH_DAY_NAMES[$dayOfDecade] ?? 'Unknown';
+        $dayName = $month === 13
+            ? (self::COMPLEMENTARY_DAY_NAMES[$day] ?? 'Complementary Day')
+            : (self::FRENCH_DAY_NAMES[$dayOfDecade] ?? 'Unknown');
+        $isLeapYear = $this->calendar->isLeapYear($year);
 
         return [
             'year' => $year,
@@ -60,6 +82,8 @@ class FrenchRepublicanService extends CalendarConversionService
             'month_name' => $monthName,
             'day' => $day,
             'day_of_week' => $dayName,
+            'is_leap_year' => $isLeapYear,
+            'decade_day' => $dayOfDecade !== null ? $dayOfDecade + 1 : null,
             'full_date' => "{$year}/{$month}/{$day}",
             'display' => "{$day} {$monthName} An {$year}",
         ];
@@ -75,16 +99,28 @@ class FrenchRepublicanService extends CalendarConversionService
             $this->handleValidationError('Invalid French Republican date components');
         }
 
-        $jd = frenchtojd($month, $day, $year);
-        $gregorian = jdtogregorian($jd);
+        $year = (int) $year;
+        $month = (int) $month;
+        $day = (int) $day;
 
-        if ($gregorian === '0/0/0') {
+        if (! $this->validateDate($year, $month, $day)) {
+            $this->handleValidationError('Invalid French Republican date components');
+        }
+
+        try {
+            $jd = $this->calendar->ymdToJd($year, $month, $day);
+        } catch (InvalidArgumentException $exception) {
             $this->handleInvalidDate('Invalid French Republican date');
         }
 
-        [$month, $day, $year] = explode('/', $gregorian);
+        if ($jd < $this->calendar->jdStart() || $jd > $this->calendar->jdEnd()) {
+            $this->handleRangeError('Date outside French Republican calendar range');
+        }
 
-        return Carbon::create($year, $month, $day, 0, 0, 0, 'Europe/Paris');
+        $gregorian = jdtogregorian($jd);
+        [$gMonth, $gDay, $gYear] = explode('/', $gregorian);
+
+        return Carbon::create($gYear, $gMonth, $gDay, 0, 0, 0, 'Europe/Paris');
     }
 
     public function getKey(): string
@@ -126,8 +162,8 @@ class FrenchRepublicanService extends CalendarConversionService
 
     private function isFrenchLeapYear(int $year): bool
     {
-        // French Republican leap year rule (simplified)
-        return $year % 4 === 0 && ($year % 100 !== 0 || $year % 400 === 0);
+        // Leap years were historically observed in Years III, VII, and XI (year % 4 === 3)
+        return $this->calendar->isLeapYear($year);
     }
 
     public function getTags(): array
