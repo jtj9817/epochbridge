@@ -156,7 +156,8 @@ $displayResults = computed(function() {
                 @foreach($displayResults as $key => $data)
                     @php
                         $shouldRender = is_array($data) && !isset($data['error']);
-                        $allowScalar = in_array($key, $scalarResultKeys, true) && is_scalar($data);
+                        $scalarMap = is_array($this->scalarResults) ? $this->scalarResults : [];
+                        $allowScalar = array_key_exists($key, $scalarMap) && is_scalar($data);
                     @endphp
                     @if($shouldRender || $allowScalar)
                         @switch($key)
