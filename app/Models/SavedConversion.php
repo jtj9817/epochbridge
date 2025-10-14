@@ -17,6 +17,7 @@ class SavedConversion extends Model
      */
     protected $fillable = [
         'original_input',
+        'conversion_data',
         'gregorian_date',
         'jalali_date',
         'unix_timestamp',
@@ -31,6 +32,7 @@ class SavedConversion extends Model
     protected function casts(): array
     {
         return [
+            'conversion_data' => 'array',
             'gregorian_date' => 'date',
         ];
     }
@@ -41,5 +43,37 @@ class SavedConversion extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the gregorian date attribute with backward compatibility.
+     */
+    public function getGregorianDateAttribute($value)
+    {
+        return $this->conversion_data['gregorian']['full_date'] ?? $value;
+    }
+
+    /**
+     * Get the jalali date attribute with backward compatibility.
+     */
+    public function getJalaliDateAttribute($value)
+    {
+        return $this->conversion_data['jalali']['full_date'] ?? $value;
+    }
+
+    /**
+     * Get the unix timestamp attribute with backward compatibility.
+     */
+    public function getUnixTimestampAttribute($value)
+    {
+        return $this->conversion_data['unix'] ?? $value;
+    }
+
+    /**
+     * Get the iso8601 string attribute with backward compatibility.
+     */
+    public function getIso8601StringAttribute($value)
+    {
+        return $this->conversion_data['iso8601'] ?? $value;
     }
 }
