@@ -1,13 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
-use function Livewire\Volt\{state, on};
 
-state(['savedConversions' => fn () => Auth::check() ? Auth::user()->savedConversions()->get() : collect()]);
+use function Livewire\Volt\on;
+use function Livewire\Volt\state;
+
+state(['savedConversions' => fn () => Auth::check() ? Auth::user()->savedConversions()->latest()->get() : collect()]);
 
 on(['conversion-saved' => function () {
     if (Auth::check()) {
-        $this->savedConversions = Auth::user()->savedConversions()->get();
+        $this->savedConversions = Auth::user()->savedConversions()->latest()->get();
     }
 }]);
 
@@ -51,7 +53,7 @@ $deleteConversion = function (int $id) {
         <h2 class="text-2xl font-bold text-theme-900 dark:text-theme-50 mb-6 text-center sm:text-left">
             Your Saved Conversions
         </h2>
-        <div class="space-y-4">
+        <div class="space-y-6">
             <template x-for="item in savedConversions" :key="item.id">
                 <x-saved-conversion-item :item="null" is-guest x-bind:item="item" />
             </template>
@@ -66,7 +68,7 @@ $deleteConversion = function (int $id) {
             <h2 class="text-2xl font-bold text-theme-900 dark:text-theme-50 mb-6 text-center sm:text-left">
                 Your Saved Conversions
             </h2>
-            <div class="space-y-4">
+            <div class="space-y-6">
                 @foreach($savedConversions as $item)
                     <x-saved-conversion-item :item="$item" wire:key="auth-{{ $item->id }}" />
                 @endforeach
