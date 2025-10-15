@@ -207,6 +207,16 @@ class DateTimeConverterService
     }
 
     /**
+     * Get full conversion results including both primary and additional calendar systems
+     */
+    public function getFullConversionResults(string $dateString, string $inputType = 'gregorian'): array
+    {
+        $primary = $this->convert($dateString, $inputType);
+        $additional = $this->convertAdditional($dateString, $inputType);
+        return array_merge($primary, $additional);
+    }
+
+    /**
      * Convert between specific calendar systems
      */
     public function convertBetweenCalendars(array $sourceDate, string $sourceCalendar, string $targetCalendar): array

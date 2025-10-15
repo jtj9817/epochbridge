@@ -46,13 +46,17 @@ mount(function () {
 
 $resolveConverter = static fn (?DateTimeConverterService $service = null) => $service ?? app(DateTimeConverterService::class);
 
-$saveConversion = function () {
+$saveConversion = function (DateTimeConverterService $converter) {
     if (! Auth::check() || empty($this->conversionResults)) {
         return;
     }
 
+    $allResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
+
     Auth::user()->savedConversions()->create([
         'original_input' => $this->dateInput,
+        'conversion_data' => $allResults,
+        // Keep old fields for backward compatibility during transition
         'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
         'jalali_date' => $this->conversionResults['jalali']['full_date'],
         'unix_timestamp' => $this->conversionResults['unix'],
@@ -89,7 +93,9 @@ on([
         $this->searchTerm = $searchTerm;
         $this->selectedTypes = $selectedTypes;
     },
-    'save-conversion' => $saveConversion,
+    'save-conversion' => function (DateTimeConverterService $converter = null) use ($resolveConverter, $saveConversion) {
+        $saveConversion($resolveConverter($converter));
+    },
 ]);
 
 $convertDate = function (?DateTimeConverterService $converter = null) use ($resolveConverter) {
