@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -23,15 +23,15 @@ return new class extends Migration
                 'gregorian' => [
                     'full_date' => $conversion->gregorian_date,
                     'name' => 'Gregorian',
-                    'tags' => ['modern']
+                    'tags' => ['modern'],
                 ],
                 'jalali' => [
                     'full_date' => $conversion->jalali_date,
                     'name' => 'Jalali (Persian)',
-                    'tags' => ['modern']
+                    'tags' => ['modern'],
                 ],
                 'unix' => $conversion->unix_timestamp,
-                'iso8601' => $conversion->iso8601_string
+                'iso8601' => $conversion->iso8601_string,
             ];
 
             DB::table('saved_conversions')

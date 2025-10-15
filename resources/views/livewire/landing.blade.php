@@ -3,7 +3,11 @@
 use App\Exceptions\CalendarConversionException;
 use App\Services\DateTimeConverterService;
 use Illuminate\Support\Facades\Auth;
-use function Livewire\Volt\{state, mount, layout, on};
+
+use function Livewire\Volt\layout;
+use function Livewire\Volt\mount;
+use function Livewire\Volt\on;
+use function Livewire\Volt\state;
 
 layout('components.layouts.public');
 
@@ -37,7 +41,6 @@ state([
     'searchTerm' => '',
     'selectedTypes' => [],
 ]);
-
 
 mount(function () {
     // Initialize with today's date in YYYY-MM-DD format
@@ -93,7 +96,7 @@ on([
         $this->searchTerm = $searchTerm;
         $this->selectedTypes = $selectedTypes;
     },
-    'save-conversion' => function (DateTimeConverterService $converter = null) use ($resolveConverter, $saveConversion) {
+    'save-conversion' => function (?DateTimeConverterService $converter = null) use ($resolveConverter, $saveConversion) {
         $saveConversion($resolveConverter($converter));
     },
 ]);
@@ -104,7 +107,7 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
 
     try {
         $this->conversionResults = $converter->convert($this->dateInput, $this->inputType);
-    } catch (CalendarConversionException | \InvalidArgumentException $e) {
+    } catch (CalendarConversionException|\InvalidArgumentException $e) {
         $this->conversionError = $e->getMessage();
     } catch (\Illuminate\Validation\ValidationException $e) {
         $this->conversionError = $e->validator->errors()->first('dateInput');

@@ -213,6 +213,7 @@ class DateTimeConverterService
     {
         $primary = $this->convert($dateString, $inputType);
         $additional = $this->convertAdditional($dateString, $inputType);
+
         return array_merge($primary, $additional);
     }
 
