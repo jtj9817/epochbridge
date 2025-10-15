@@ -54,3 +54,6 @@ pail_logs_*.txt
 *test_suite_results*.txt
 
 TEST_RESULTS_FORMATTED.md
+
+# Implementation prompts (generated artifacts)
+docs/saved-conversions-enhancement-plan-prompts.md
