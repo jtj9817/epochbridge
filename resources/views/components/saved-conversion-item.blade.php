@@ -76,7 +76,7 @@
                         <div class="transform transition-transform hover:scale-[1.02]">
                             @if($isGuest)
                                 <!-- For guest items, we need to render the card with Alpine.js data binding -->
-                                <div x-data="{ calendarData: {{ json_encode($data) } } }">
+                                <div x-data="{ calendarData: {{ json_encode($data) }} }">
                                     @include($calendarComponents[$system], ['data' => $data])
                                 </div>
                             @else
