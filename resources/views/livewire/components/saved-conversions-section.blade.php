@@ -1,27 +1,59 @@
 <?php
 
+use App\Models\SavedConversion;
 use Illuminate\Support\Facades\Auth;
 
 use function Livewire\Volt\on;
 use function Livewire\Volt\state;
 
-state(['savedConversions' => fn () => Auth::check() ? Auth::user()->savedConversions()->latest()->get() : collect()]);
+state([
+    'savedConversions' => fn () => Auth::check() ? SavedConversion::getPaginatedForUser(Auth::id(), 10) : null,
+    'perPage' => 10,
+]);
 
-on(['conversion-saved' => function () {
-    if (Auth::check()) {
-        $this->savedConversions = Auth::user()->savedConversions()->latest()->get();
-    }
-}]);
+on([
+    'conversion-saved' => function () {
+        if (Auth::check()) {
+            $this->savedConversions = SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage);
+        }
+    },
+    'page-updated' => function ($page) {
+        if (Auth::check()) {
+            $this->savedConversions = SavedConversion::forUser(Auth::id())
+                ->withConversionData()
+                ->paginate($this->perPage, ['*'], 'page', $page);
+        }
+    },
+]);
 
 $deleteConversion = function (int $id) {
     if (Auth::check()) {
-        $conversion = Auth::user()->savedConversions()->find($id);
+        $conversion = SavedConversion::where('user_id', Auth::id())->find($id);
         if ($conversion) {
             $conversion->delete();
-            $this->savedConversions = $this->savedConversions
-                ->reject(fn ($item) => $item->id === $id)
-                ->values();
+            // Refresh pagination to maintain correct page counts
+            $this->savedConversions = SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage);
         }
+    }
+};
+
+$updatedPerPage = function ($perPage) {
+    $this->perPage = $perPage;
+    if (Auth::check()) {
+        $this->savedConversions = SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage);
+    }
+};
+
+$setPage = function ($url) {
+    if (Auth::check() && $url) {
+        // Extract page number from URL
+        $parsedUrl = parse_url($url);
+        parse_str($parsedUrl['query'] ?? '', $query);
+        $page = $query['page'] ?? 1;
+
+        $this->savedConversions = SavedConversion::forUser(Auth::id())
+            ->withConversionData()
+            ->paginate($this->perPage, ['*'], 'page', $page);
     }
 };
 
@@ -92,15 +124,95 @@ $deleteConversion = function (int $id) {
     <!-- Saved Conversions for Authenticated Users -->
     @auth
     <div id="saved-conversions-auth">
-        @if ($savedConversions->isNotEmpty())
-            <h2 class="text-2xl font-bold text-theme-900 dark:text-theme-50 mb-6 text-center sm:text-left">
-                Your Saved Conversions
-            </h2>
+        @if ($savedConversions && $savedConversions->isNotEmpty())
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-theme-900 dark:text-theme-50 text-center sm:text-left">
+                    Your Saved Conversions
+                </h2>
+                
+                <!-- Per page selector -->
+                <div class="flex items-center gap-2">
+                    <label for="per-page" class="text-sm text-theme-600 dark:text-theme-300">Show:</label>
+                    <select 
+                        id="per-page" 
+                        wire:model.live="perPage" 
+                        wire:change="updatedPerPage"
+                        class="px-3 py-1 text-sm border border-theme-300 dark:border-theme-600 rounded-md bg-theme-50 dark:bg-theme-700 text-theme-900 dark:text-theme-100 focus:ring-2 focus:ring-theme-500 focus:border-transparent"
+                    >
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+            </div>
+            
             <div class="space-y-6">
                 @foreach($savedConversions as $item)
                     <x-saved-conversion-item :item="$item" wire:key="auth-{{ $item->id }}" />
                 @endforeach
             </div>
+            
+            <!-- Pagination controls -->
+            @if ($savedConversions->hasPages())
+                <div class="flex items-center justify-between mt-8">
+                    <div class="text-sm text-theme-600 dark:text-theme-300">
+                        Showing {{ $savedConversions->firstItem() }} to {{ $savedConversions->lastItem() }} of {{ $savedConversions->total() }} conversions
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        {{-- Previous Button --}}
+                        @if ($savedConversions->onFirstPage())
+                            <button 
+                                disabled 
+                                class="px-3 py-2 text-sm border border-theme-300 dark:border-theme-600 rounded-md bg-theme-100 dark:bg-theme-800 text-theme-400 dark:text-theme-500 cursor-not-allowed"
+                            >
+                                Previous
+                            </button>
+                        @else
+                            <button 
+                                wire:click="setPage('{{ $savedConversions->previousPageUrl() }}')"
+                                class="px-3 py-2 text-sm border border-theme-300 dark:border-theme-600 rounded-md bg-theme-50 dark:bg-theme-700 text-theme-900 dark:text-theme-100 hover:bg-theme-100 dark:hover:bg-theme-600 transition-colors"
+                            >
+                                Previous
+                            </button>
+                        @endif
+                        
+                        {{-- Page Numbers --}}
+                        @foreach ($savedConversions->links()->elements[0] as $page)
+                            @if ($page['url'])
+                                <button 
+                                    wire:click="setPage('{{ $page['url'] }}')"
+                                    class="px-3 py-2 text-sm border border-theme-300 dark:border-theme-600 rounded-md {{ $page['active'] ? 'bg-theme-300 dark:bg-theme-500 text-theme-900 dark:text-theme-100' : 'bg-theme-50 dark:bg-theme-700 text-theme-900 dark:text-theme-100 hover:bg-theme-100 dark:hover:bg-theme-600' }} transition-colors"
+                                >
+                                    {{ $page['label'] }}
+                                </button>
+                            @else
+                                <span class="px-3 py-2 text-sm text-theme-500 dark:text-theme-400">
+                                    {{ $page['label'] }}
+                                </span>
+                            @endif
+                        @endforeach
+                        
+                        {{-- Next Button --}}
+                        @if ($savedConversions->hasMorePages())
+                            <button 
+                                wire:click="setPage('{{ $savedConversions->nextPageUrl() }}')"
+                                class="px-3 py-2 text-sm border border-theme-300 dark:border-theme-600 rounded-md bg-theme-50 dark:bg-theme-700 text-theme-900 dark:text-theme-100 hover:bg-theme-100 dark:hover:bg-theme-600 transition-colors"
+                            >
+                                Next
+                            </button>
+                        @else
+                            <button 
+                                disabled 
+                                class="px-3 py-2 text-sm border border-theme-300 dark:border-theme-600 rounded-md bg-theme-100 dark:bg-theme-800 text-theme-400 dark:text-theme-500 cursor-not-allowed"
+                            >
+                                Next
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            @endif
         @endif
     </div>
     @endauth

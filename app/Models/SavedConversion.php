@@ -46,6 +46,48 @@ class SavedConversion extends Model
     }
 
     /**
+     * Scope a query to only include conversions for a specific user with optimized ordering.
+     */
+    public function scopeForUser($query, $userId)
+    {
+        return $query->where('user_id', $userId)->latest('created_at');
+    }
+
+    /**
+     * Scope a query to include conversion data efficiently.
+     */
+    public function scopeWithConversionData($query)
+    {
+        return $query->select(['id', 'user_id', 'original_input', 'conversion_data', 'created_at', 'updated_at']);
+    }
+
+    /**
+     * Get paginated conversions for a user with optimized queries.
+     */
+    public static function getPaginatedForUser($userId, $perPage = 10)
+    {
+        return static::forUser($userId)
+            ->withConversionData()
+            ->paginate($perPage);
+    }
+
+    /**
+     * Get paginated conversions with performance monitoring.
+     */
+    public static function getPaginatedForUserWithMonitoring($userId, $perPage = 10)
+    {
+        if (app()->environment('local', 'testing')) {
+            // Use monitoring in development/testing
+            $result = \App\Services\PerformanceMonitoringService::monitorSavedConversionsQuery($userId, $perPage);
+
+            return $result['conversions'];
+        }
+
+        // Production: use optimized query without monitoring overhead
+        return static::getPaginatedForUser($userId, $perPage);
+    }
+
+    /**
      * Get the gregorian date attribute with backward compatibility.
      */
     public function getGregorianDateAttribute($value)
