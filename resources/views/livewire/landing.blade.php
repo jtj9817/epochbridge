@@ -118,21 +118,80 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
 
 <div id="landing-page-container" class="min-h-screen bg-theme-50 dark:bg-theme-900"
      x-data="{
-        showResults: @entangle('conversionResults'),
-        showSaveLimitNotification: false
-     }"
-     @save-guest-conversion.window="
-        const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
-        if (savedConversions.length >= 3) {
-            showSaveLimitNotification = true;
-            return;
-        }
-        const newConversion = JSON.parse(JSON.stringify(showResults));
-        newConversion.id = Date.now();
-        savedConversions.unshift(newConversion);
-        localStorage.setItem('savedConversions', JSON.stringify(savedConversions.slice(0, 3)));
-        window.dispatchEvent(new CustomEvent('new-guest-conversion', { detail: { conversion: newConversion }}));
-     ">
+         showResults: @entangle('conversionResults'),
+         showSaveLimitNotification: false,
+         dateInput: @entangle('dateInput'),
+         inputType: @entangle('inputType'),
+         
+         init() {
+             this.migrateGuestData();
+         },
+         
+         migrateGuestData() {
+             const existingData = localStorage.getItem('savedConversions');
+             if (existingData) {
+                 try {
+                     const parsed = JSON.parse(existingData);
+                     // Check if old format (missing conversion_data)
+                     if (parsed.length > 0 && !parsed[0].conversion_data) {
+                         const migratedData = parsed.map(item => {
+                             if (item.conversion_data) {
+                                 return item; // Already migrated
+                             }
+                             
+                             // Migrate old format to new structure
+                             const conversionData = {
+                                 'gregorian': {
+                                     'full_date': item.gregorian?.full_date || item.gregorian_date,
+                                     'name': 'Gregorian',
+                                     'tags': ['modern', 'solar']
+                                 },
+                                 'jalali': {
+                                     'full_date': item.jalali?.full_date || item.jalali_date,
+                                     'name': 'Jalali',
+                                     'tags': ['modern', 'solar']
+                                 },
+                                 'unix': item.unix || item.unix_timestamp,
+                                 'iso8601': item.iso8601 || item.iso8601_string
+                             };
+                             
+                             return {
+                                 ...item,
+                                 conversion_data: conversionData,
+                                 original_input: item.original_input || this.dateInput,
+                                 created_at: item.created_at || new Date().toISOString()
+                             };
+                         });
+                         
+                         localStorage.setItem('savedConversions', JSON.stringify(migratedData));
+                     }
+                 } catch (e) {
+                     console.warn('Failed to migrate guest data:', e);
+                     // Clear corrupted data
+                     localStorage.removeItem('savedConversions');
+                 }
+             }
+         }
+      }"
+      @save-guest-conversion.window="
+         const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
+         if (savedConversions.length >= 3) {
+             showSaveLimitNotification = true;
+             return;
+         }
+         
+         // Store complete conversion data with the same structure as database
+         const newConversion = {
+             id: Date.now(),
+             original_input: dateInput,
+             conversion_data: JSON.parse(JSON.stringify(showResults)),
+             created_at: new Date().toISOString()
+         };
+         
+         savedConversions.unshift(newConversion);
+         localStorage.setItem('savedConversions', JSON.stringify(savedConversions.slice(0, 3)));
+         window.dispatchEvent(new CustomEvent('new-guest-conversion', { detail: { conversion: newConversion }}));
+      ">
 
     <!-- Header -->
     <header id="landing-header" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

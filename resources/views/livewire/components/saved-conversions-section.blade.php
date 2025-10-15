@@ -34,17 +34,45 @@ $deleteConversion = function (int $id) {
         id="saved-conversions-guest"
         x-data="{
             savedConversions: [],
+            
             init() {
-                this.savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
+                this.loadSavedConversions();
                 window.addEventListener('new-guest-conversion', event => {
                     this.savedConversions.unshift(event.detail.conversion);
                     this.savedConversions = this.savedConversions.slice(0, 3);
-                    localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
+                    this.saveToLocalStorage();
                 });
             },
+            
+            loadSavedConversions() {
+                try {
+                    const data = localStorage.getItem('savedConversions');
+                    if (data) {
+                        this.savedConversions = JSON.parse(data);
+                    }
+                } catch (e) {
+                    console.warn('Failed to load guest conversions:', e);
+                    this.savedConversions = [];
+                }
+            },
+            
+            saveToLocalStorage() {
+                try {
+                    localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
+                } catch (e) {
+                    console.warn('Failed to save guest conversions:', e);
+                    // Handle localStorage quota exceeded
+                    if (e.name === 'QuotaExceededError') {
+                        // Keep only the most recent conversion
+                        this.savedConversions = this.savedConversions.slice(0, 1);
+                        localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
+                    }
+                }
+            },
+            
             deleteSaved(id) {
                 this.savedConversions = this.savedConversions.filter(item => item.id !== id);
-                localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
+                this.saveToLocalStorage();
             }
         }"
         x-show="savedConversions.length > 0"
