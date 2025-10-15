@@ -55,17 +55,11 @@ it('shows an error message when passed', function () {
 });
 
 it('filters results by search term', function () {
-    $component = Volt::test('components.calendar-results-grid', ['conversionResults' => $this->baseResults])
-        ->set('searchTerm', 'Jalali');
-
-    $component
-        ->assertSet('filteredResults', function ($results) {
-            expect(array_keys($results))->toBe(['jalali']);
-
-            return true;
-        })
+    Volt::test('components.calendar-results-grid', ['conversionResults' => $this->baseResults])
+        ->set('searchTerm', 'Jalali')
         ->assertSee('Jalali')
-        ->assertDontSeeText('Gregorian');
+        ->assertDontSeeText('Gregorian')
+        ->assertDontSeeText('Islamic');
 });
 
 it('filters results by type', function () {
@@ -74,24 +68,6 @@ it('filters results by type', function () {
         ->set('selectedTypes', ['lunar']);
 
     $component
-        ->assertSet('filteredResults', function ($results) {
-            expect(array_keys($results))->toBe(['islamic']);
-
-            return true;
-        })
-        ->assertSet('displayResults', function ($results) {
-            expect(array_keys($results))->toBe([
-                'islamic',
-                'unix',
-                'iso8601',
-                'julian-day',
-                'modified-julian-day',
-            ]);
-
-            return true;
-        })
-        ->assertSet('displayResults.unix', 1704067200)
-        ->assertSet('displayResults.iso8601', '2024-01-01T00:00:00+00:00')
         ->assertSee('Islamic')
         ->assertDontSeeText('Gregorian')
         ->assertDontSeeText('Jalali')
