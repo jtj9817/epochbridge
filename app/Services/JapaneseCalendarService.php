@@ -66,17 +66,13 @@ class JapaneseCalendarService extends CalendarConversionService
         $day = (int) $day;
         $gregorianYear = $this->calculateGregorianYear($era, $eraYear);
 
-        if (! $this->validateDate($eraYear, $month, $day)) {
+        if (! $this->isValidEraDate($era, $eraYear, $month, $day)) {
             $this->handleValidationError("Invalid Japanese date: {$eraName} {$eraYear}/{$month}/{$day}");
         }
 
-        $candidateDate = Carbon::createFromFormat(
-            'Y-n-j H:i:s',
-            "{$gregorianYear}-{$month}-{$day} 00:00:00",
-            'Asia/Tokyo'
-        );
-
-        if ($candidateDate === false) {
+        try {
+            $candidateDate = Carbon::createSafe($gregorianYear, $month, $day, 0, 0, 0, 'Asia/Tokyo');
+        } catch (\Throwable $e) {
             $this->handleValidationError("Invalid Japanese date: {$eraName} {$eraYear}/{$month}/{$day}");
         }
 
@@ -113,8 +109,8 @@ class JapaneseCalendarService extends CalendarConversionService
     public function getDaysInMonth(int $year, int $month): int
     {
         return match ($month) {
-            2 => 29, // Leap-safe default; actual validation occurs against era metadata
             4, 6, 9, 11 => 30,
+            2 => 29,
             default => 31,
         };
     }
@@ -155,5 +151,39 @@ class JapaneseCalendarService extends CalendarConversionService
             ->orWhere('name_japanese', $eraName)
             ->orWhere('name_english', $eraName)
             ->first();
+    }
+
+    private function isValidEraDate(JapaneseEra $era, int $eraYear, int $month, int $day): bool
+    {
+        if ($eraYear < 1 || $month < 1 || $month > 12 || $day < 1) {
+            return false;
+        }
+
+        $gregorianYear = $this->calculateGregorianYear($era, $eraYear);
+
+        if ($month === 2) {
+            $daysInMonth = checkdate(2, 29, $gregorianYear) ? 29 : 28;
+        } else {
+            $daysInMonth = $this->getDaysInMonth($eraYear, $month);
+        }
+
+        if ($day > $daysInMonth) {
+            return false;
+        }
+
+        if ($eraYear === 1 && $this->fallsBeforeEraStart($era, $month, $day)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function fallsBeforeEraStart(JapaneseEra $era, int $month, int $day): bool
+    {
+        $start = $era->start_date;
+
+        return $start->month === $month
+            ? $day < $start->day
+            : $month < $start->month;
     }
 }
