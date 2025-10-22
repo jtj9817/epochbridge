@@ -88,7 +88,8 @@ test('backward compatibility accessors fall back to original fields', function (
     ]);
 
     // Test accessors fall back to original fields
-    expect($savedConversion->gregorian_date)->toBe('2024-01-15')
+    expect($savedConversion->gregorian_date)->toBeInstanceOf(\Carbon\Carbon::class)
+        ->and($savedConversion->gregorian_date->format('Y-m-d'))->toBe('2024-01-15')
         ->and($savedConversion->jalali_date)->toBe('1402/10/24')
         ->and($savedConversion->unix_timestamp)->toBe(1705276800)
         ->and($savedConversion->iso8601_string)->toBe('2024-01-15T00:00:00Z');
@@ -139,6 +140,7 @@ test('saved conversion casts gregorian_date as date', function () {
     $user = User::factory()->create();
     $savedConversion = SavedConversion::factory()->create([
         'user_id' => $user->id,
+        'conversion_data' => null,
         'gregorian_date' => '2024-01-15',
     ]);
 
@@ -188,7 +190,8 @@ test('getPaginatedForUser hydrates conversion data and legacy fields', function 
 
     expect($legacyItem)->not()->toBeNull()
         ->and($legacyItem->conversion_data)->toBeNull()
-        ->and($legacyItem->gregorian_date)->toBe('2023-05-10')
+        ->and($legacyItem->gregorian_date)->toBeInstanceOf(\Carbon\Carbon::class)
+        ->and($legacyItem->gregorian_date->format('Y-m-d'))->toBe('2023-05-10')
         ->and($legacyItem->jalali_date)->toBe('1402/02/20')
         ->and($legacyItem->unix_timestamp)->toBe(1683676800)
         ->and($legacyItem->iso8601_string)->toBe('2023-05-10T00:00:00Z');
