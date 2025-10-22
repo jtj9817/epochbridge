@@ -171,6 +171,8 @@ class DateTimeConverterService
                 'hebrew', 'islamic', 'french_republican', 'chinese', 'japanese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian', 'mayan', 'julian' => $this->convertFromCalendar($inputType, $dateString),
                 default => throw new InvalidArgumentException('Invalid input type provided.'),
             };
+        } catch (CalendarMalformedDateException $e) {
+            throw $e;
         } catch (CalendarConversionException $e) {
             throw $e; // Re-throw calendar-specific exceptions
         } catch (\Exception $e) {
@@ -268,11 +270,11 @@ class DateTimeConverterService
             );
         }
 
-        return $service->toGregorian([
+        return Carbon::instance($service->toGregorian([
             'era' => $eraName,
             'year' => $eraYear,
             'month' => $month,
             'day' => $day,
-        ]);
+        ]));
     }
 }
