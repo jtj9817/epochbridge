@@ -154,6 +154,9 @@ test('saved conversion casts gregorian_date as date', function () {
             'gregorian' => ['full_date' => '2024-01-20'],
         ],
         'gregorian_date' => '2024-01-20',
+        'jalali_date' => '1402/11/30',
+        'unix_timestamp' => 1705708800,
+        'iso8601_string' => '2024-01-20T00:00:00Z',
     ]);
 
     expect($withConversionData->gregorian_date)->toBe('2024-01-20');
