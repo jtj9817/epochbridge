@@ -139,4 +139,68 @@ class SavedConversion extends Model
     {
         return $this->conversion_data['iso8601'] ?? $value;
     }
+
+    /**
+     * Get normalized legacy values for display when conversion_data is unavailable.
+     */
+    public function legacyValues(): array
+    {
+        return [
+            'gregorian' => $this->formatLegacyDate($this->gregorian_date),
+            'jalali' => $this->normalizeString($this->jalali_date),
+            'unix' => $this->normalizeNumeric($this->unix_timestamp),
+            'iso8601' => $this->normalizeString($this->iso8601_string),
+        ];
+    }
+
+    /**
+     * Determine if any legacy values are present.
+     */
+    public function hasLegacyValues(): bool
+    {
+        return collect($this->legacyValues())
+            ->filter(fn ($value) => $value !== null && $value !== '')
+            ->isNotEmpty();
+    }
+
+    protected function formatLegacyDate(mixed $value): ?string
+    {
+        if ($value instanceof Carbon) {
+            return $value->format('Y-m-d');
+        }
+
+        if (is_string($value) && trim($value) !== '') {
+            try {
+                return Carbon::parse($value)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                return trim($value);
+            }
+        }
+
+        return null;
+    }
+
+    protected function normalizeString(mixed $value): ?string
+    {
+        if ($value instanceof Carbon) {
+            return $value->toIso8601String();
+        }
+
+        if (is_string($value)) {
+            $trimmed = trim($value);
+
+            return $trimmed === '' ? null : $trimmed;
+        }
+
+        return null;
+    }
+
+    protected function normalizeNumeric(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return is_numeric($value) ? (string) $value : null;
+    }
 }

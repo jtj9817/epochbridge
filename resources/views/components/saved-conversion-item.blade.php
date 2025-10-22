@@ -98,18 +98,15 @@
                     <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">ISO 8601:</strong> <span x-text="item.iso8601 || 'N/A'"></span></div>
                 @else
                     @php
-                        $legacyGregorian = $item->gregorian_date?->format('Y-m-d');
-                        $legacyJalali = $item->jalali_date;
-                        $legacyUnix = $item->unix_timestamp;
-                        $legacyIso = $item->iso8601_string;
-                        $hasLegacyData = $legacyGregorian || $legacyJalali || $legacyUnix || $legacyIso;
+                        $legacyValues = $item->legacyValues();
+                        $hasLegacyData = $item->hasLegacyValues();
                     @endphp
 
                     @if($hasLegacyData)
-                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span>{{ $legacyGregorian ?? 'N/A' }}</span></div>
-                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span>{{ $legacyJalali ?? 'N/A' }}</span></div>
-                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span>{{ $legacyUnix ?? 'N/A' }}</span></div>
-                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">ISO 8601:</strong> <span>{{ $legacyIso ?? 'N/A' }}</span></div>
+                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span>{{ $legacyValues['gregorian'] ?? 'N/A' }}</span></div>
+                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span>{{ $legacyValues['jalali'] ?? 'N/A' }}</span></div>
+                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span>{{ $legacyValues['unix'] ?? 'N/A' }}</span></div>
+                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">ISO 8601:</strong> <span>{{ $legacyValues['iso8601'] ?? 'N/A' }}</span></div>
                     @else
                         <div class="text-sm text-theme-500 dark:text-theme-400 col-span-full">
                             Saved conversion details are unavailable for this entry.
