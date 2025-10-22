@@ -4,6 +4,7 @@ namespace Tests\Unit\Services;
 
 use App\Services\ChineseCalendarService;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ChineseCalendarServiceTest extends TestCase
@@ -81,11 +82,7 @@ class ChineseCalendarServiceTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideKnownNewYearDates
-     *
-     * @param  array<string, mixed>  $expected
-     */
+    #[DataProvider('provideKnownNewYearDates')]
     public function test_from_gregorian_matches_known_new_years(Carbon $date, array $expected): void
     {
         $result = $this->service->fromGregorian($date);
@@ -146,11 +143,7 @@ class ChineseCalendarServiceTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideChineseToGregorianMappings
-     *
-     * @param  array<string, mixed>  $input
-     */
+    #[DataProvider('provideChineseToGregorianMappings')]
     public function test_to_gregorian_matches_known_new_year_dates(array $input, string $expectedDate): void
     {
         $gregorian = $this->service->toGregorian($input);
