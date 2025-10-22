@@ -94,10 +94,10 @@
         <div class="p-4">
             <div class="text-sm text-theme-600 dark:text-theme-300 grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2">
                 @if($isGuest)
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span x-text="item.gregorian?.full_date || 'N/A'"></span></div>
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span x-text="item.jalali?.full_date || 'N/A'"></span></div>
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span x-text="item.unix || 'N/A'"></span></div>
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">ISO 8601:</strong> <span x-text="item.iso8601 || 'N/A'"></span></div>
+                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span x-text="item.conversion_data?.gregorian?.full_date || 'N/A'"></span></div>
+                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span x-text="item.conversion_data?.jalali?.full_date || 'N/A'"></span></div>
+                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span x-text="item.conversion_data?.unix || 'N/A'"></span></div>
+                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">ISO 8601:</strong> <span x-text="item.conversion_data?.iso8601 || 'N/A'"></span></div>
                 @else
                     @php
                         $legacyValues = $item->legacy_display_values ?? $item->legacyValues();
