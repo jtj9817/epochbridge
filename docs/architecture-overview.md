@@ -481,7 +481,11 @@ app/Services/
 ├── JulianCalendarService.php      # Julian calendar (historical dates)
 ├── HebrewCalendarService.php      # Jewish calendar (lunar-solar)
 ├── IslamicCalendarService.php     # Hijri lunar calendar
-├── ChineseCalendarService.php     # Chinese lunisolar with zodiac
+├── ChineseCalendarService.php     # Chinese lunisolar calendar (orchestrator)
+├── Chinese/                       # Chinese calendar astronomical subsystem
+│   ├── ChineseLunisolarCalendar.php  # Suì construction and lunation logic
+│   ├── AstronomyCalculator.php       # Meeus-based Sun/Moon ephemerides with ΔT
+│   └── LunarMonth.php                # Lunation data structure with month length
 ├── JapaneseCalendarService.php    # Imperial era-based calendar
 ├── FrenchRepublicanService.php    # Revolutionary calendar with DI & proleptic support
 ├── CopticCalendarService.php      # Egyptian Christian calendar
@@ -636,6 +640,45 @@ French Republican calendar behavior is configurable via `config/calendars.php`:
 **Paris Mean Solar Offset**: The French Republican calendar was based on astronomical observations at the Paris Observatory. This offset aligns conversions with historical equinox observations.
 
 **Proleptic Support**: Extends calendar calculations beyond the official usage period (1792-1805) using mathematical rules, allowing conversion of any date.
+
+### Chinese Calendar Astronomical Architecture
+
+The Chinese lunisolar calendar implementation uses a sophisticated multi-class architecture for precise astronomical calculations:
+
+#### Components
+
+**ChineseLunisolarCalendar** (`app/Services/Chinese/ChineseLunisolarCalendar.php`)
+- Orchestrates suì (Chinese year) construction and lunation sequencing
+- Implements dìngqì solar term convention for accurate leap month detection
+- Caches lunation sequences per suì and per Chinese year for performance
+- Uses "first lunation after winter solstice + one" rule for 正月 (first month)
+- Handles leap month detection via "first month with no major term" rule
+
+**AstronomyCalculator** (`app/Services/Chinese/AstronomyCalculator.php`)
+- Provides Meeus-based Sun and Moon ephemerides (Jean Meeus algorithms)
+- Implements ΔT (Delta T) corrections using Espenak–Meeus polynomials for 1900–2100
+- Calculates new moon times from Meeus chapter 49 with all periodic corrections
+- Solves major solar terms via Newton iteration on apparent solar longitude
+- Converts astronomical times to Beijing civil days (UTC+8) with midnight boundaries
+
+**LunarMonth** (`app/Services/Chinese/LunarMonth.php`)
+- Immutable data structure representing a single lunation (lunar month)
+- Contains: Chinese year, month number, leap flag, month length, start/end dates
+- Provides helper methods for month length calculation and date validation
+
+#### Features
+
+- **Astronomical Accuracy**: True lunisolar calculations using Jean Meeus algorithms
+- **ΔT Corrections**: Applies proper time corrections for historical accuracy
+- **Leap Month Detection**: Uses dìngqì convention (first post-solstice lunation lacking major term)
+- **Performance Caching**: Month sequences cached per suì to avoid redundant calculations
+- **Edge Case Handling**: Properly handles anomalies like the 2033 leap month 11
+- **Validation & Conversion**: Self-consistent month lengths from computed lunations
+- **Solar Terms**: All 24 solar terms calculated from apparent solar longitude (15° bins)
+
+#### Configuration
+
+Chinese calendar calculations use Beijing timezone (`Asia/Shanghai`, UTC+8) for all astronomical events and civil day boundaries.
 
 ## Database Architecture
 

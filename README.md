@@ -256,7 +256,11 @@ app/
 │   ├── JulianCalendarService.php      # Julian calendar (historical dates)
 │   │   ├── HebrewCalendarService.php      # Hebrew calendar
 │   │   ├── IslamicCalendarService.php     # Islamic/Hijri calendar
-│   │   ├── ChineseCalendarService.php     # Chinese lunisolar calendar
+│   │   ├── ChineseCalendarService.php     # Chinese lunisolar calendar (orchestrator)
+│   │   ├── Chinese/                       # Chinese calendar astronomical subsystem
+│   │   │   ├── ChineseLunisolarCalendar.php  # Suì construction and lunation logic
+│   │   │   ├── AstronomyCalculator.php       # Meeus-based Sun/Moon ephemerides with ΔT
+│   │   │   └── LunarMonth.php                # Lunation data structure
 │   │   ├── JapaneseCalendarService.php    # Japanese era-based calendar
 │   │   ├── FrenchRepublicanService.php    # French Revolutionary calendar with DI
 │   │   ├── CopticCalendarService.php      # Coptic calendar
@@ -405,7 +409,7 @@ The core functionality is powered by `DateTimeConverterService` and 15+ speciali
 - **Mayan**: Complex Mesoamerican calendar system
 
 #### East Asian Calendars
-- **Chinese Lunisolar**: Traditional Chinese calendar with zodiac
+- **Chinese Lunisolar**: Traditional Chinese calendar with astronomical calculations, Meeus algorithms for Sun/Moon ephemerides, ΔT corrections, and dìngqì solar term convention for accurate leap month detection
 - **Japanese Era-based**: Calendar with imperial era names
 
 ### User Features

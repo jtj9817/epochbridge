@@ -87,7 +87,106 @@ Consider using the adapter pattern when:
 - ✅ High test coverage with mocked dependencies is desired
 - ✅ Future alternative implementations are anticipated
 
-**Example**: French Republican calendar with proleptic support and Paris mean solar offset
+**Examples**: 
+- French Republican calendar with proleptic support and Paris mean solar offset
+- Chinese lunisolar calendar with astronomical calculations and ΔT corrections
+
+### Advanced: Multi-Class Subsystem Architecture
+
+For extremely complex calendars requiring astronomical calculations, consider a dedicated subsystem with multiple specialized classes.
+
+#### When to Use Multi-Class Subsystem
+
+Use this pattern when:
+
+- ✅ Calendar requires complex astronomical calculations (Sun/Moon ephemerides)
+- ✅ Multiple data structures needed for intermediate calculations
+- ✅ Significant caching and performance optimization required
+- ✅ Algorithms span multiple domains (astronomy, time corrections, calendar logic)
+- ✅ Implementation benefits from separation of concerns
+
+**Example**: Chinese lunisolar calendar with `ChineseLunisolarCalendar`, `AstronomyCalculator`, and `LunarMonth` classes
+
+#### Implementation Structure
+
+```
+app/Services/
+└── YourCalendarService.php          # Main service (orchestrator)
+    └── YourCalendar/                # Dedicated subsystem
+        ├── YourCalendarCalculator.php   # Core calendar logic
+        ├── AstronomyHelper.php          # Astronomical calculations
+        └── CalendarDataStructure.php    # Specialized data structures
+```
+
+**Chinese Calendar Example**:
+```php
+// app/Services/ChineseCalendarService.php (orchestrator)
+class ChineseCalendarService extends CalendarConversionService
+{
+    private ChineseLunisolarCalendar $calendar;
+    
+    public function __construct(?ChineseLunisolarCalendar $calendar = null)
+    {
+        $this->calendar = $calendar ?? new ChineseLunisolarCalendar();
+    }
+    
+    public function fromGregorian(Carbon $date): array
+    {
+        $components = $this->calendar->chineseDateFor($date);
+        // Format and return data
+    }
+}
+
+// app/Services/Chinese/ChineseLunisolarCalendar.php
+class ChineseLunisolarCalendar
+{
+    private AstronomyCalculator $astronomy;
+    private array $suiCache = [];
+    
+    public function chineseDateFor(CarbonInterface $gregorian): array
+    {
+        // Complex lunation logic using astronomy calculator
+    }
+}
+
+// app/Services/Chinese/AstronomyCalculator.php
+class AstronomyCalculator
+{
+    public function newMoonAtOrAfter(CarbonImmutable $moment): CarbonImmutable
+    {
+        // Jean Meeus algorithms with ΔT corrections
+    }
+    
+    public function solarLongitudeAt(CarbonImmutable $moment): float
+    {
+        // Solar position calculations
+    }
+}
+
+// app/Services/Chinese/LunarMonth.php
+class LunarMonth
+{
+    public function __construct(
+        public readonly int $chineseYear,
+        public readonly int $number,
+        public readonly bool $isLeap,
+        public readonly CarbonImmutable $monthStart,
+        public readonly CarbonImmutable $monthEnd,
+    ) {}
+    
+    public function length(): int
+    {
+        return $this->monthStart->diffInDays($this->monthEnd);
+    }
+}
+```
+
+This architecture provides:
+- **Separation of Concerns**: Calendar logic, astronomy, and data structures isolated
+- **Testability**: Each class can be tested independently
+- **Performance**: Dedicated caching strategies per component
+- **Maintainability**: Complex algorithms organized by domain
+- **Extensibility**: Easy to add alternative astronomy calculators
 
 ### Implementation Steps
 
