@@ -3,8 +3,9 @@
 use App\Models\SavedConversion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-uses(RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 test('saved conversion model casts conversion_data as array', function () {
     $user = User::factory()->create();
