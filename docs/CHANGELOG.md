@@ -5,6 +5,114 @@ All notable changes to EpochBridge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [October 21, 2025] - Chinese Calendar Astronomical Implementation & Performance Optimization
+
+### Added
+- **Chinese Calendar Astronomical Subsystem**: Complete replacement of simplified approximations with precise astronomical calculations
+  - `app/Services/Chinese/ChineseLunisolarCalendar.php` - Suì construction and lunation sequencing orchestrator
+  - `app/Services/Chinese/AstronomyCalculator.php` - Meeus-based Sun/Moon ephemerides with ΔT corrections
+  - `app/Services/Chinese/LunarMonth.php` - Immutable lunation data structure with month length helpers
+  - **Jean Meeus Algorithms**: Chapter 49 new moon calculations with all periodic corrections
+  - **ΔT Corrections**: Espenak–Meeus polynomials for 1900–2100 with fallback quadratic approximation
+  - **Dìngqì Solar Term Convention**: Accurate leap month detection via first post-solstice lunation lacking major term
+  - **24 Solar Terms**: All terms calculated from apparent solar longitude (15° bins, 0° = Spring Equinox)
+  - **Beijing Timezone**: All astronomical events converted to UTC+8 civil days with midnight boundaries
+  - **Performance Caching**: Lunation sequences cached per suì and per Chinese year
+  - **Edge Case Handling**: Proper handling of anomalies like 2033 leap month 11
+
+- **Saved Conversions Performance Optimization**: Database indexing and pagination support
+  - `app/Services/PerformanceMonitoringService.php` - Performance tracking and query optimization
+  - Migration `*_add_indexes_to_saved_conversions_table.php` - Composite indexes for user_id and timestamps
+  - Pagination support in `SavedConversionsSection` component with configurable page size
+  - Query optimization with proper eager loading and select column limiting
+
+- **Complete Conversion Data Storage**: Full conversion results stored in JSON format
+  - `conversion_data` JSON field in `saved_conversions` table stores complete calendar outputs
+  - Enhanced `SavedConversion` model with JSON casting and accessor methods
+  - Guest data migration functionality with error handling
+  - Improved saved conversion display with complete calendar information
+
+- **Comprehensive Test Coverage**: New test suites for saved conversions and data migration
+  - `tests/Browser/SavedConversionsTest.php` - Full browser interaction tests
+  - `tests/Feature/DataMigrationTest.php` - Guest to authenticated data migration tests
+  - `tests/Feature/Livewire/SavedConversionsTest.php` - Component behavior tests
+  - `tests/Unit/Models/SavedConversionTest.php` - Model method and relationship tests
+  - Enhanced `SavedConversionsSectionTest.php` with comprehensive assertions
+
+### Changed
+- **ChineseCalendarService**: Complete architectural refactor
+  - Replaced simplified approximation algorithms with precise astronomical calculations
+  - Constructor injection of `ChineseLunisolarCalendar` with optional DI support
+  - Solar terms reordered to start from Spring Equinox (0° apparent solar longitude)
+  - Added heavenly stem and earthly branch to zodiac output
+  - Improved validation using computed lunation data for self-consistency
+  - Month length calculation from actual lunation boundaries
+
+- **Chinese Calendar Tests**: Updated for astronomical accuracy
+  - Test fixtures aligned with actual astronomical events (New Year 2024, leap month 2023)
+  - Added solar term validation and leap month detection tests
+  - Bidirectional conversion tests (Gregorian ↔ Chinese)
+  - Month length and date validation tests with edge cases
+
+- **Saved Conversions Components**: Enhanced UI and data handling
+  - Reactive pagination with Alpine.js state management
+  - Improved ordering by creation date (newest first)
+  - Better error handling and loading states
+  - Optimized database queries with selective column loading
+
+### Fixed
+- **Calendar Results Grid**: Improved scalar and null value handling
+  - Proper filtering for conversion results that may be null or scalar
+  - Enhanced reactivity with Livewire property updates
+  - Fixed Alpine.js data binding syntax errors
+
+- **Saved Conversion Item Display**: Improved formatting and consistency
+  - Proper handling of complete conversion data structure
+  - Enhanced copy functionality with full date information
+  - Better visual hierarchy and spacing
+
+### Technical Improvements
+- **Multi-Class Subsystem Architecture**: Demonstrates advanced pattern for complex calendars
+  - Separation of concerns: calendar logic, astronomy, data structures
+  - Independent testability for each component
+  - Performance optimization through dedicated caching strategies
+  - Maintainability via domain-organized algorithms
+  - Extensibility for alternative astronomy calculators
+
+- **Astronomical Accuracy**: Production-ready calculations
+  - True lunisolar computations using established astronomical algorithms
+  - Proper handling of time corrections (ΔT) for historical accuracy
+  - Newton iteration for precise solar term timing
+  - Self-consistent validation from computed ephemerides
+
+- **Database Performance**: Optimized query patterns
+  - Composite indexes on frequently queried columns
+  - Pagination reduces memory footprint and response times
+  - Eager loading prevents N+1 query problems
+  - Selective column retrieval minimizes data transfer
+
+### Documentation
+- **Architecture Documentation**: Updated for Chinese calendar subsystem
+  - Added "Chinese Calendar Astronomical Architecture" section in `docs/architecture-overview.md`
+  - Detailed component descriptions for ChineseLunisolarCalendar, AstronomyCalculator, LunarMonth
+  - Features, configuration, and implementation notes
+
+- **Integration Guide**: New multi-class subsystem pattern
+  - "Advanced: Multi-Class Subsystem Architecture" section in `docs/calendar-integration-guide.md`
+  - When to use subsystem pattern vs adapter pattern vs simple service
+  - Chinese calendar implementation example with code snippets
+  - Benefits analysis: separation of concerns, testability, performance, maintainability
+
+- **Supplementary Documentation**: Implementation notes in existing docs
+  - Updated `docs/chinese-calendar-system-supplement-doc.md` with EpochBridge-specific implementation notes
+  - Cross-references to actual implementation classes
+  - Clarification of ΔT handling, new moon calculations, and leap month logic
+
+- **README Updates**: Reflected new Chinese calendar capabilities
+  - Enhanced East Asian Calendars description with astronomical implementation details
+  - Updated project structure to show `Services/Chinese/` namespace
+  - Added Meeus algorithms, ΔT corrections, and dìngqì convention to feature highlights
+
 ## [October 14, 2025] - Calendar Architecture Enhancements & Test Improvements
 
 ### Added
