@@ -144,6 +144,17 @@ test('saved conversion casts gregorian_date as date', function () {
 
     expect($savedConversion->gregorian_date)->toBeInstanceOf(\Carbon\Carbon::class)
         ->and($savedConversion->gregorian_date->format('Y-m-d'))->toBe('2024-01-15');
+
+    $withConversionData = SavedConversion::create([
+        'user_id' => $user->id,
+        'original_input' => '2024-01-20',
+        'conversion_data' => [
+            'gregorian' => ['full_date' => '2024-01-20'],
+        ],
+        'gregorian_date' => '2024-01-20',
+    ]);
+
+    expect($withConversionData->gregorian_date)->toBe('2024-01-20');
 });
 
 test('getPaginatedForUser hydrates conversion data and legacy fields', function () {

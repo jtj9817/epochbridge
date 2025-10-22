@@ -16,6 +16,7 @@ class SavedConversion extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'user_id',
         'original_input',
         'conversion_data',
         'gregorian_date',
