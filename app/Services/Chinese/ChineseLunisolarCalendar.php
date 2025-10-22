@@ -55,7 +55,7 @@ class ChineseLunisolarCalendar
         }
 
         $dayStart = $beijingTime->setTime(0, 0, 0);
-        $day = $month->startDate->diffInDays($dayStart) + 1;
+        $day = (int) round($month->startDate->diffInDays($dayStart) + 1);
 
         return [
             'year' => $month->chineseYear,
