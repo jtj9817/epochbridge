@@ -1,59 +1,120 @@
 <?php
 
 use App\Models\SavedConversion;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 use function Livewire\Volt\on;
 use function Livewire\Volt\state;
 
+$normalizeConversions = function (?LengthAwarePaginator $paginator) {
+    if (! $paginator) {
+        return null;
+    }
+
+    $items = $paginator->getCollection()->map(function ($item) {
+        if (! $item->created_at instanceof Carbon) {
+            $item->created_at = Carbon::parse($item->created_at);
+        }
+
+        $legacyValues = $item->legacyValues();
+
+        if (empty($item->conversion_data)) {
+            $fallbackData = array_filter([
+                'gregorian' => $legacyValues['gregorian']
+                    ? [
+                        'full_date' => $legacyValues['gregorian'],
+                        'name' => 'Gregorian',
+                        'tags' => ['legacy', 'fallback'],
+                    ]
+                    : null,
+                'jalali' => $legacyValues['jalali']
+                    ? [
+                        'full_date' => $legacyValues['jalali'],
+                        'name' => 'Jalali',
+                        'tags' => ['legacy', 'fallback'],
+                    ]
+                    : null,
+                'unix' => $legacyValues['unix'],
+                'iso8601' => $legacyValues['iso8601'],
+            ], fn ($value) => $value !== null && $value !== '');
+
+            if (! empty($fallbackData)) {
+                $item->conversion_data = $fallbackData;
+            }
+        }
+
+        $item->normalized_conversion_data = $item->conversion_data ?? [];
+        $item->legacy_display_values = $legacyValues;
+        $item->has_legacy_values = $item->hasLegacyValues();
+
+        return $item;
+    });
+
+    return tap($paginator)->setCollection($items);
+};
+
 state([
-    'savedConversions' => fn () => Auth::check() ? SavedConversion::getPaginatedForUser(Auth::id(), 10) : null,
+    'savedConversions' => fn () => Auth::check()
+        ? $normalizeConversions(SavedConversion::getPaginatedForUser(Auth::id(), 10))
+        : null,
     'perPage' => 10,
 ]);
 
 on([
-    'conversion-saved' => function () {
+    'conversion-saved' => function () use ($normalizeConversions) {
         if (Auth::check()) {
-            $this->savedConversions = SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage);
+            $this->savedConversions = $normalizeConversions(
+                SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage)
+            );
         }
     },
-    'page-updated' => function ($page) {
+    'page-updated' => function ($page) use ($normalizeConversions) {
         if (Auth::check()) {
-            $this->savedConversions = SavedConversion::forUser(Auth::id())
-                ->withConversionData()
-                ->paginate($this->perPage, ['*'], 'page', $page);
+            $this->savedConversions = $normalizeConversions(
+                SavedConversion::forUser(Auth::id())
+                    ->withConversionData()
+                    ->paginate($this->perPage, ['*'], 'page', $page)
+            );
         }
     },
 ]);
 
-$deleteConversion = function (int $id) {
+$deleteConversion = function (int $id) use ($normalizeConversions) {
     if (Auth::check()) {
         $conversion = SavedConversion::where('user_id', Auth::id())->find($id);
         if ($conversion) {
             $conversion->delete();
             // Refresh pagination to maintain correct page counts
-            $this->savedConversions = SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage);
+            $this->savedConversions = $normalizeConversions(
+                SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage)
+            );
         }
     }
 };
 
-$updatedPerPage = function ($perPage) {
+$updatedPerPage = function ($perPage) use ($normalizeConversions) {
     $this->perPage = $perPage;
     if (Auth::check()) {
-        $this->savedConversions = SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage);
+        $this->savedConversions = $normalizeConversions(
+            SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage)
+        );
     }
 };
 
-$setPage = function ($url) {
+$setPage = function ($url) use ($normalizeConversions) {
     if (Auth::check() && $url) {
         // Extract page number from URL
         $parsedUrl = parse_url($url);
         parse_str($parsedUrl['query'] ?? '', $query);
         $page = $query['page'] ?? 1;
 
-        $this->savedConversions = SavedConversion::forUser(Auth::id())
-            ->withConversionData()
-            ->paginate($this->perPage, ['*'], 'page', $page);
+        $this->savedConversions = $normalizeConversions(
+            SavedConversion::forUser(Auth::id())
+                ->withConversionData()
+                ->paginate($this->perPage, ['*'], 'page', $page)
+        );
     }
 };
 

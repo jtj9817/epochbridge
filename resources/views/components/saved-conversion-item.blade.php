@@ -2,9 +2,11 @@
 
 @php
     // Get conversion data based on whether it's guest or authenticated
-    $conversionData = $isGuest ? $item['conversion_data'] ?? [] : ($item->conversion_data ?? []);
-    $originalInput = $isGuest ? ($item['original_input'] ?? '') : $item->original_input;
-    $createdAt = $isGuest ? ($item['created_at'] ?? '') : $item->created_at;
+    $conversionData = $isGuest
+        ? $item['conversion_data'] ?? []
+        : ($item->normalized_conversion_data ?? $item->conversion_data ?? []);
+    $originalInput = $isGuest ? ($item['original_input'] ?? '') : ($item->original_input ?? '');
+    $createdAt = $isGuest ? ($item['created_at'] ?? '') : ($item->created_at ?? null);
     
     // Define calendar card components mapping
     $calendarComponents = [
@@ -44,7 +46,7 @@
                 @if($isGuest)
                     Saved: {{ \Carbon\Carbon::parse($createdAt)->format('M j, Y g:i A') }}
                 @else
-                    Saved: {{ $createdAt->format('M j, Y g:i A') }}
+                    Saved: {{ $createdAt?->format('M j, Y g:i A') }}
                 @endif
             </div>
         </div>
@@ -98,8 +100,8 @@
                     <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">ISO 8601:</strong> <span x-text="item.iso8601 || 'N/A'"></span></div>
                 @else
                     @php
-                        $legacyValues = $item->legacyValues();
-                        $hasLegacyData = $item->hasLegacyValues();
+                        $legacyValues = $item->legacy_display_values ?? $item->legacyValues();
+                        $hasLegacyData = $item->has_legacy_values ?? $item->hasLegacyValues();
                     @endphp
 
                     @if($hasLegacyData)
