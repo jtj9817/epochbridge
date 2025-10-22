@@ -1,0 +1,1252 @@
+[
+  {
+    "year": 645,
+    "name": "Taika",
+    "kanji": "大化"
+  },
+  {
+    "year": 650,
+    "name": "Hakuchi",
+    "kanji": "白雉"
+  },
+  {
+    "year": 686,
+    "name": "Shuchō",
+    "kanji": "朱鳥"
+  },
+  {
+    "year": 701,
+    "name": "Taihō",
+    "kanji": "大宝"
+  },
+  {
+    "year": 704,
+    "name": "Keiun",
+    "kanji": "慶雲"
+  },
+  {
+    "year": 708,
+    "name": "Wadō",
+    "kanji": "和銅"
+  },
+  {
+    "year": 715,
+    "name": "Reiki",
+    "kanji": "霊亀"
+  },
+  {
+    "year": 717,
+    "name": "Yōrō",
+    "kanji": "養老"
+  },
+  {
+    "year": 724,
+    "name": "Jinki",
+    "kanji": "神亀"
+  },
+  {
+    "year": 729,
+    "name": "Tenpyō",
+    "kanji": "天平"
+  },
+  {
+    "year": 749,
+    "name": "Tenpyō-kanpō",
+    "kanji": "天平感宝"
+  },
+  {
+    "year": 749,
+    "name": "Tenpyō-shōhō",
+    "kanji": "天平勝宝"
+  },
+  {
+    "year": 757,
+    "name": "Tenpyō-jōji",
+    "kanji": "天平宝字"
+  },
+  {
+    "year": 765,
+    "name": "Tenpyō-jingo",
+    "kanji": "天平神護"
+  },
+  {
+    "year": 767,
+    "name": "Jingokeiun",
+    "kanji": "神護景雲"
+  },
+  {
+    "year": 770,
+    "name": "Hōki",
+    "kanji": "宝亀"
+  },
+  {
+    "year": 781,
+    "name": "Ten’ō",
+    "kanji": "天応"
+  },
+  {
+    "year": 782,
+    "name": "Enryaku",
+    "kanji": "延暦"
+  },
+  {
+    "year": 806,
+    "name": "Daidō",
+    "kanji": "大同"
+  },
+  {
+    "year": 810,
+    "name": "Kōnin",
+    "kanji": "弘仁"
+  },
+  {
+    "year": 823,
+    "name": "Tenchō",
+    "kanji": "天長"
+  },
+  {
+    "year": 834,
+    "name": "Jōwa",
+    "kanji": "承和"
+  },
+  {
+    "year": 848,
+    "name": "Kashō",
+    "kanji": "嘉祥"
+  },
+  {
+    "year": 851,
+    "name": "Ninju",
+    "kanji": "仁寿"
+  },
+  {
+    "year": 855,
+    "name": "Saikō",
+    "kanji": "斉衡"
+  },
+  {
+    "year": 857,
+    "name": "Ten’an",
+    "kanji": "天安"
+  },
+  {
+    "year": 859,
+    "name": "Jōgan",
+    "kanji": "貞観"
+  },
+  {
+    "year": 877,
+    "name": "Gangyō",
+    "kanji": "元慶"
+  },
+  {
+    "year": 885,
+    "name": "Ninna",
+    "kanji": "仁和"
+  },
+  {
+    "year": 889,
+    "name": "Kampyō",
+    "kanji": "寛平"
+  },
+  {
+    "year": 898,
+    "name": "Shōtai",
+    "kanji": "昌泰"
+  },
+  {
+    "year": 901,
+    "name": "Engi",
+    "kanji": "延喜"
+  },
+  {
+    "year": 923,
+    "name": "Enchō",
+    "kanji": "延長"
+  },
+  {
+    "year": 931,
+    "name": "Jōhei",
+    "kanji": "承平"
+  },
+  {
+    "year": 938,
+    "name": "Tengyō",
+    "kanji": "天慶"
+  },
+  {
+    "year": 947,
+    "name": "Tenryaku",
+    "kanji": "天暦"
+  },
+  {
+    "year": 957,
+    "name": "Tentoku",
+    "kanji": "天徳"
+  },
+  {
+    "year": 961,
+    "name": "Ōwa",
+    "kanji": "応和"
+  },
+  {
+    "year": 964,
+    "name": "Kōhō",
+    "kanji": "康保"
+  },
+  {
+    "year": 968,
+    "name": "Anna",
+    "kanji": "安和"
+  },
+  {
+    "year": 970,
+    "name": "Tenroku",
+    "kanji": "天禄"
+  },
+  {
+    "year": 974,
+    "name": "Ten’en",
+    "kanji": "天延"
+  },
+  {
+    "year": 976,
+    "name": "Jōgen",
+    "kanji": "貞元"
+  },
+  {
+    "year": 979,
+    "name": "Tengen",
+    "kanji": "天元"
+  },
+  {
+    "year": 983,
+    "name": "Eikan",
+    "kanji": "永観"
+  },
+  {
+    "year": 985,
+    "name": "Kanna",
+    "kanji": "寛和"
+  },
+  {
+    "year": 987,
+    "name": "Eien",
+    "kanji": "永延"
+  },
+  {
+    "year": 989,
+    "name": "Eiso",
+    "kanji": "永祚"
+  },
+  {
+    "year": 990,
+    "name": "Shōryaku",
+    "kanji": "正暦"
+  },
+  {
+    "year": 995,
+    "name": "Chōtoku",
+    "kanji": "長徳"
+  },
+  {
+    "year": 999,
+    "name": "Chōhō",
+    "kanji": "長保"
+  },
+  {
+    "year": 1004,
+    "name": "Kankō",
+    "kanji": "寛弘"
+  },
+  {
+    "year": 1013,
+    "name": "Chōwa",
+    "kanji": "長和"
+  },
+  {
+    "year": 1017,
+    "name": "Kannin",
+    "kanji": "寛仁"
+  },
+  {
+    "year": 1021,
+    "name": "Jian",
+    "kanji": "治安"
+  },
+  {
+    "year": 1024,
+    "name": "Manju",
+    "kanji": "万寿"
+  },
+  {
+    "year": 1028,
+    "name": "Chōgen",
+    "kanji": "長元"
+  },
+  {
+    "year": 1037,
+    "name": "Chōryaku",
+    "kanji": "長暦"
+  },
+  {
+    "year": 1040,
+    "name": "Chōkyū",
+    "kanji": "長久"
+  },
+  {
+    "year": 1045,
+    "name": "Kantoku",
+    "kanji": "寛徳"
+  },
+  {
+    "year": 1046,
+    "name": "Eishō",
+    "kanji": "永承"
+  },
+  {
+    "year": 1053,
+    "name": "Tengi",
+    "kanji": "天喜"
+  },
+  {
+    "year": 1058,
+    "name": "Kōhei",
+    "kanji": "康平"
+  },
+  {
+    "year": 1065,
+    "name": "Jiryaku",
+    "kanji": "治暦"
+  },
+  {
+    "year": 1069,
+    "name": "Enkyū",
+    "kanji": "延久"
+  },
+  {
+    "year": 1074,
+    "name": "Jōhō",
+    "kanji": "承保"
+  },
+  {
+    "year": 1078,
+    "name": "Jōryaku",
+    "kanji": "承暦"
+  },
+  {
+    "year": 1081,
+    "name": "Eihō",
+    "kanji": "永保"
+  },
+  {
+    "year": 1084,
+    "name": "Ōtoku",
+    "kanji": "応徳"
+  },
+  {
+    "year": 1087,
+    "name": "Kanji",
+    "kanji": "寛治"
+  },
+  {
+    "year": 1095,
+    "name": "Kahō",
+    "kanji": "嘉保"
+  },
+  {
+    "year": 1097,
+    "name": "Eichō",
+    "kanji": "永長"
+  },
+  {
+    "year": 1098,
+    "name": "Jōtoku",
+    "kanji": "承徳"
+  },
+  {
+    "year": 1099,
+    "name": "Kōwa",
+    "kanji": "康和"
+  },
+  {
+    "year": 1104,
+    "name": "Chōji",
+    "kanji": "長治"
+  },
+  {
+    "year": 1106,
+    "name": "Kajō",
+    "kanji": "嘉承"
+  },
+  {
+    "year": 1108,
+    "name": "Tennin",
+    "kanji": "天仁"
+  },
+  {
+    "year": 1110,
+    "name": "Tennei",
+    "kanji": "天永"
+  },
+  {
+    "year": 1113,
+    "name": "Eikyū",
+    "kanji": "永久"
+  },
+  {
+    "year": 1118,
+    "name": "Gen’ei",
+    "kanji": "元永"
+  },
+  {
+    "year": 1120,
+    "name": "Hōan",
+    "kanji": "保安"
+  },
+  {
+    "year": 1124,
+    "name": "Tenji",
+    "kanji": "天治"
+  },
+  {
+    "year": 1126,
+    "name": "Daiji",
+    "kanji": "大治"
+  },
+  {
+    "year": 1131,
+    "name": "Tenshō",
+    "kanji": "天承"
+  },
+  {
+    "year": 1132,
+    "name": "Chōshō",
+    "kanji": "長承"
+  },
+  {
+    "year": 1135,
+    "name": "Hōen",
+    "kanji": "保延"
+  },
+  {
+    "year": 1141,
+    "name": "Eiji",
+    "kanji": "永治"
+  },
+  {
+    "year": 1142,
+    "name": "Kōji",
+    "kanji": "康治"
+  },
+  {
+    "year": 1144,
+    "name": "Ten’yō",
+    "kanji": "天養"
+  },
+  {
+    "year": 1145,
+    "name": "Kyūan",
+    "kanji": "久安"
+  },
+  {
+    "year": 1151,
+    "name": "Nimpei",
+    "kanji": "仁平"
+  },
+  {
+    "year": 1154,
+    "name": "Kyūju",
+    "kanji": "久寿"
+  },
+  {
+    "year": 1156,
+    "name": "Hōgen",
+    "kanji": "保元"
+  },
+  {
+    "year": 1159,
+    "name": "Heiji",
+    "kanji": "平治"
+  },
+  {
+    "year": 1160,
+    "name": "Eiryaku",
+    "kanji": "永暦"
+  },
+  {
+    "year": 1161,
+    "name": "Ōhō",
+    "kanji": "応保"
+  },
+  {
+    "year": 1163,
+    "name": "Chōkan",
+    "kanji": "長寛"
+  },
+  {
+    "year": 1165,
+    "name": "Eiman",
+    "kanji": "永万"
+  },
+  {
+    "year": 1166,
+    "name": "Nin’an",
+    "kanji": "仁安"
+  },
+  {
+    "year": 1169,
+    "name": "Kaō",
+    "kanji": "嘉応"
+  },
+  {
+    "year": 1171,
+    "name": "Shōan",
+    "kanji": "承安"
+  },
+  {
+    "year": 1175,
+    "name": "Angen",
+    "kanji": "安元"
+  },
+  {
+    "year": 1177,
+    "name": "Jishō",
+    "kanji": "治承"
+  },
+  {
+    "year": 1181,
+    "name": "Yōwa",
+    "kanji": "養和"
+  },
+  {
+    "year": 1182,
+    "name": "Juei",
+    "kanji": "寿永"
+  },
+  {
+    "year": 1184,
+    "name": "Genryaku",
+    "kanji": "元暦"
+  },
+  {
+    "year": 1185,
+    "name": "Bunji",
+    "kanji": "文治"
+  },
+  {
+    "year": 1190,
+    "name": "Kenkyū",
+    "kanji": "建久"
+  },
+  {
+    "year": 1199,
+    "name": "Shōji",
+    "kanji": "正治"
+  },
+  {
+    "year": 1201,
+    "name": "Kennin",
+    "kanji": "建仁"
+  },
+  {
+    "year": 1204,
+    "name": "Genkyū",
+    "kanji": "元久"
+  },
+  {
+    "year": 1206,
+    "name": "Ken’ei",
+    "kanji": "建永"
+  },
+  {
+    "year": 1207,
+    "name": "Jōgen",
+    "kanji": "承元"
+  },
+  {
+    "year": 1211,
+    "name": "Kenryaku",
+    "kanji": "建暦"
+  },
+  {
+    "year": 1214,
+    "name": "Kempō",
+    "kanji": "建保"
+  },
+  {
+    "year": 1219,
+    "name": "Jōkyū",
+    "kanji": "承久"
+  },
+  {
+    "year": 1222,
+    "name": "Jōō",
+    "kanji": "貞応"
+  },
+  {
+    "year": 1225,
+    "name": "Gennin",
+    "kanji": "元仁"
+  },
+  {
+    "year": 1225,
+    "name": "Karoku",
+    "kanji": "嘉禄"
+  },
+  {
+    "year": 1228,
+    "name": "Antei",
+    "kanji": "安貞"
+  },
+  {
+    "year": 1229,
+    "name": "Kanki",
+    "kanji": "寛喜"
+  },
+  {
+    "year": 1232,
+    "name": "Jōei",
+    "kanji": "貞永"
+  },
+  {
+    "year": 1233,
+    "name": "Tempuku",
+    "kanji": "天福"
+  },
+  {
+    "year": 1235,
+    "name": "Bunryaku",
+    "kanji": "文暦"
+  },
+  {
+    "year": 1235,
+    "name": "Katei",
+    "kanji": "嘉禎"
+  },
+  {
+    "year": 1239,
+    "name": "Ryakunin",
+    "kanji": "暦仁"
+  },
+  {
+    "year": 1239,
+    "name": "En’ō",
+    "kanji": "延応"
+  },
+  {
+    "year": 1240,
+    "name": "Ninji",
+    "kanji": "仁治"
+  },
+  {
+    "year": 1243,
+    "name": "Kangen",
+    "kanji": "寛元"
+  },
+  {
+    "year": 1247,
+    "name": "Hōji",
+    "kanji": "宝治"
+  },
+  {
+    "year": 1249,
+    "name": "Kenchō",
+    "kanji": "建長"
+  },
+  {
+    "year": 1256,
+    "name": "Kōgen",
+    "kanji": "康元"
+  },
+  {
+    "year": 1257,
+    "name": "Shōka",
+    "kanji": "正嘉"
+  },
+  {
+    "year": 1259,
+    "name": "Shōgen",
+    "kanji": "正元"
+  },
+  {
+    "year": 1260,
+    "name": "Bun’ō",
+    "kanji": "文応"
+  },
+  {
+    "year": 1261,
+    "name": "Kōchō",
+    "kanji": "弘長"
+  },
+  {
+    "year": 1264,
+    "name": "Bun’ei",
+    "kanji": "文永"
+  },
+  {
+    "year": 1275,
+    "name": "Kenji",
+    "kanji": "健治"
+  },
+  {
+    "year": 1278,
+    "name": "Kōan",
+    "kanji": "弘安"
+  },
+  {
+    "year": 1288,
+    "name": "Shōō",
+    "kanji": "正応"
+  },
+  {
+    "year": 1293,
+    "name": "Einin",
+    "kanji": "永仁"
+  },
+  {
+    "year": 1299,
+    "name": "Shōan",
+    "kanji": "正安"
+  },
+  {
+    "year": 1303,
+    "name": "Kengen",
+    "kanji": "乾元"
+  },
+  {
+    "year": 1303,
+    "name": "Kagen",
+    "kanji": "嘉元"
+  },
+  {
+    "year": 1307,
+    "name": "Tokuji",
+    "kanji": "徳治"
+  },
+  {
+    "year": 1308,
+    "name": "Enkyō",
+    "kanji": "延慶"
+  },
+  {
+    "year": 1311,
+    "name": "Ōchō",
+    "kanji": "応長"
+  },
+  {
+    "year": 1312,
+    "name": "Shōwa",
+    "kanji": "正和"
+  },
+  {
+    "year": 1317,
+    "name": "Bumpō",
+    "kanji": "文保"
+  },
+  {
+    "year": 1319,
+    "name": "Gen’ō",
+    "kanji": "元応"
+  },
+  {
+    "year": 1321,
+    "name": "Genkō",
+    "kanji": "元亨"
+  },
+  {
+    "year": 1325,
+    "name": "Shōchu",
+    "kanji": "正中"
+  },
+  {
+    "year": 1326,
+    "name": "Karyaku",
+    "kanji": "嘉暦"
+  },
+  {
+    "year": 1329,
+    "name": "Gentoku",
+    "kanji": "元徳"
+  },
+  {
+    "year": 1331,
+    "name": "Genkō",
+    "kanji": "元弘",
+    "faction": "Southern"
+  },
+  {
+    "year": 1332,
+    "name": "Shōkei",
+    "kanji": "正慶"
+  },
+  {
+    "year": 1334,
+    "name": "Kemmu",
+    "kanji": "建武",
+    "faction": "Southern"
+  },
+  {
+    "year": 1336,
+    "name": "Eigen",
+    "kanji": "延元",
+    "faction": "Southern"
+  },
+  {
+    "year": 1338,
+    "name": "Ryakuō",
+    "kanji": "暦応"
+  },
+  {
+    "year": 1340,
+    "name": "Kōkoku",
+    "kanji": "興国",
+    "faction": "Southern"
+  },
+  {
+    "year": 1342,
+    "name": "Kōei",
+    "kanji": "康永"
+  },
+  {
+    "year": 1345,
+    "name": "Jōwa",
+    "kanji": "貞和"
+  },
+  {
+    "year": 1347,
+    "name": "Shōhei",
+    "kanji": "正平",
+    "faction": "Southern"
+  },
+  {
+    "year": 1350,
+    "name": "Kan’ō",
+    "kanji": "観応"
+  },
+  {
+    "year": 1352,
+    "name": "Bunna",
+    "kanji": "文和"
+  },
+  {
+    "year": 1356,
+    "name": "Embun",
+    "kanji": "延文"
+  },
+  {
+    "year": 1361,
+    "name": "Kōan",
+    "kanji": "康安"
+  },
+  {
+    "year": 1362,
+    "name": "Jōji",
+    "kanji": "貞治"
+  },
+  {
+    "year": 1368,
+    "name": "Ōan",
+    "kanji": "応安"
+  },
+  {
+    "year": 1370,
+    "name": "Kentoku",
+    "kanji": "建徳",
+    "faction": "Southern"
+  },
+  {
+    "year": 1372,
+    "name": "Bunchū",
+    "kanji": "文中",
+    "faction": "Southern"
+  },
+  {
+    "year": 1375,
+    "name": "Eiwa",
+    "kanji": "永和"
+  },
+  {
+    "year": 1375,
+    "name": "Tenju",
+    "kanji": "天授",
+    "faction": "Southern"
+  },
+  {
+    "year": 1379,
+    "name": "Kōryaku",
+    "kanji": "康暦"
+  },
+  {
+    "year": 1381,
+    "name": "Eitoku",
+    "kanji": "永徳"
+  },
+  {
+    "year": 1381,
+    "name": "Kōwa",
+    "kanji": "弘和",
+    "faction": "Southern"
+  },
+  {
+    "year": 1384,
+    "name": "Shitoku",
+    "kanji": "至徳"
+  },
+  {
+    "year": 1384,
+    "name": "Genchū",
+    "kanji": "元中",
+    "faction": "Southern"
+  },
+  {
+    "year": 1387,
+    "name": "Kakei",
+    "kanji": "嘉慶"
+  },
+  {
+    "year": 1389,
+    "name": "Kōō",
+    "kanji": "康応"
+  },
+  {
+    "year": 1390,
+    "name": "Meitoku",
+    "kanji": "明徳"
+  },
+  {
+    "year": 1394,
+    "name": "Ōei",
+    "kanji": "応永"
+  },
+  {
+    "year": 1428,
+    "name": "Shōchō",
+    "kanji": "正長"
+  },
+  {
+    "year": 1429,
+    "name": "Eikyō",
+    "kanji": "永享"
+  },
+  {
+    "year": 1441,
+    "name": "Kakitsu",
+    "kanji": "嘉吉"
+  },
+  {
+    "year": 1444,
+    "name": "Bun’an",
+    "kanji": "文安"
+  },
+  {
+    "year": 1449,
+    "name": "Hōtoku",
+    "kanji": "宝徳"
+  },
+  {
+    "year": 1452,
+    "name": "Kyōtoku",
+    "kanji": "享徳"
+  },
+  {
+    "year": 1455,
+    "name": "Kōshō",
+    "kanji": "康正"
+  },
+  {
+    "year": 1457,
+    "name": "Chōroku",
+    "kanji": "長禄"
+  },
+  {
+    "year": 1461,
+    "name": "Kanshō",
+    "kanji": "寛正"
+  },
+  {
+    "year": 1466,
+    "name": "Bunshō",
+    "kanji": "文正"
+  },
+  {
+    "year": 1467,
+    "name": "Ōnin",
+    "kanji": "応仁"
+  },
+  {
+    "year": 1469,
+    "name": "Bunmei",
+    "kanji": "文明"
+  },
+  {
+    "year": 1487,
+    "name": "Chōkyō",
+    "kanji": "長享"
+  },
+  {
+    "year": 1489,
+    "name": "Entoku",
+    "kanji": "延徳"
+  },
+  {
+    "year": 1492,
+    "name": "Meiō",
+    "kanji": "明応"
+  },
+  {
+    "year": 1501,
+    "name": "Bunki",
+    "kanji": "文亀"
+  },
+  {
+    "year": 1504,
+    "name": "Eishō",
+    "kanji": "永正"
+  },
+  {
+    "year": 1521,
+    "name": "Daiei",
+    "kanji": "大永"
+  },
+  {
+    "year": 1528,
+    "name": "Kyōroku",
+    "kanji": "享禄"
+  },
+  {
+    "year": 1532,
+    "name": "Tenbun",
+    "kanji": "天文"
+  },
+  {
+    "year": 1555,
+    "name": "Kōji",
+    "kanji": "弘治"
+  },
+  {
+    "year": 1558,
+    "name": "Eiroku",
+    "kanji": "永禄"
+  },
+  {
+    "year": 1570,
+    "name": "Genki",
+    "kanji": "元亀"
+  },
+  {
+    "year": 1573,
+    "name": "Tenshō",
+    "kanji": "天正"
+  },
+  {
+    "year": 1593,
+    "name": "Bunroku",
+    "kanji": "文禄"
+  },
+  {
+    "year": 1596,
+    "name": "Keichō",
+    "kanji": "慶長"
+  },
+  {
+    "year": 1615,
+    "name": "Genna",
+    "kanji": "元和"
+  },
+  {
+    "year": 1624,
+    "name": "Kan’ei",
+    "kanji": "寛永"
+  },
+  {
+    "year": 1645,
+    "name": "Shōhō",
+    "kanji": "正保"
+  },
+  {
+    "year": 1648,
+    "name": "Keian",
+    "kanji": "慶安"
+  },
+  {
+    "year": 1652,
+    "name": "Jōō",
+    "kanji": "承応"
+  },
+  {
+    "year": 1655,
+    "name": "Meireki",
+    "kanji": "明暦"
+  },
+  {
+    "year": 1658,
+    "name": "Manji",
+    "kanji": "万治"
+  },
+  {
+    "year": 1661,
+    "name": "Kanbun",
+    "kanji": "寛文"
+  },
+  {
+    "year": 1673,
+    "name": "Empō",
+    "kanji": "延宝"
+  },
+  {
+    "year": 1681,
+    "name": "Tenna",
+    "kanji": "天和"
+  },
+  {
+    "year": 1684,
+    "name": "Jōkyō",
+    "kanji": "貞享"
+  },
+  {
+    "year": 1688,
+    "name": "Genroku",
+    "kanji": "元禄"
+  },
+  {
+    "year": 1704,
+    "name": "Hōei",
+    "kanji": "宝永"
+  },
+  {
+    "year": 1711,
+    "name": "Shōtoku",
+    "kanji": "正徳"
+  },
+  {
+    "year": 1716,
+    "name": "Kyōhō",
+    "kanji": "享保"
+  },
+  {
+    "year": 1736,
+    "name": "Genbun",
+    "kanji": "元文"
+  },
+  {
+    "year": 1741,
+    "name": "Kampō",
+    "kanji": "寛保"
+  },
+  {
+    "year": 1744,
+    "name": "Enkyō",
+    "kanji": "延享"
+  },
+  {
+    "year": 1748,
+    "name": "Kan’en",
+    "kanji": "寛延"
+  },
+  {
+    "year": 1751,
+    "name": "Hōreki",
+    "kanji": "宝暦"
+  },
+  {
+    "year": 1764,
+    "name": "Meiwa",
+    "kanji": "明和"
+  },
+  {
+    "year": 1773,
+    "name": "An’ei",
+    "kanji": "安永"
+  },
+  {
+    "year": 1781,
+    "name": "Tenmei",
+    "kanji": "天明"
+  },
+  {
+    "year": 1801,
+    "name": "Kansei",
+    "kanji": "寛政"
+  },
+  {
+    "year": 1802,
+    "name": "Kyōwa",
+    "kanji": "享和"
+  },
+  {
+    "year": 1804,
+    "name": "Bunka",
+    "kanji": "文化"
+  },
+  {
+    "year": 1818,
+    "name": "Bunsei",
+    "kanji": "文政"
+  },
+  {
+    "year": 1831,
+    "name": "Tenpō",
+    "kanji": "天保"
+  },
+  {
+    "year": 1845,
+    "name": "Kōka",
+    "kanji": "弘化"
+  },
+  {
+    "year": 1848,
+    "name": "Kaei",
+    "kanji": "嘉永"
+  },
+  {
+    "year": 1855,
+    "name": "Ansei",
+    "kanji": "安政"
+  },
+  {
+    "year": 1860,
+    "name": "Man’en",
+    "kanji": "万延"
+  },
+  {
+    "year": 1861,
+    "name": "Bunkyū",
+    "kanji": "文久"
+  },
+  {
+    "year": 1864,
+    "name": "Genji",
+    "kanji": "元治"
+  },
+  {
+    "year": 1865,
+    "name": "Keiō",
+    "kanji": "慶応"
+  },
+  {
+    "year": 1868,
+    "name": "Meiji",
+    "kanji": "明治"
+  },
+  {
+    "year": 1912,
+    "name": "Taishō",
+    "kanji": "大正"
+  },
+  {
+    "year": 1926,
+    "name": "Shōwa",
+    "kanji": "昭和"
+  },
+  {
+    "year": 1989,
+    "name": "Heisei",
+    "kanji": "平成"
+  },
+  {
+    "year": 2019,
+    "name": "Reiwa",
+    "kanji": "令和"
+  }
+]
