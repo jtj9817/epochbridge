@@ -2,6 +2,15 @@
 
 The Chinese lunisolar calendar represents one of humanity's most sophisticated timekeeping systems, continuously refined over 2,000+ years. This guide provides complete technical specifications for implementing accurate Gregorian-to-Chinese date conversion, including all astronomical calculations, month numbering algorithms, and edge case handling required for a production-ready implementation.
 
+## EpochBridge Implementation Notes
+
+- Reference implementation lives under `app/Services/Chinese` with `ChineseLunisolarCalendar` orchestrating the suì construction and `AstronomyCalculator` providing Meeus-based Sun/Moon ephemerides.
+- ΔT follows the Espenak–Meeus polynomials for 1900–2100 with fallback quadratic approximation beyond that window.
+- New moon times come from Meeus chapter 49 (all periodic corrections) and are converted to Beijing civil days by applying ΔT and the UTC+8 offset before flooring to midnight boundaries.
+- Major solar terms are solved via Newton iteration on the apparent solar longitude, using the dìngqì convention so leap months naturally emerge from the first post-solstice lunation lacking a zhōngqì.
+- Month sequences are cached per suì and per Chinese year: the first regular month after winter solstice + one (skipping any leap copy) becomes 正月; leap detection uses the “first month with no major term” rule.
+- Validation and reverse conversion both derive month lengths from the computed lunations, so conversions remain self-consistent with the astronomical model and cover edge cases such as the 2033 leap month 11 anomaly.
+
 ## Critical foundation: The winter solstice anchors everything
 
 **Month 11 always contains Winter Solstice (Dōngzhì, 冬至)** - this single rule anchors the entire calendar system. Chinese New Year follows as the first day of month 1, which is the second regular (non-leap) month after month 11. Understanding this relationship, rather than the oversimplified "second new moon after winter solstice" rule, is essential for handling leap years correctly.

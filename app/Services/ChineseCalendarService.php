@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\CalendarCalculationException;
+use App\Services\Chinese\ChineseLunisolarCalendar;
 use Carbon\Carbon;
 
 class ChineseCalendarService extends CalendarConversionService
@@ -20,11 +21,14 @@ class ChineseCalendarService extends CalendarConversionService
         25 => '廿五', 26 => '廿六', 27 => '廿七', 28 => '廿八', 29 => '廿九', 30 => '三十',
     ];
 
+    /**
+     * Ordered by apparent solar longitude bins (0° inclusive, 15° per segment).
+     */
     private const SOLAR_TERMS = [
-        '小寒', '大寒', '立春', '雨水', '惊蛰', '春分',
-        '清明', '谷雨', '立夏', '小满', '芒种', '夏至',
-        '小暑', '大暑', '立秋', '处暑', '白露', '秋分',
-        '寒露', '霜降', '立冬', '小雪', '大雪', '冬至',
+        '春分', '清明', '谷雨', '立夏', '小满', '芒种',
+        '夏至', '小暑', '大暑', '立秋', '处暑', '白露',
+        '秋分', '寒露', '霜降', '立冬', '小雪', '大雪',
+        '冬至', '小寒', '大寒', '立春', '雨水', '惊蛰',
     ];
 
     private const ZODIAC_ANIMALS = [
@@ -36,31 +40,46 @@ class ChineseCalendarService extends CalendarConversionService
 
     private const EARTHLY_BRANCHES = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
 
+    private ChineseLunisolarCalendar $calendar;
+
+    public function __construct(?ChineseLunisolarCalendar $calendar = null)
+    {
+        $this->calendar = $calendar ?? new ChineseLunisolarCalendar();
+    }
+
     public function fromGregorian(Carbon $date): array
     {
-        $date = $this->ensureTimezone($date, 'Asia/Shanghai');
+        $beijing = $this->ensureTimezone($date, 'Asia/Shanghai');
 
         try {
-            $chineseDate = $this->calculateChineseDate($date);
-            $zodiac = $this->calculateZodiac($chineseDate['year']);
-            $solarTerm = $this->getCurrentSolarTerm($date);
+            $components = $this->calendar->chineseDateFor($beijing);
+            $zodiac = $this->calculateZodiac($components['year']);
+            $solarTermIndex = $this->calendar->solarTermIndexFor($beijing);
+            $solarTerm = self::SOLAR_TERMS[$solarTermIndex] ?? '未知节气';
 
             return [
-                'year' => $chineseDate['year'],
-                'month' => $chineseDate['month'],
-                'month_name' => $chineseDate['month_name'],
-                'day' => $chineseDate['day'],
-                'day_name' => $chineseDate['day_name'],
-                'is_leap_month' => $chineseDate['is_leap_month'],
+                'year' => $components['year'],
+                'month' => $components['month'],
+                'month_name' => $this->formatMonthName($components['month'], $components['is_leap']),
+                'day' => $components['day'],
+                'day_name' => self::CHINESE_DAY_NAMES[$components['day']] ?? '未知',
+                'is_leap_month' => $components['is_leap'],
                 'zodiac_animal' => $zodiac['animal'],
                 'zodiac_element' => $zodiac['element'],
+                'heavenly_stem' => $zodiac['heavenly_stem'],
+                'earthly_branch' => $zodiac['earthly_branch'],
                 'solar_term' => $solarTerm,
-                'full_date' => $this->formatChineseDate($chineseDate),
-                'display' => $this->getDisplayDate($chineseDate, $zodiac),
+                'full_date' => $this->formatChineseDateString(
+                    $components['year'],
+                    $components['month'],
+                    $components['day'],
+                    $components['is_leap']
+                ),
+                'display' => $this->buildDisplayString($components, $zodiac),
             ];
         } catch (CalendarCalculationException $e) {
-            throw $e; // Re-throw specific exceptions
-        } catch (\Exception $e) {
+            throw $e;
+        } catch (\Throwable $e) {
             $this->handleCalculationError(
                 'Unable to calculate Chinese calendar date: '.$e->getMessage(),
                 $e
@@ -73,19 +92,23 @@ class ChineseCalendarService extends CalendarConversionService
         $year = $dateData['year'] ?? $dateData['chinese_year'] ?? null;
         $month = $dateData['month'] ?? $dateData['chinese_month'] ?? null;
         $day = $dateData['day'] ?? $dateData['chinese_day'] ?? null;
-        $isLeapMonth = $dateData['is_leap_month'] ?? false;
+        $isLeapMonth = (bool) ($dateData['is_leap_month'] ?? false);
 
-        if (! $year || ! $month || ! $day) {
+        if ($year === null || $month === null || $day === null) {
             $this->handleValidationError('Invalid Chinese date components');
         }
 
-        if (! $this->validateDate($year, $month, $day)) {
+        if (! $this->validateDate((int) $year, (int) $month, (int) $day)) {
             $this->handleValidationError("Invalid Chinese date: {$year}/{$month}/{$day}");
         }
 
         try {
-            return $this->calculateGregorianFromChinese($year, $month, $day, $isLeapMonth);
-        } catch (\Exception $e) {
+            $gregorian = $this->calendar->gregorianDateFor((int) $year, (int) $month, (int) $day, $isLeapMonth);
+
+            return Carbon::createFromImmutable($gregorian);
+        } catch (\RuntimeException $e) {
+            $this->handleValidationError($e->getMessage());
+        } catch (\Throwable $e) {
             $this->handleCalculationError(
                 'Unable to convert Chinese date to Gregorian: '.$e->getMessage(),
                 $e
@@ -105,129 +128,81 @@ class ChineseCalendarService extends CalendarConversionService
 
     public function validateDate(int $year, int $month, int $day): bool
     {
-        if ($year < 1900 || $year > 2100 || $month < 1 || $month > 12 || $day < 1 || $day > 30) {
+        if ($year < 1900 || $year > 2100 || $month < 1 || $month > 12 || $day < 1) {
             return false;
         }
 
-        // Simplified validation - in production this would check actual month lengths
-        return $day <= $this->getDaysInMonth($year, $month);
+        try {
+            $months = $this->calendar->monthsForChineseYear($year);
+        } catch (\Throwable $e) {
+            return false;
+        }
+
+        foreach ($months as $lunation) {
+            if ($lunation->chineseYear === $year && $lunation->number === $month) {
+                return $day <= $lunation->length();
+            }
+        }
+
+        return false;
     }
 
     public function getDaysInMonth(int $year, int $month): int
     {
-        // Simplified - in production this would calculate actual lunar month length
-        return $month == 2 ? 29 : 30;
-    }
-
-    /**
-     * Calculate Chinese date from Gregorian using astronomical algorithms
-     */
-    private function calculateChineseDate(Carbon $date): array
-    {
-        // Simplified calculation - in production would use precise astronomical algorithms
-        $year = $date->year;
-        $month = $date->month;
-        $day = $date->day;
-
-        // Approximate conversion (simplified for implementation)
-        // In production, this would use complex astronomical calculations
-        $chineseYear = $this->calculateChineseYear($date);
-        $chineseMonth = $this->calculateChineseMonth($date, $chineseYear);
-        $chineseDay = $this->calculateChineseDay($date);
-
-        $isLeapMonth = $this->isLeapMonth($chineseYear, $chineseMonth);
-
-        return [
-            'year' => $chineseYear,
-            'month' => $chineseMonth,
-            'month_name' => self::CHINESE_MONTH_NAMES[$chineseMonth] ?? '未知',
-            'day' => $chineseDay,
-            'day_name' => self::CHINESE_DAY_NAMES[$chineseDay] ?? '未知',
-            'is_leap_month' => $isLeapMonth,
-        ];
-    }
-
-    /**
-     * Calculate Chinese year from Gregorian date
-     */
-    private function calculateChineseYear(Carbon $date): int
-    {
-        // Chinese New Year typically falls between Jan 21 and Feb 20
-        $year = $date->year;
-        $chineseNewYear = $this->calculateChineseNewYear($year);
-
-        // If date is before Chinese New Year, it belongs to previous Chinese year
-        if ($date->lt($chineseNewYear)) {
-            return $year - 1;
+        try {
+            $months = $this->calendar->monthsForChineseYear($year);
+        } catch (\Throwable $e) {
+            return 0;
         }
 
-        return $year;
+        foreach ($months as $lunation) {
+            if ($lunation->chineseYear === $year && $lunation->number === $month && ! $lunation->isLeap) {
+                return $lunation->length();
+            }
+        }
+
+        foreach ($months as $lunation) {
+            if ($lunation->chineseYear === $year && $lunation->number === $month) {
+                return $lunation->length();
+            }
+        }
+
+        return 0;
     }
 
-    /**
-     * Calculate Chinese New Year date for a given Gregorian year
-     */
-    private function calculateChineseNewYear(int $gregorianYear): Carbon
+    public function getTags(): array
     {
-        // Simplified calculation - in production would use precise astronomical new moon
-        // Chinese New Year is the second new moon after winter solstice
-        $winterSolstice = Carbon::create($gregorianYear - 1, 12, 21, 0, 0, 0, 'Asia/Shanghai');
-
-        // Approximate: 1st new moon ~29.5 days after winter solstice
-        $firstNewMoon = $winterSolstice->copy()->addDays(29);
-        // 2nd new moon ~59 days after winter solstice (Chinese New Year)
-        $chineseNewYear = $winterSolstice->copy()->addDays(59);
-
-        return $chineseNewYear;
+        return ['east-asian', 'lunisolar'];
     }
 
     /**
-     * Calculate Chinese month from Gregorian date
-     */
-    private function calculateChineseMonth(Carbon $date, int $chineseYear): int
-    {
-        $chineseNewYear = $this->calculateChineseNewYear($chineseYear + 1);
-        $monthsPassed = $date->diffInMonths($chineseNewYear->copy()->subYear());
-
-        return 12 - ($monthsPassed % 12);
-    }
-
-    /**
-     * Calculate Chinese day from Gregorian date (simplified)
-     */
-    private function calculateChineseDay(Carbon $date): int
-    {
-        // Simplified - in production would use precise lunar calculations
-        return $date->day;
-    }
-
-    /**
-     * Check if a month is a leap month in the Chinese calendar
-     */
-    private function isLeapMonth(int $chineseYear, int $month): bool
-    {
-        // Simplified leap month calculation
-        // In production, this would use the 19-year Metonic cycle
-        $metonicCycle = $chineseYear % 19;
-        $leapMonths = [0, 3, 6, 9, 11, 14, 17]; // Common leap months in Metonic cycle
-
-        return in_array($metonicCycle, $leapMonths) && $month == 7; // Example: 7th month is leap
-    }
-
-    /**
-     * Calculate Chinese zodiac animal and element
+     * Calculate Chinese zodiac information for the given Chinese year.
      */
     private function calculateZodiac(int $chineseYear): array
     {
         $zodiacIndex = ($chineseYear - 4) % 12;
+        if ($zodiacIndex < 0) {
+            $zodiacIndex += 12;
+        }
+
         $stemIndex = ($chineseYear - 4) % 10;
+        if ($stemIndex < 0) {
+            $stemIndex += 10;
+        }
+
         $branchIndex = ($chineseYear - 4) % 12;
+        if ($branchIndex < 0) {
+            $branchIndex += 12;
+        }
+
+        $stem = self::HEAVENLY_STEMS[$stemIndex] ?? '甲';
+        $branch = self::EARTHLY_BRANCHES[$branchIndex] ?? '子';
 
         return [
             'animal' => self::ZODIAC_ANIMALS[$zodiacIndex] ?? 'Unknown',
-            'element' => $this->getElementFromStem(self::HEAVENLY_STEMS[$stemIndex] ?? '甲'),
-            'heavenly_stem' => self::HEAVENLY_STEMS[$stemIndex] ?? '甲',
-            'earthly_branch' => self::EARTHLY_BRANCHES[$branchIndex] ?? '子',
+            'element' => $this->getElementFromStem($stem),
+            'heavenly_stem' => $stem,
+            'earthly_branch' => $branch,
         ];
     }
 
@@ -242,60 +217,40 @@ class ChineseCalendarService extends CalendarConversionService
         return $elements[$stem] ?? 'Unknown';
     }
 
-    /**
-     * Get current solar term for a date
-     */
-    private function getCurrentSolarTerm(Carbon $date): string
+    private function formatMonthName(int $month, bool $isLeap): string
     {
-        $dayOfYear = $date->dayOfYear;
-        $terms = [
-            5 => '小寒', 20 => '大寒', 34 => '立春', 50 => '雨水',
-            64 => '惊蛰', 79 => '春分', 94 => '清明', 109 => '谷雨',
-            119 => '立夏', 134 => '小满', 149 => '芒种', 164 => '夏至',
-            174 => '小暑', 189 => '大暑', 204 => '立秋', 219 => '处暑',
-            234 => '白露', 249 => '秋分', 264 => '寒露', 279 => '霜降',
-            294 => '立冬', 309 => '小雪', 324 => '大雪', 339 => '冬至',
-        ];
+        $base = self::CHINESE_MONTH_NAMES[$month] ?? "{$month}月";
 
-        foreach ($terms as $day => $term) {
-            if ($dayOfYear >= $day && $dayOfYear < $day + 15) {
-                return $term;
-            }
-        }
-
-        return '冬至'; // Default
+        return $isLeap ? '闰'.$base : $base;
     }
 
-    private function formatChineseDate(array $chineseDate): string
+    private function formatChineseDateString(int $year, int $month, int $day, bool $isLeap): string
     {
-        $leapIndicator = $chineseDate['is_leap_month'] ? '闰' : '';
+        $leapIndicator = $isLeap ? '闰' : '';
 
-        return "{$chineseDate['year']}/{$leapIndicator}{$chineseDate['month']}/{$chineseDate['day']}";
-    }
-
-    private function getDisplayDate(array $chineseDate, array $zodiac): string
-    {
-        $leapIndicator = $chineseDate['is_leap_month'] ? '闰' : '';
-
-        return "{$chineseDate['year']}年 {$leapIndicator}{$chineseDate['month_name']} {$chineseDate['day_name']} ({$zodiac['animal']}年)";
+        return sprintf('%d/%s%d/%d', $year, $leapIndicator, $month, $day);
     }
 
     /**
-     * Calculate Gregorian date from Chinese date (simplified)
+     * Build human-readable display string.
+     *
+     * @param  array{year:int,month:int,day:int,is_leap:bool,month_length:int,month_start:\Carbon\CarbonImmutable,month_end:\Carbon\CarbonImmutable}  $components
+     * @param  array{animal:string,element:string,heavenly_stem:string,earthly_branch:string}  $zodiac
      */
-    private function calculateGregorianFromChinese(int $year, int $month, int $day, bool $isLeapMonth): Carbon
+    private function buildDisplayString(array $components, array $zodiac): string
     {
-        // Simplified reverse calculation
-        $chineseNewYear = $this->calculateChineseNewYear($year);
+        $leapPrefix = $components['is_leap'] ? '闰' : '';
+        $monthName = self::CHINESE_MONTH_NAMES[$components['month']] ?? "{$components['month']}月";
+        $dayName = self::CHINESE_DAY_NAMES[$components['day']] ?? "{$components['day']}日";
 
-        // Approximate: each Chinese month is ~29.5 days
-        $daysFromNewYear = (($month - 1) * 29.5) + ($day - 1);
-
-        return $chineseNewYear->copy()->addDays($daysFromNewYear);
-    }
-
-    public function getTags(): array
-    {
-        return ['east-asian', 'lunisolar'];
+        return sprintf(
+            '%d年 %s%s %s (%s%s年)',
+            $components['year'],
+            $leapPrefix,
+            $monthName,
+            $dayName,
+            $zodiac['heavenly_stem'],
+            $zodiac['earthly_branch']
+        );
     }
 }
