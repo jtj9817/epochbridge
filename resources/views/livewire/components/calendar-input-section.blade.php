@@ -11,7 +11,7 @@ rules(fn () => match ($this->inputType) {
     'iso8601' => ['dateInput' => 'required|string'],
     'jd', 'mjd' => ['dateInput' => 'required|numeric'],
     'hebrew', 'islamic', 'french_republican', 'chinese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian', 'mayan' => ['dateInput' => 'required|date_format:Y/m/d'],
-    'japanese' => ['dateInput' => 'required|string'], // More complex format: EraYear/MM/DD
+    'japanese' => ['dateInput' => 'required|string'], // EraName Year/MM/DD
     default => ['dateInput' => 'required'],
 })->messages([
     'dateInput.required' => 'Please enter a value.',
@@ -106,7 +106,7 @@ updated([
                     id="date-input-japanese"
                     wire:model.live.debounce.300ms="dateInput"
                     class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
-                    placeholder="Reiwa1/MM/DD or 2023/MM/DD"
+                    placeholder="Reiwa 5/05/01"
                 />
             </div>
             @error('dateInput')

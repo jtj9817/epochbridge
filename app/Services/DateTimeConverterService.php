@@ -184,6 +184,10 @@ class DateTimeConverterService
             throw new InvalidArgumentException("Unsupported calendar type: {$calendarType}");
         }
 
+        if ($calendarType === 'japanese') {
+            return $this->convertFromJapaneseEra($dateString);
+        }
+
         // Parse date string (expecting YYYY/MM/DD format)
         if (! preg_match('/^(\d+)\/(\d+)\/(\d+)$/', $dateString, $matches)) {
             throw new CalendarMalformedDateException("Invalid date format for {$calendarType}. Use YYYY/MM/DD.", $calendarType);
@@ -238,5 +242,37 @@ class DateTimeConverterService
 
         // Convert Gregorian to target
         return $targetService->fromGregorian($gregorian);
+    }
+
+    private function convertFromJapaneseEra(string $dateString): Carbon
+    {
+        $service = $this->calendarServices['japanese'];
+        $trimmed = trim($dateString);
+
+        if (! preg_match('/^(.+?)\s+(\d+)\/(\d+)\/(\d+)$/u', $trimmed, $matches)) {
+            throw new CalendarMalformedDateException(
+                'Invalid date format for japanese. Use "<Era Name> <Year>/<Month>/<Day>".',
+                'japanese'
+            );
+        }
+
+        $eraName = trim($matches[1]);
+        $eraYear = (int) $matches[2];
+        $month = (int) $matches[3];
+        $day = (int) $matches[4];
+
+        if (! $service->validateDate($eraYear, $month, $day)) {
+            throw new CalendarValidationException(
+                "Invalid japanese date: {$eraName} {$eraYear}/{$month}/{$day}",
+                'japanese'
+            );
+        }
+
+        return $service->toGregorian([
+            'era' => $eraName,
+            'year' => $eraYear,
+            'month' => $month,
+            'day' => $day,
+        ]);
     }
 }

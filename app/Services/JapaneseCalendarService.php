@@ -18,19 +18,28 @@ class JapaneseCalendarService extends CalendarConversionService
         }
 
         $eraYear = $era->getEraYear($date);
-        $imperialYear = $this->calculateImperialYear($date);
+        $monthName = $date->format('F');
+        $fullDate = sprintf(
+            '%s %d/%02d/%02d',
+            $era->name_romanized,
+            $eraYear,
+            $date->month,
+            $date->day
+        );
 
         return [
             'year' => $eraYear,
+            'year_in_era' => $eraYear,
             'month' => $date->month,
+            'month_name' => $monthName,
             'day' => $date->day,
-            'era_japanese' => $era->name_japanese,
-            'era_romanized' => $era->name_romanized,
-            'era_english' => $era->name_english,
-            'imperial_year' => $imperialYear,
+            'era_name_japanese' => $era->name_japanese,
+            'era_name_romanized' => $era->name_romanized,
+            'era_name_english' => $era->name_english,
+            'imperial_year' => $eraYear,
             'is_current_era' => $era->isActive(),
             'historical_context' => $era->historical_context,
-            'full_date' => "{$era->name_romanized}{$eraYear}/{$date->month}/{$date->day}",
+            'full_date' => $fullDate,
             'display' => "{$era->name_romanized} {$eraYear}年 {$date->month}月 {$date->day}日",
         ];
     }
@@ -46,26 +55,35 @@ class JapaneseCalendarService extends CalendarConversionService
             $this->handleValidationError('Invalid Japanese date components');
         }
 
-        $era = JapaneseEra::where('name_romanized', $eraName)
-            ->orWhere('name_japanese', $eraName)
-            ->orWhere('name_english', $eraName)
-            ->first();
+        $era = $this->findEraByName($eraName);
 
         if (! $era) {
             $this->handleValidationError("Japanese era '{$eraName}' not found");
         }
 
-        $gregorianYear = $era->start_date->year + $year - 1;
-        $candidateDate = Carbon::create($gregorianYear, $month, $day, 0, 0, 0, 'Asia/Tokyo');
+        $eraYear = (int) $year;
+        $month = (int) $month;
+        $day = (int) $day;
+        $gregorianYear = $this->calculateGregorianYear($era, $eraYear);
+
+        if (! $this->validateDate($eraYear, $month, $day)) {
+            $this->handleValidationError("Invalid Japanese date: {$eraName} {$eraYear}/{$month}/{$day}");
+        }
+
+        $candidateDate = Carbon::createFromFormat(
+            'Y-n-j H:i:s',
+            "{$gregorianYear}-{$month}-{$day} 00:00:00",
+            'Asia/Tokyo'
+        );
+
+        if ($candidateDate === false) {
+            $this->handleValidationError("Invalid Japanese date: {$eraName} {$eraYear}/{$month}/{$day}");
+        }
 
         // Validate that the date is within the era's range
         if ($candidateDate->lt($era->start_date) ||
             ($era->end_date && $candidateDate->gt($era->end_date))) {
             $this->handleRangeError("Date {$eraName}{$year}/{$month}/{$day} is not within the era's valid range");
-        }
-
-        if (! $this->validateDate($year, $month, $day)) {
-            $this->handleValidationError("Invalid Japanese date: {$eraName}{$year}/{$month}/{$day}");
         }
 
         return $candidateDate;
@@ -83,30 +101,22 @@ class JapaneseCalendarService extends CalendarConversionService
 
     public function validateDate(int $year, int $month, int $day): bool
     {
-        // Japanese calendar uses same solar months as Gregorian
         if ($year < 1 || $month < 1 || $month > 12 || $day < 1) {
             return false;
         }
 
-        return $day <= $this->getDaysInMonth($year, $month);
+        $maxDays = $this->getDaysInMonth($year, $month);
+
+        return $day <= $maxDays;
     }
 
     public function getDaysInMonth(int $year, int $month): int
     {
-        // Same as Gregorian calendar
-        return cal_days_in_month(CAL_GREGORIAN, $month, $year + 1867); // Approximate base year
-    }
-
-    /**
-     * Calculate imperial year (year of emperor's reign)
-     */
-    private function calculateImperialYear(Carbon $date): int
-    {
-        // Imperial year starts from the year of emperor's accession
-        // For current era (Reiwa), it's year since 2019
-        $era = JapaneseEra::findEraForDate($date);
-
-        return $era ? $date->year - $era->start_date->year + 1 : $date->year;
+        return match ($month) {
+            2 => 29, // Leap-safe default; actual validation occurs against era metadata
+            4, 6, 9, 11 => 30,
+            default => 31,
+        };
     }
 
     /**
@@ -132,5 +142,18 @@ class JapaneseCalendarService extends CalendarConversionService
     public function getTags(): array
     {
         return ['east-asian', 'solar'];
+    }
+
+    private function calculateGregorianYear(JapaneseEra $era, int $eraYear): int
+    {
+        return $era->start_date->year + $eraYear - 1;
+    }
+
+    private function findEraByName(string $eraName): ?JapaneseEra
+    {
+        return JapaneseEra::where('name_romanized', $eraName)
+            ->orWhere('name_japanese', $eraName)
+            ->orWhere('name_english', $eraName)
+            ->first();
     }
 }

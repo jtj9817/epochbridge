@@ -35,6 +35,7 @@ class JapaneseEra extends Model
                     ->orWhereNull('end_date');
             })
             ->orderBy('start_date', 'desc')
+            ->orderByRaw('CASE WHEN historical_context IS NULL THEN 0 ELSE 1 END')
             ->first();
     }
 

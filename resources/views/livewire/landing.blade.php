@@ -26,7 +26,7 @@ state('inputTypes', [
     'islamic' => 'Islamic (YYYY/MM/DD)',
     'french_republican' => 'French Republican (YYYY/MM/DD)',
     'chinese' => 'Chinese (YYYY/MM/DD)',
-    'japanese' => 'Japanese (Era Year/MM/DD)',
+    'japanese' => 'Japanese (Era Year/MM/DD, e.g., "Reiwa 5/05/01")',
     'coptic' => 'Coptic (YYYY/MM/DD)',
     'egyptian' => 'Egyptian (YYYY/MM/DD)',
     'ethiopian' => 'Ethiopian (YYYY/MM/DD)',

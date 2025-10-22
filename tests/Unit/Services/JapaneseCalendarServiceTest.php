@@ -49,9 +49,12 @@ class JapaneseCalendarServiceTest extends TestCase
         $date = Carbon::create(2023, 6, 15);
         $result = $this->service->fromGregorian($date);
 
-        $this->assertEquals('Reiwa', $result['era_romanized']);
+        $this->assertEquals('Reiwa', $result['era_name_romanized']);
         $this->assertEquals(5, $result['year']); // 2023 - 2018 = 5
+        $this->assertEquals(5, $result['year_in_era']);
+        $this->assertEquals('June', $result['month_name']);
         $this->assertTrue($result['is_current_era']);
+        $this->assertEquals('Reiwa 5/06/15', $result['full_date']);
     }
 
     public function test_converts_japanese_era_to_gregorian()
@@ -76,12 +79,24 @@ class JapaneseCalendarServiceTest extends TestCase
         $date = Carbon::create(2019, 4, 30);
         $result = $this->service->fromGregorian($date);
 
-        $this->assertEquals('Heisei', $result['era_romanized']);
-    }
+        $this->assertEquals('Heisei', $result['era_name_romanized']);
+}
 
     public function test_validates_japanese_dates()
     {
         $this->assertTrue($this->service->validateDate(5, 6, 15));
         $this->assertFalse($this->service->validateDate(5, 13, 15)); // Invalid month
+    }
+
+    public function test_rejects_invalid_leap_day_for_era_year()
+    {
+        $this->expectException(\App\Exceptions\CalendarValidationException::class);
+
+        $this->service->toGregorian([
+            'era' => 'Reiwa',
+            'year' => 5,
+            'month' => 2,
+            'day' => 29,
+        ]);
     }
 }
