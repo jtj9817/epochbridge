@@ -119,6 +119,8 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
 <div id="landing-page-container" class="min-h-screen bg-theme-50 dark:bg-theme-900"
      x-data="{
          showResults: @entangle('conversionResults'),
+         additionalResults: @entangle('additionalConversionResults'),
+         additionalLoaded: @entangle('additionalCalendarsLoaded'),
          showSaveLimitNotification: false,
          dateInput: @entangle('dateInput'),
          inputType: @entangle('inputType'),
@@ -171,6 +173,16 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
                      localStorage.removeItem('savedConversions');
                  }
              }
+         },
+         
+         getAllConversionResults() {
+             const basicResults = this.showResults || {};
+             const additionalResults = this.additionalResults || {};
+             
+             return {
+                 ...basicResults,
+                 ...additionalResults
+             };
          }
       }"
       @save-guest-conversion.window="
@@ -180,11 +192,14 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
              return;
          }
          
+         // Get all conversion results (basic + additional calendars)
+         const allResults = getAllConversionResults();
+         
          // Store complete conversion data with the same structure as database
          const newConversion = {
              id: Date.now(),
              original_input: dateInput,
-             conversion_data: JSON.parse(JSON.stringify(showResults)),
+             conversion_data: JSON.parse(JSON.stringify(allResults)),
              created_at: new Date().toISOString()
          };
          
