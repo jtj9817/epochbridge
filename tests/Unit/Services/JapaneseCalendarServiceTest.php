@@ -80,7 +80,7 @@ class JapaneseCalendarServiceTest extends TestCase
         $result = $this->service->fromGregorian($date);
 
         $this->assertEquals('Heisei', $result['era_name_romanized']);
-}
+    }
 
     public function test_validates_japanese_dates()
     {
