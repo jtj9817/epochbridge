@@ -27,9 +27,12 @@ class AstronomyCalculator
     public function julianDayFromCarbon(CarbonInterface $dateTime): float
     {
         $utc = CarbonImmutable::createFromInterface($dateTime)->setTimezone('UTC');
-        $seconds = (float) $utc->format('U.u');
+        $seconds = $utc->getTimestamp();
+        $microseconds = (int) $utc->format('u');
+        $totalMicroseconds = ($seconds * 1_000_000) + $microseconds;
 
-        return self::JULIAN_DATE_UNIX_EPOCH + ($seconds / self::SECONDS_PER_DAY);
+        return self::JULIAN_DATE_UNIX_EPOCH
+            + ($totalMicroseconds / (self::SECONDS_PER_DAY * 1_000_000));
     }
 
     /**
@@ -37,13 +40,28 @@ class AstronomyCalculator
      */
     public function julianDayToCarbon(float $jd, string $timezone = 'UTC'): CarbonImmutable
     {
-        $seconds = ($jd - self::JULIAN_DATE_UNIX_EPOCH) * self::SECONDS_PER_DAY;
-        $wholeSeconds = (int) floor($seconds);
-        $microseconds = (int) round(($seconds - $wholeSeconds) * 1_000_000);
+        $totalMicroseconds = (int) round(
+            ($jd - self::JULIAN_DATE_UNIX_EPOCH) * self::SECONDS_PER_DAY * 1_000_000
+        );
+
+        $wholeSeconds = intdiv($totalMicroseconds, 1_000_000);
+        $microseconds = $totalMicroseconds % 1_000_000;
+
+        if ($microseconds < 0) {
+            $wholeSeconds -= 1;
+            $microseconds += 1_000_000;
+        }
+
+        if ($microseconds >= 999_900) {
+            $wholeSeconds += 1;
+            $microseconds = 0;
+        } elseif ($microseconds <= 100) {
+            $microseconds = 0;
+        }
 
         $date = CarbonImmutable::createFromTimestampUTC($wholeSeconds);
 
-        if ($microseconds !== 0) {
+        if ($microseconds > 0) {
             $date = $date->addMicroseconds($microseconds);
         }
 
