@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 class SavedConversion extends Model
 {
@@ -104,7 +105,15 @@ class SavedConversion extends Model
      */
     public function getGregorianDateAttribute($value)
     {
-        return $this->conversion_data['gregorian']['full_date'] ?? $value;
+        if (isset($this->conversion_data['gregorian']['full_date'])) {
+            return $this->conversion_data['gregorian']['full_date'];
+        }
+
+        if ($value instanceof Carbon || $value === null) {
+            return $value;
+        }
+
+        return Carbon::parse($value)->startOfDay();
     }
 
     /**
