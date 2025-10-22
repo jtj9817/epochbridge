@@ -29,9 +29,6 @@ class ProgressTrackingService
 
     /**
      * Register the console output for rendering progress.
-     *
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @return void
      */
     public function registerOutput(OutputInterface $output): void
     {
@@ -41,12 +38,8 @@ class ProgressTrackingService
     /**
      * Initialise a new progress record for a command.
      *
-     * @param string $commandId
-     * @param int $totalTests
-     * @param array<string, mixed> $testTypes
-     * @param \Carbon\CarbonInterface $startTime
-     * @param array<string, mixed> $context
-     * @return void
+     * @param  array<string, mixed>  $testTypes
+     * @param  array<string, mixed>  $context
      */
     public function initializeProgress(
         string $commandId,
@@ -76,7 +69,7 @@ class ProgressTrackingService
         ];
 
         foreach ($testTypes as $type => $count) {
-            if (!isset($byType[$type])) {
+            if (! isset($byType[$type])) {
                 $byType[$type] = $typeTemplate;
             }
             $byType[$type]['total'] = (int) $count;
@@ -105,19 +98,14 @@ class ProgressTrackingService
 
     /**
      * Update progress for a completed test.
-     *
-     * @param string $commandId
-     * @param string $testFile
-     * @param string $status
-     * @param float $duration
-     * @return void
      */
     public function updateProgress(string $commandId, string $testFile, string $status, float $duration): void
     {
-        if (!isset($this->executions[$commandId])) {
+        if (! isset($this->executions[$commandId])) {
             Log::debug('Attempted to update progress for unknown command', [
                 'command_id' => $commandId,
             ]);
+
             return;
         }
 
@@ -130,7 +118,7 @@ class ProgressTrackingService
 
         $type = $this->determineTestType($testFile);
 
-        if (!isset($execution['by_type'][$type])) {
+        if (! isset($execution['by_type'][$type])) {
             $execution['by_type'][$type] = [
                 'total' => 0,
                 'completed' => 0,
@@ -167,7 +155,7 @@ class ProgressTrackingService
 
         $execution['recent'] = array_slice($execution['recent'], -10);
 
-        if (!empty($execution['pending'])) {
+        if (! empty($execution['pending'])) {
             $execution['pending'] = array_values(array_filter(
                 $execution['pending'],
                 static fn ($file) => $file !== $testFile
@@ -179,11 +167,6 @@ class ProgressTrackingService
 
     /**
      * Display the current status to the console.
-     *
-     * @param \Symfony\Component\Console\Output\OutputInterface|null $output
-     * @param string|null $commandId
-     * @param bool $force
-     * @return void
      */
     public function displayCurrentStatus(
         ?OutputInterface $output = null,
@@ -197,14 +180,14 @@ class ProgressTrackingService
             return;
         }
 
-        if (!isset($this->executions[$commandId])) {
+        if (! isset($this->executions[$commandId])) {
             return;
         }
 
         $execution = &$this->executions[$commandId];
 
         $now = microtime(true);
-        if (!$force && ($now - $execution['last_render']) < 0.1) {
+        if (! $force && ($now - $execution['last_render']) < 0.1) {
             return;
         }
         $execution['last_render'] = $now;
@@ -253,17 +236,17 @@ class ProgressTrackingService
             $eta
         );
 
-        if (!empty($execution['currently_running'])) {
+        if (! empty($execution['currently_running'])) {
             $running = implode(', ', array_slice($execution['currently_running'], 0, 4));
-            $lines[] = ' Running: ' . $running . (count($execution['currently_running']) > 4 ? ', …' : '');
-        } elseif (!empty($execution['pending'])) {
+            $lines[] = ' Running: '.$running.(count($execution['currently_running']) > 4 ? ', …' : '');
+        } elseif (! empty($execution['pending'])) {
             $queued = implode(', ', array_slice($execution['pending'], 0, 4));
-            $lines[] = ' Pending: ' . $queued . (count($execution['pending']) > 4 ? ', …' : '');
+            $lines[] = ' Pending: '.$queued.(count($execution['pending']) > 4 ? ', …' : '');
         } else {
             $lines[] = ' Running: Idle';
         }
 
-        if (!empty($execution['recent'])) {
+        if (! empty($execution['recent'])) {
             $last = end($execution['recent']);
             $lines[] = sprintf(
                 ' Last: %s (%s, %s)',
@@ -288,11 +271,6 @@ class ProgressTrackingService
 
     /**
      * Calculate the estimated time remaining based on average duration.
-     *
-     * @param int $completed
-     * @param int $total
-     * @param \Carbon\CarbonInterface $startTime
-     * @return string
      */
     public function calculateETA(
         int $completed,
@@ -316,11 +294,6 @@ class ProgressTrackingService
 
     /**
      * Generate an ASCII progress bar for display.
-     *
-     * @param int $completed
-     * @param int $total
-     * @param int $width
-     * @return string
      */
     public function getProgressBar(int $completed, int $total, int $width = 30): string
     {
@@ -337,14 +310,13 @@ class ProgressTrackingService
     /**
      * Get the current statistics for the active command.
      *
-     * @param string|null $commandId
      * @return array<string, mixed>
      */
     public function getStatistics(?string $commandId = null): array
     {
         $commandId = $commandId ?? $this->currentCommandId;
 
-        if ($commandId === null || !isset($this->executions[$commandId])) {
+        if ($commandId === null || ! isset($this->executions[$commandId])) {
             return [];
         }
 
@@ -366,9 +338,7 @@ class ProgressTrackingService
     /**
      * Persist the final summary for the execution.
      *
-     * @param string $commandId
-     * @param array<string, mixed> $summary
-     * @return void
+     * @param  array<string, mixed>  $summary
      */
     public function finalizeSummary(string $commandId, array $summary): void
     {
@@ -379,9 +349,6 @@ class ProgressTrackingService
 
     /**
      * Set the command ID to operate on.
-     *
-     * @param string $commandId
-     * @return void
      */
     public function setActiveCommand(string $commandId): void
     {
@@ -390,8 +357,6 @@ class ProgressTrackingService
 
     /**
      * Remove any existing rendering artefacts.
-     *
-     * @return void
      */
     public function clear(): void
     {
@@ -401,9 +366,6 @@ class ProgressTrackingService
 
     /**
      * Determine the test type based on file path patterns.
-     *
-     * @param string $testFile
-     * @return string
      */
     public function determineTestType(string $testFile): string
     {
@@ -420,9 +382,6 @@ class ProgressTrackingService
 
     /**
      * Format the duration into a friendly string.
-     *
-     * @param float|int $seconds
-     * @return string
      */
     private function formatDuration(float|int $seconds): string
     {
@@ -433,11 +392,11 @@ class ProgressTrackingService
         }
 
         if ($seconds < 1) {
-            return number_format($seconds, 2) . 's';
+            return number_format($seconds, 2).'s';
         }
 
         if ($seconds < 60) {
-            return number_format($seconds, 1) . 's';
+            return number_format($seconds, 1).'s';
         }
 
         $minutes = floor($seconds / 60);
@@ -448,10 +407,6 @@ class ProgressTrackingService
 
     /**
      * Clear previously rendered lines in the console.
-     *
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param int $lineCount
-     * @return void
      */
     private function clearPreviousLines(OutputInterface $output, int $lineCount): void
     {
@@ -468,8 +423,6 @@ class ProgressTrackingService
 
     /**
      * Determine whether the environment supports ANSI escape sequences.
-     *
-     * @return bool
      */
     private function detectAnsiSupport(): bool
     {
@@ -478,9 +431,6 @@ class ProgressTrackingService
 
     /**
      * Resolve the console width if possible.
-     *
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @return int
      */
     private function resolveTerminalWidth(OutputInterface $output): int
     {
@@ -493,10 +443,6 @@ class ProgressTrackingService
 
     /**
      * Calculate completion percentage.
-     *
-     * @param int $completed
-     * @param int $total
-     * @return float
      */
     private function getCompletionPercentage(int $completed, int $total): float
     {
@@ -509,8 +455,6 @@ class ProgressTrackingService
 
     /**
      * Retrieve average duration for the current execution.
-     *
-     * @return float
      */
     private function getAverageDurationSeconds(): float
     {
@@ -524,14 +468,13 @@ class ProgressTrackingService
     /**
      * Recompute the currently running tests list based on concurrency settings.
      *
-     * @param array<string, mixed> $execution
-     * @return void
+     * @param  array<string, mixed>  $execution
      */
     private function recomputeRunningList(array &$execution): void
     {
         $concurrency = max(1, (int) $execution['concurrency']);
 
-        if (!empty($execution['pending'])) {
+        if (! empty($execution['pending'])) {
             $execution['currently_running'] = array_slice($execution['pending'], 0, $concurrency);
         } else {
             $execution['currently_running'] = [];

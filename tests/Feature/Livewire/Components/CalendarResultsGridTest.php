@@ -56,9 +56,9 @@ it('shows an error message when passed', function () {
 
 it('filters results by search term', function () {
     Volt::test('components.calendar-results-grid', [
-            'conversionResults' => $this->baseResults,
-            'searchTerm' => 'Jalali',
-        ])
+        'conversionResults' => $this->baseResults,
+        'searchTerm' => 'Jalali',
+    ])
         ->assertSee('Jalali')
         ->assertDontSeeText('Gregorian')
         ->assertDontSeeText('Islamic');
@@ -67,9 +67,9 @@ it('filters results by search term', function () {
 it('filters results by type', function () {
     // 'islamic' has 'lunar' tag. 'gregorian' and 'jalali' do not.
     Volt::test('components.calendar-results-grid', [
-            'conversionResults' => $this->baseResults,
-            'selectedTypes' => ['lunar'],
-        ])
+        'conversionResults' => $this->baseResults,
+        'selectedTypes' => ['lunar'],
+    ])
         ->assertSee('Islamic')
         ->assertDontSeeText('Gregorian')
         ->assertDontSeeText('Jalali')
@@ -80,9 +80,9 @@ it('filters results by type', function () {
 
 it('shows loading skeletons when additional calendars are not loaded', function () {
     Volt::test('components.calendar-results-grid', [
-            'conversionResults' => $this->baseResults,
-            'additionalCalendarsLoaded' => false,
-        ])
+        'conversionResults' => $this->baseResults,
+        'additionalCalendarsLoaded' => false,
+    ])
         ->assertSeeHtmlInOrder(['<div', 'animate-pulse']);
 });
 
@@ -154,10 +154,10 @@ it('renders additional calendar data when loaded', function () {
     ];
 
     Volt::test('components.calendar-results-grid', [
-            'conversionResults' => $baseData,
-            'additionalConversionResults' => $additionalData,
-            'additionalCalendarsLoaded' => true,
-        ])
+        'conversionResults' => $baseData,
+        'additionalConversionResults' => $additionalData,
+        'additionalCalendarsLoaded' => true,
+    ])
         ->assertSee('Julian Calendar')
         ->assertSee('Difference:')
         ->assertSee('13 days behind Gregorian');

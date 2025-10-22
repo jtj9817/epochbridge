@@ -10,7 +10,7 @@ uses(TestCase::class);
 
 describe('ProgressTrackingService', function () {
     beforeEach(function () {
-        $this->service = new ProgressTrackingService();
+        $this->service = new ProgressTrackingService;
         $this->commandId = 'cmd-'.uniqid();
         $this->start = CarbonImmutable::create(2024, 10, 18, 12, 0, 0, 'UTC');
         Date::setTestNow($this->start);

@@ -21,19 +21,19 @@ class TestRunnerServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(config_path('test-runner.php'), 'test-runner');
 
         $this->app->singleton(ProgressTrackingService::class, function () {
-            return new ProgressTrackingService();
+            return new ProgressTrackingService;
         });
 
         $this->app->singleton(MarkdownReportService::class, function () {
-            return new MarkdownReportService();
+            return new MarkdownReportService;
         });
 
         $this->app->singleton(ErrorRecoveryService::class, function () {
-            return new ErrorRecoveryService();
+            return new ErrorRecoveryService;
         });
 
         $this->app->singleton(TestProcessFactory::class, function () {
-            return new TestProcessFactory();
+            return new TestProcessFactory;
         });
     }
 
@@ -47,8 +47,6 @@ class TestRunnerServiceProvider extends ServiceProvider
 
     /**
      * Apply configuration defaults to test execution service.
-     *
-     * @return void
      */
     protected function configureTestExecutionDefaults(): void
     {

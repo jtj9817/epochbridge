@@ -44,7 +44,7 @@ class ChineseCalendarService extends CalendarConversionService
 
     public function __construct(?ChineseLunisolarCalendar $calendar = null)
     {
-        $this->calendar = $calendar ?? new ChineseLunisolarCalendar();
+        $this->calendar = $calendar ?? new ChineseLunisolarCalendar;
     }
 
     public function fromGregorian(Carbon $date): array

@@ -1,7 +1,7 @@
 <?php
 
 use App\Services\DateTimeConverterService;
-use Illuminate\Support\Facades\Cache;;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 uses(TestCase::class);

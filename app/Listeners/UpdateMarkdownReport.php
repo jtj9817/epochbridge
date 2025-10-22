@@ -12,18 +12,11 @@ class UpdateMarkdownReport
 {
     /**
      * Create a new listener instance.
-     *
-     * @param \App\Services\MarkdownReportService $markdownReportService
      */
-    public function __construct(private readonly MarkdownReportService $markdownReportService)
-    {
-    }
+    public function __construct(private readonly MarkdownReportService $markdownReportService) {}
 
     /**
      * Handle the TestCompleted event.
-     *
-     * @param \App\Events\TestCompleted $event
-     * @return void
      */
     public function handleTestCompleted(TestCompleted $event): void
     {
@@ -49,9 +42,6 @@ class UpdateMarkdownReport
 
     /**
      * Handle the TestExecutionCompleted event.
-     *
-     * @param \App\Events\TestExecutionCompleted $event
-     * @return void
      */
     public function handleTestExecutionCompleted(TestExecutionCompleted $event): void
     {
@@ -76,4 +66,3 @@ class UpdateMarkdownReport
         }
     }
 }
-

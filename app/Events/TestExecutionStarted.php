@@ -2,14 +2,11 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use Carbon\Carbon;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Carbon\Carbon;
 
 class TestExecutionStarted
 {
@@ -38,10 +35,10 @@ class TestExecutionStarted
     /**
      * Create a new event instance
      *
-     * @param string $commandId Unique command identifier
-     * @param int $testCount Number of tests to execute
-     * @param Carbon $startTime When execution started
-     * @param array $metadata Additional execution metadata
+     * @param  string  $commandId  Unique command identifier
+     * @param  int  $testCount  Number of tests to execute
+     * @param  Carbon  $startTime  When execution started
+     * @param  array  $metadata  Additional execution metadata
      */
     public function __construct(string $commandId, int $testCount, Carbon $startTime, array $metadata = [])
     {
@@ -59,14 +56,12 @@ class TestExecutionStarted
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('test-execution.' . $this->commandId),
+            new PrivateChannel('test-execution.'.$this->commandId),
         ];
     }
 
     /**
      * Get the data to broadcast
-     *
-     * @return array
      */
     public function broadcastWith(): array
     {
@@ -81,8 +76,6 @@ class TestExecutionStarted
 
     /**
      * The event's broadcast name
-     *
-     * @return string
      */
     public function broadcastAs(): string
     {

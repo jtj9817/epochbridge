@@ -8,9 +8,9 @@ use App\Services\TestExecutionService;
 use App\Services\TestSelectionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\warning;
 
@@ -30,10 +30,15 @@ class InteractiveTestRunnerCommand extends Command
      * Test type constants
      */
     private const UNIT_TESTS = 'unit';
+
     private const FEATURE_TESTS = 'feature';
+
     private const LIVEWIRE_TESTS = 'livewire';
+
     private const BROWSER_TESTS = 'browser';
+
     private const CUSTOM_SELECTION = 'custom';
+
     private const ALL_TESTS = 'all';
 
     /**
@@ -83,10 +88,9 @@ class InteractiveTestRunnerCommand extends Command
         TestDiscoveryService $discoveryService,
         TestExecutionService $executionService,
         ProgressTrackingService $progressTrackingService
-    )
-    {
+    ) {
         parent::__construct();
-        
+
         $this->discoveryService = $discoveryService;
         $this->executionService = $executionService;
         $this->selectionService = new TestSelectionService($discoveryService, $this);
@@ -105,24 +109,26 @@ class InteractiveTestRunnerCommand extends Command
             $this->lastLoggedFailureCount = 0;
 
             $this->displayWelcomeMessage();
-            
+
             $testSelection = $this->showMainMenu();
-            
+
             if ($testSelection === null) {
                 warning('No test selection made. Exiting...');
                 $this->logVerbose('Aborting execution because no valid test selection was provided.', 'warning');
+
                 return self::FAILURE;
             }
 
             // Handle custom selection
             if ($testSelection === self::CUSTOM_SELECTION) {
                 $this->selectedTests = $this->selectCustomTests();
-                
+
                 if (empty($this->selectedTests)) {
                     warning('No tests selected. Exiting...');
                     $this->logVerbose('Custom selection did not include any tests. Exiting.', 'warning', [
                         'selection' => $testSelection,
                     ]);
+
                     return self::FAILURE;
                 }
             }
@@ -133,38 +139,42 @@ class InteractiveTestRunnerCommand extends Command
             ]);
 
             $this->displayTestSummary($testSelection);
-            
-            if (!$this->confirmExecution()) {
+
+            if (! $this->confirmExecution()) {
                 info('Test execution cancelled by user.');
                 $this->logVerbose('User cancelled test execution before start.');
+
                 return self::SUCCESS;
             }
 
             // Get execution options
             $executionOptions = $this->getExecutionOptions();
-            
+
             // Start test execution
             $commandId = $this->executeTests($testSelection, $executionOptions);
-            
+
             if ($commandId) {
                 $this->displayExecutionProgress($commandId);
+
                 return self::SUCCESS;
             } else {
                 $this->error('Failed to start test execution.');
                 $this->logVerbose('Failed to start test execution after preparing options.', 'error', [
                     'selection' => $testSelection,
                 ]);
+
                 return self::FAILURE;
             }
-            
+
             return self::SUCCESS;
-            
+
         } catch (\Exception $e) {
             $this->error("An error occurred: {$e->getMessage()}");
             $this->logVerbose('Unhandled exception during test runner execution.', 'error', [
                 'exception' => $e::class,
                 'message' => $e->getMessage(),
             ]);
+
             return self::FAILURE;
         }
     }
@@ -180,7 +190,7 @@ class InteractiveTestRunnerCommand extends Command
         $this->line('║           EpochBridge Test Execution System              ║');
         $this->line('╚═══════════════════════════════════════════════════════════╝');
         $this->newLine();
-        
+
         info('Welcome to the EpochBridge Interactive Test Runner!');
         $this->line('This tool helps you select and execute tests with real-time reporting.');
         $this->newLine();
@@ -192,9 +202,10 @@ class InteractiveTestRunnerCommand extends Command
     private function showMainMenu(): ?string
     {
         $testSelection = $this->getTestSelection();
-        
-        if (!$this->validateSelection($testSelection)) {
+
+        if (! $this->validateSelection($testSelection)) {
             warning('Invalid test selection provided.');
+
             return null;
         }
 
@@ -208,7 +219,7 @@ class InteractiveTestRunnerCommand extends Command
     {
         // Get test statistics for display
         $statistics = $this->discoveryService->getTestStatistics();
-        
+
         return select(
             label: 'Which tests would you like to run?',
             options: [
@@ -254,22 +265,21 @@ class InteractiveTestRunnerCommand extends Command
     /**
      * Display a comprehensive summary of the test selection
      *
-     * @param string $selection Test selection type
-     * @return void
+     * @param  string  $selection  Test selection type
      */
     private function displayTestSummary(string $selection): void
     {
         $this->newLine();
-        
-        if ($selection === self::CUSTOM_SELECTION && !empty($this->selectedTests)) {
+
+        if ($selection === self::CUSTOM_SELECTION && ! empty($this->selectedTests)) {
             // Display custom selection summary
             $this->selectionService->displayTestSummary($this->selectedTests);
         } else {
             // Display standard selection summary
             $statistics = $this->discoveryService->getTestStatistics();
-            
+
             info('📋 Test Selection Summary');
-            
+
             $descriptions = [
                 self::ALL_TESTS => 'Complete test suite (Unit, Feature, Livewire, Browser)',
                 self::UNIT_TESTS => 'Unit tests only - Fast isolated component testing',
@@ -299,7 +309,7 @@ class InteractiveTestRunnerCommand extends Command
                 ]
             );
         }
-        
+
         $this->newLine();
     }
 
@@ -324,9 +334,9 @@ class InteractiveTestRunnerCommand extends Command
     {
         $this->newLine();
         info('⚙️  Execution Options');
-        
+
         $options = [];
-        
+
         // Parallel execution option
         $options['parallel'] = confirm(
             label: 'Enable parallel execution?',
@@ -374,7 +384,7 @@ class InteractiveTestRunnerCommand extends Command
             default: '10',
             hint: 'Maximum time to wait for test completion'
         );
-        
+
         $options['timeout'] = $timeoutMinutes * 60; // Convert to seconds
 
         return $options;
@@ -383,8 +393,8 @@ class InteractiveTestRunnerCommand extends Command
     /**
      * Execute tests based on selection and options
      *
-     * @param string $testSelection Test selection type
-     * @param array $options Execution options
+     * @param  string  $testSelection  Test selection type
+     * @param  array  $options  Execution options
      * @return string|null Command ID or null on failure
      */
     private function executeTests(string $testSelection, array $options): ?string
@@ -399,8 +409,8 @@ class InteractiveTestRunnerCommand extends Command
             $outputFile = $this->resolveOutputFile();
 
             $this->line("Output file: <fg=cyan>{$outputFile}</>");
-            $this->line("Execution mode: " . ($options['parallel'] ? 'Parallel' : 'Sequential'));
-            $this->line("Test files: " . count($testFiles) . " files");
+            $this->line('Execution mode: '.($options['parallel'] ? 'Parallel' : 'Sequential'));
+            $this->line('Test files: '.count($testFiles).' files');
             $this->newLine();
 
             $progressContext = $this->buildProgressContext($testSelection, $testFiles);
@@ -441,7 +451,7 @@ class InteractiveTestRunnerCommand extends Command
             $this->logVerbose('Test execution started successfully.', 'info', [
                 'command_id' => $commandId,
             ]);
-            
+
             return $commandId;
 
         } catch (\Exception $e) {
@@ -452,6 +462,7 @@ class InteractiveTestRunnerCommand extends Command
                 'message' => $e->getMessage(),
                 'exception' => $e::class,
             ]);
+
             return null;
         }
     }
@@ -459,7 +470,7 @@ class InteractiveTestRunnerCommand extends Command
     /**
      * Get test files for execution based on selection
      *
-     * @param string $testSelection Test selection type
+     * @param  string  $testSelection  Test selection type
      * @return array Test files to execute
      */
     private function getTestFilesForExecution(string $testSelection): array
@@ -474,7 +485,7 @@ class InteractiveTestRunnerCommand extends Command
 
         // Get tests for specific category
         $discovered = $this->discoveryService->discoverAllTests();
-        
+
         return match ($testSelection) {
             self::UNIT_TESTS => $discovered['unit'] ?? [],
             self::FEATURE_TESTS => $discovered['feature'] ?? [],
@@ -487,15 +498,14 @@ class InteractiveTestRunnerCommand extends Command
     /**
      * Build progress tracking context for the given selection.
      *
-     * @param string $selection
-     * @param array<int, mixed> $testFiles
+     * @param  array<int, mixed>  $testFiles
      * @return array{estimated_total_tests:int, tests_by_type:array<string,int>, test_files:array<int,string>}
      */
     private function buildProgressContext(string $selection, array $testFiles): array
     {
         $statistics = $this->discoveryService->getTestStatistics();
 
-        $estimatedTotal = !empty($testFiles)
+        $estimatedTotal = ! empty($testFiles)
             ? count($testFiles)
             : (int) ($statistics['total'] ?? 0);
 
@@ -506,7 +516,7 @@ class InteractiveTestRunnerCommand extends Command
             'browser' => 0,
         ];
 
-        if (!empty($testFiles)) {
+        if (! empty($testFiles)) {
             foreach ($testFiles as $file) {
                 $path = is_array($file) ? ($file['file_path'] ?? '') : $file;
                 $type = $this->progressService->determineTestType($path);
@@ -568,7 +578,7 @@ class InteractiveTestRunnerCommand extends Command
             try {
                 $progress = $this->executionService->trackProgress($commandId);
 
-                if (!$progress) {
+                if (! $progress) {
                     warning('Progress tracking unavailable for this execution.');
                     $this->logVerbose('Progress tracking returned no data; aborting monitor loop.', 'warning', [
                         'command_id' => $commandId,
@@ -618,17 +628,17 @@ class InteractiveTestRunnerCommand extends Command
     private function formatDuration(float $seconds): string
     {
         if ($seconds < 1) {
-            return number_format($seconds, 2) . 's';
+            return number_format($seconds, 2).'s';
         }
 
         if ($seconds < 60) {
-            return number_format($seconds, 1) . 's';
+            return number_format($seconds, 1).'s';
         }
 
         $minutes = floor($seconds / 60);
         $remainingSeconds = $seconds % 60;
 
-        return $minutes . 'm ' . number_format($remainingSeconds, 1) . 's';
+        return $minutes.'m '.number_format($remainingSeconds, 1).'s';
     }
 
     /**
@@ -667,7 +677,7 @@ class InteractiveTestRunnerCommand extends Command
                 ['Passed', $summary['total_passed'] ?? ($statistics['passed'] ?? 0)],
                 ['Failed', $summary['total_failed'] ?? ($statistics['failed'] ?? 0)],
                 ['Skipped', $summary['total_skipped'] ?? ($statistics['skipped'] ?? 0)],
-                ['Success Rate', ($summary['success_rate'] ?? 0) . '%'],
+                ['Success Rate', ($summary['success_rate'] ?? 0).'%'],
                 ['Duration', $this->formatDuration($summary['total_duration'] ?? ($statistics['elapsed'] ?? 0))],
                 ['Average Test Duration', $this->formatDuration($statistics['average_duration'] ?? 0)],
                 ['Output File', $report['output_file'] ?? 'N/A'],
@@ -676,7 +686,7 @@ class InteractiveTestRunnerCommand extends Command
 
         $this->newLine();
 
-        if (!empty($statistics['by_type'])) {
+        if (! empty($statistics['by_type'])) {
             $this->line('Breakdown by Test Type:');
             $rows = [];
 
@@ -699,10 +709,10 @@ class InteractiveTestRunnerCommand extends Command
             $this->newLine();
         }
 
-        if (!empty($summary['failures'])) {
+        if (! empty($summary['failures'])) {
             warning('Test Failures:');
             foreach (array_slice($summary['failures'], 0, 5) as $failure) {
-                $this->line("  • " . trim($failure));
+                $this->line('  • '.trim($failure));
             }
             $this->logVerbose('Test failures detected during execution.', 'warning', [
                 'command_id' => $commandId,
@@ -715,10 +725,10 @@ class InteractiveTestRunnerCommand extends Command
             $this->newLine();
         }
 
-        if (!empty($summary['warnings'])) {
+        if (! empty($summary['warnings'])) {
             $this->line('<fg=yellow>Warnings:</>');
             foreach (array_slice($summary['warnings'], 0, 3) as $warningMessage) {
-                $this->line("  • " . trim($warningMessage));
+                $this->line('  • '.trim($warningMessage));
             }
             if (count($summary['warnings']) > 3) {
                 $this->line('  ... additional warnings omitted');
@@ -730,7 +740,7 @@ class InteractiveTestRunnerCommand extends Command
             $this->newLine();
         }
 
-        if (!empty($summary['recovery_actions'])) {
+        if (! empty($summary['recovery_actions'])) {
             $this->line('<fg=cyan>Recovery Actions:</>');
             foreach ($summary['recovery_actions'] as $recovery) {
                 $fileLabel = $recovery['file'] ?? 'unknown';
@@ -764,7 +774,7 @@ class InteractiveTestRunnerCommand extends Command
     /**
      * Emit verbose status messages for the current progress snapshot.
      *
-     * @param array<string, mixed> $progress
+     * @param  array<string, mixed>  $progress
      */
     private function logProgressStatus(array $progress): void
     {
@@ -788,7 +798,7 @@ class InteractiveTestRunnerCommand extends Command
             strtoupper($status),
             $completed,
             $total > 0 ? (string) $total : 'unknown',
-            $pending !== [] ? '; Pending sample: ' . implode(', ', $pending) : ''
+            $pending !== [] ? '; Pending sample: '.implode(', ', $pending) : ''
         );
 
         $context = [
@@ -825,7 +835,7 @@ class InteractiveTestRunnerCommand extends Command
     /**
      * Extract a sample list of tests that are pending execution.
      *
-     * @param array<string, mixed> $progress
+     * @param  array<string, mixed>  $progress
      * @return array<int, string>
      */
     private function extractPendingTests(array $progress): array
@@ -854,8 +864,7 @@ class InteractiveTestRunnerCommand extends Command
     /**
      * Normalize a test file entry into a human readable string.
      *
-     * @param string|array<string, mixed>|null $entry
-     * @return string
+     * @param  string|array<string, mixed>|null  $entry
      */
     private function normalizeTestFileEntry($entry): string
     {
@@ -872,7 +881,7 @@ class InteractiveTestRunnerCommand extends Command
             return '';
         }
 
-        $basePath = rtrim(base_path(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $basePath = rtrim(base_path(), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
 
         if (str_starts_with($entry, $basePath)) {
             $entry = substr($entry, strlen($basePath));
@@ -884,14 +893,13 @@ class InteractiveTestRunnerCommand extends Command
     /**
      * Write a verbose message to both stdout (via echo) and the Laravel logger.
      *
-     * @param string $message
-     * @param 'info'|'warning'|'error' $level
-     * @param array<string, mixed> $context
+     * @param  'info'|'warning'|'error'  $level
+     * @param  array<string, mixed>  $context
      */
     private function logVerbose(string $message, string $level = 'info', array $context = []): void
     {
         $prefix = '[TestRunner] ';
-        echo $prefix . $message . PHP_EOL;
+        echo $prefix.$message.PHP_EOL;
 
         $context = array_merge(['command' => 'test:runner'], $context);
 

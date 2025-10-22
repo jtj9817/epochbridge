@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Console\Command;
+
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\multiselect;
@@ -25,9 +26,6 @@ class TestSelectionService
 
     /**
      * Constructor
-     *
-     * @param TestDiscoveryService $discoveryService
-     * @param Command $command
      */
     public function __construct(TestDiscoveryService $discoveryService, Command $command)
     {
@@ -38,8 +36,7 @@ class TestSelectionService
     /**
      * Display hierarchical file tree of test files
      *
-     * @param array $tests Array of test file information
-     * @return void
+     * @param  array  $tests  Array of test file information
      */
     public function displayFileTree(array $tests): void
     {
@@ -48,15 +45,15 @@ class TestSelectionService
         $this->command->newLine();
 
         $grouped = $this->groupTestsByDirectory($tests);
-        
+
         foreach ($grouped as $directory => $directoryTests) {
             $this->command->line("📂 <fg=cyan>{$directory}</>");
-            
+
             foreach ($directoryTests as $test) {
                 $icon = $this->getTestIcon($test['category']);
                 $this->command->line("  {$icon} {$test['filename']}");
             }
-            
+
             $this->command->newLine();
         }
     }
@@ -102,10 +99,10 @@ class TestSelectionService
     private function selectByCategory(): array
     {
         $statistics = $this->discoveryService->getTestStatistics();
-        
+
         // Show statistics first
         $this->displayTestStatistics($statistics);
-        
+
         $selectedCategories = multiselect(
             label: 'Select test categories',
             options: [
@@ -120,6 +117,7 @@ class TestSelectionService
 
         if (empty($selectedCategories)) {
             warning('No categories selected.');
+
             return [];
         }
 
@@ -146,7 +144,7 @@ class TestSelectionService
     {
         $selectedTests = [];
         $allTests = $this->discoveryService->discoverAllTests()['all'];
-        
+
         $this->command->line('🔍 Search for tests by typing part of the name or path.');
         $this->command->line('You can add multiple tests one by one.');
         $this->command->newLine();
@@ -158,7 +156,7 @@ class TestSelectionService
                     if (strlen($value) < 2) {
                         return [];
                     }
-                    
+
                     $results = [];
                     foreach ($allTests as $test) {
                         if (str_contains(strtolower($test['display_name']), strtolower($value)) ||
@@ -166,7 +164,7 @@ class TestSelectionService
                             $results[$test['relative_path']] = $test['display_name'];
                         }
                     }
-                    
+
                     return array_slice($results, 0, 10); // Limit to 10 results
                 },
                 placeholder: 'Type to search...',
@@ -175,8 +173,8 @@ class TestSelectionService
 
             if ($searchQuery) {
                 // Find the full test information
-                $selectedTest = collect($allTests)->first(fn($test) => $test['relative_path'] === $searchQuery);
-                
+                $selectedTest = collect($allTests)->first(fn ($test) => $test['relative_path'] === $searchQuery);
+
                 if ($selectedTest) {
                     $selectedTests[] = $selectedTest;
                     info("✓ Added: {$selectedTest['display_name']}");
@@ -202,11 +200,11 @@ class TestSelectionService
     {
         $allTests = $this->discoveryService->discoverAllTests()['all'];
         $grouped = $this->groupTestsByDirectory($allTests);
-        
+
         // First, select directories
         $directoryOptions = [];
         foreach ($grouped as $directory => $tests) {
-            $directoryOptions[$directory] = "{$directory} ({" . count($tests) . "} tests)";
+            $directoryOptions[$directory] = "{$directory} ({".count($tests).'} tests)';
         }
 
         $selectedDirectories = multiselect(
@@ -239,7 +237,7 @@ class TestSelectionService
         );
 
         // Return full test information for selected tests
-        return array_filter($availableTests, fn($test) => in_array($test['relative_path'], $selectedTestPaths));
+        return array_filter($availableTests, fn ($test) => in_array($test['relative_path'], $selectedTestPaths));
     }
 
     /**
@@ -295,20 +293,22 @@ class TestSelectionService
     /**
      * Validate custom test selection
      *
-     * @param array $selectedTests Selected test files
+     * @param  array  $selectedTests  Selected test files
      * @return bool True if selection is valid
      */
     public function validateCustomSelection(array $selectedTests): bool
     {
         if (empty($selectedTests)) {
             warning('No tests selected.');
+
             return false;
         }
 
         // Validate each test file exists and is readable
         foreach ($selectedTests as $test) {
-            if (!file_exists($test['file_path']) || !is_readable($test['file_path'])) {
+            if (! file_exists($test['file_path']) || ! is_readable($test['file_path'])) {
                 warning("Test file not accessible: {$test['relative_path']}");
+
                 return false;
             }
         }
@@ -319,8 +319,8 @@ class TestSelectionService
     /**
      * Build PestPHP command arguments for selected tests
      *
-     * @param array $selectedTests Selected test files
-     * @param array $options Additional options
+     * @param  array  $selectedTests  Selected test files
+     * @param  array  $options  Additional options
      * @return string Command arguments
      */
     public function buildTestCommand(array $selectedTests, array $options = []): string
@@ -333,9 +333,9 @@ class TestSelectionService
         }
 
         // Add specific test files
-        if (!empty($selectedTests)) {
-            $testPaths = array_map(fn($test) => $test['file_path'], $selectedTests);
-            $command .= ' ' . implode(' ', array_map('escapeshellarg', $testPaths));
+        if (! empty($selectedTests)) {
+            $testPaths = array_map(fn ($test) => $test['file_path'], $selectedTests);
+            $command .= ' '.implode(' ', array_map('escapeshellarg', $testPaths));
         }
 
         // Add other options
@@ -353,16 +353,16 @@ class TestSelectionService
     /**
      * Display test selection summary
      *
-     * @param array $selectedTests Selected test files
-     * @return void
+     * @param  array  $selectedTests  Selected test files
      */
     public function displayTestSummary(array $selectedTests): void
     {
         $this->command->newLine();
         info('📋 Test Selection Summary');
-        
+
         if (empty($selectedTests)) {
             warning('No tests selected.');
+
             return;
         }
 
@@ -394,7 +394,7 @@ class TestSelectionService
     /**
      * Group tests by directory
      *
-     * @param array $tests Array of test information
+     * @param  array  $tests  Array of test information
      * @return array<string, array> Tests grouped by directory
      */
     private function groupTestsByDirectory(array $tests): array
@@ -403,22 +403,23 @@ class TestSelectionService
 
         foreach ($tests as $test) {
             $directory = $test['directory'] === '.' ? 'Root' : $test['directory'];
-            
-            if (!isset($grouped[$directory])) {
+
+            if (! isset($grouped[$directory])) {
                 $grouped[$directory] = [];
             }
-            
+
             $grouped[$directory][] = $test;
         }
 
         ksort($grouped);
+
         return $grouped;
     }
 
     /**
      * Get icon for test category
      *
-     * @param string $category Test category
+     * @param  string  $category  Test category
      * @return string Icon
      */
     private function getTestIcon(string $category): string
@@ -435,7 +436,7 @@ class TestSelectionService
     /**
      * Get tests from selected categories
      *
-     * @param array $categories Selected category names
+     * @param  array  $categories  Selected category names
      * @return array<int, array> Test files from categories
      */
     private function getTestsFromCategories(array $categories): array
@@ -455,7 +456,7 @@ class TestSelectionService
     /**
      * Select specific tests from categories
      *
-     * @param array $categories Selected category names
+     * @param  array  $categories  Selected category names
      * @return array<int, array> Selected test files
      */
     private function selectSpecificTestsFromCategories(array $categories): array
@@ -464,20 +465,20 @@ class TestSelectionService
         $selectedTests = [];
 
         foreach ($categories as $category) {
-            if (!isset($discovered[$category]) || empty($discovered[$category])) {
+            if (! isset($discovered[$category]) || empty($discovered[$category])) {
                 continue;
             }
 
             $categoryTests = $discovered[$category];
             $testOptions = [];
-            
+
             foreach ($categoryTests as $test) {
                 $testOptions[$test['relative_path']] = $test['display_name'];
             }
 
             $categoryIcon = $this->getTestIcon($category);
             $selectedTestPaths = multiselect(
-                label: "{$categoryIcon} Select " . ucfirst($category) . " tests",
+                label: "{$categoryIcon} Select ".ucfirst($category).' tests',
                 options: $testOptions,
                 hint: 'Use space to select, enter to continue'
             );
@@ -496,14 +497,13 @@ class TestSelectionService
     /**
      * Display test statistics
      *
-     * @param array $statistics Test count statistics
-     * @return void
+     * @param  array  $statistics  Test count statistics
      */
     private function displayTestStatistics(array $statistics): void
     {
         $this->command->newLine();
         info('📊 Test Statistics');
-        
+
         $this->command->table(
             ['Category', 'Count'],
             [
@@ -519,22 +519,22 @@ class TestSelectionService
     /**
      * Get test files by category for display
      *
-     * @param array $tests Selected tests
-     * @param string $category Category to filter
+     * @param  array  $tests  Selected tests
+     * @param  string  $category  Category to filter
      * @return string Comma-separated file names
      */
     private function getTestFilesByCategory(array $tests, string $category): string
     {
-        $categoryTests = array_filter($tests, fn($test) => $test['category'] === $category);
-        
+        $categoryTests = array_filter($tests, fn ($test) => $test['category'] === $category);
+
         if (empty($categoryTests)) {
             return '-';
         }
 
-        $filenames = array_map(fn($test) => $test['filename'], $categoryTests);
-        
+        $filenames = array_map(fn ($test) => $test['filename'], $categoryTests);
+
         if (count($filenames) > 3) {
-            return implode(', ', array_slice($filenames, 0, 3)) . ', ... +' . (count($filenames) - 3);
+            return implode(', ', array_slice($filenames, 0, 3)).', ... +'.(count($filenames) - 3);
         }
 
         return implode(', ', $filenames);

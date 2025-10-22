@@ -2,9 +2,8 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 
 class TestDiscoveryService
 {
@@ -43,12 +42,11 @@ class TestDiscoveryService
     /**
      * Apply discovery configuration provided by service provider.
      *
-     * @param array<string, mixed> $configuration
-     * @return void
+     * @param  array<string, mixed>  $configuration
      */
     public function setDiscoveryConfiguration(array $configuration): void
     {
-        if (!empty($configuration['paths']) && is_array($configuration['paths'])) {
+        if (! empty($configuration['paths']) && is_array($configuration['paths'])) {
             foreach ($configuration['paths'] as $key => $path) {
                 if (isset($this->paths[$key]) && is_string($path) && $path !== '') {
                     $this->paths[$key] = $path;
@@ -56,7 +54,7 @@ class TestDiscoveryService
             }
         }
 
-        if (!empty($configuration['patterns']) && is_array($configuration['patterns'])) {
+        if (! empty($configuration['patterns']) && is_array($configuration['patterns'])) {
             foreach ($configuration['patterns'] as $key => $pattern) {
                 if (is_string($pattern) && $pattern !== '') {
                     $this->patterns[$key] = $pattern;
@@ -70,7 +68,7 @@ class TestDiscoveryService
     /**
      * Discover all test files in the project
      *
-     * @param bool $useCache Whether to use cached results
+     * @param  bool  $useCache  Whether to use cached results
      * @return array<string, array> Categorized test files
      */
     public function discoverAllTests(bool $useCache = true): array
@@ -135,14 +133,14 @@ class TestDiscoveryService
         $allFeatureTests = $this->scanDirectory($featurePath, 'feature');
 
         // Filter out Livewire tests from feature tests when configured
-        $livewireBase = rtrim(base_path($this->paths['livewire']), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $livewireBase = rtrim(base_path($this->paths['livewire']), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
 
-        if ($this->paths['livewire'] === '' || !File::isDirectory(base_path($this->paths['livewire']))) {
+        if ($this->paths['livewire'] === '' || ! File::isDirectory(base_path($this->paths['livewire']))) {
             return $allFeatureTests;
         }
 
         return array_filter($allFeatureTests, function ($test) use ($livewireBase) {
-            return !str_starts_with($test['file_path'], $livewireBase);
+            return ! str_starts_with($test['file_path'], $livewireBase);
         });
     }
 
@@ -155,7 +153,7 @@ class TestDiscoveryService
     {
         $livewireDirectory = $this->paths['livewire'];
 
-        if ($livewireDirectory === '' || !File::isDirectory(base_path($livewireDirectory))) {
+        if ($livewireDirectory === '' || ! File::isDirectory(base_path($livewireDirectory))) {
             return [];
         }
 
@@ -175,15 +173,15 @@ class TestDiscoveryService
     /**
      * Scan directory for test files recursively
      *
-     * @param string $directory Directory to scan (relative to base path)
-     * @param string $category Test category
+     * @param  string  $directory  Directory to scan (relative to base path)
+     * @param  string  $category  Test category
      * @return array<int, array> Array of test file information
      */
     private function scanDirectory(string $directory, string $category): array
     {
         $fullPath = base_path($directory);
-        
-        if (!File::isDirectory($fullPath)) {
+
+        if (! File::isDirectory($fullPath)) {
             return [];
         }
 
@@ -195,12 +193,12 @@ class TestDiscoveryService
         foreach ($files as $file) {
             if ($this->validateTestFile($file->getPathname())) {
                 if ($pattern) {
-                    $relativeToBase = ltrim(str_replace(base_path() . DIRECTORY_SEPARATOR, '', $file->getPathname()), DIRECTORY_SEPARATOR);
-                    if (!fnmatch($pattern, $relativeToBase)) {
+                    $relativeToBase = ltrim(str_replace(base_path().DIRECTORY_SEPARATOR, '', $file->getPathname()), DIRECTORY_SEPARATOR);
+                    if (! fnmatch($pattern, $relativeToBase)) {
                         continue;
                     }
                 }
-                
+
                 $testInfo = $this->categorizeTestFile($file, $directory, $category);
                 if ($testInfo !== null) {
                     $testFiles[] = $testInfo;
@@ -209,7 +207,7 @@ class TestDiscoveryService
         }
 
         // Sort by relative path for consistent ordering
-        usort($testFiles, fn($a, $b) => strcmp($a['relative_path'], $b['relative_path']));
+        usort($testFiles, fn ($a, $b) => strcmp($a['relative_path'], $b['relative_path']));
 
         return $testFiles;
     }
@@ -217,23 +215,23 @@ class TestDiscoveryService
     /**
      * Categorize a test file and extract metadata
      *
-     * @param \SplFileInfo $file File information
-     * @param string $baseDirectory Base directory for relative path calculation
-     * @param string $category Test category
+     * @param  \SplFileInfo  $file  File information
+     * @param  string  $baseDirectory  Base directory for relative path calculation
+     * @param  string  $category  Test category
      * @return array|null Test file information or null if invalid
      */
     private function categorizeTestFile(\SplFileInfo $file, string $baseDirectory, string $category): ?array
     {
-        $base = rtrim(base_path($baseDirectory), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $base = rtrim(base_path($baseDirectory), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
         $relativePath = ltrim(str_replace($base, '', $file->getPathname()), DIRECTORY_SEPARATOR);
-        
+
         // Skip if not a PHP file
         if ($file->getExtension() !== 'php') {
             return null;
         }
 
         // Skip base test case files and page objects
-        if (str_contains($relativePath, 'TestCase.php') || 
+        if (str_contains($relativePath, 'TestCase.php') ||
             str_contains($relativePath, 'Pages/') ||
             str_contains($relativePath, 'console/') ||
             str_contains($relativePath, 'screenshots/') ||
@@ -243,7 +241,7 @@ class TestDiscoveryService
 
         $className = $this->extractClassName($file->getPathname());
         $namespace = $this->extractNamespace($file->getPathname());
-        
+
         return [
             'file_path' => $file->getPathname(),
             'relative_path' => $relativePath,
@@ -251,7 +249,7 @@ class TestDiscoveryService
             'filename' => $file->getFilename(),
             'class_name' => $className,
             'namespace' => $namespace,
-            'full_class_name' => $namespace ? $namespace . '\\' . $className : $className,
+            'full_class_name' => $namespace ? $namespace.'\\'.$className : $className,
             'category' => $category,
             'display_name' => $this->generateDisplayName($relativePath, $className),
             'file_size' => $file->getSize(),
@@ -262,38 +260,38 @@ class TestDiscoveryService
     /**
      * Validate that a file is an executable test file
      *
-     * @param string $filePath Path to the file
+     * @param  string  $filePath  Path to the file
      * @return bool True if file is a valid test file
      */
     private function validateTestFile(string $filePath): bool
     {
         // Must be a PHP file
-        if (!str_ends_with($filePath, '.php')) {
+        if (! str_ends_with($filePath, '.php')) {
             return false;
         }
 
         // Must be readable
-        if (!File::isReadable($filePath)) {
+        if (! File::isReadable($filePath)) {
             return false;
         }
 
         try {
             $content = File::get($filePath);
-            
+
             // Check for PestPHP test patterns
             if (preg_match('/\b(it|test|describe|beforeEach|afterEach)\s*\(/', $content)) {
                 return true;
             }
-            
+
             // Check for traditional PHPUnit class-based tests
             if (preg_match('/class\s+\w+/', $content)) {
                 return str_contains($content, 'extends TestCase') ||
                        str_contains($content, 'extends DuskTestCase') ||
                        preg_match('/function\s+test\w+/', $content);
             }
-            
+
             return false;
-                   
+
         } catch (\Exception $e) {
             return false;
         }
@@ -302,14 +300,14 @@ class TestDiscoveryService
     /**
      * Extract class name from PHP file
      *
-     * @param string $filePath Path to the PHP file
+     * @param  string  $filePath  Path to the PHP file
      * @return string Class name or filename if no class found
      */
     private function extractClassName(string $filePath): string
     {
         try {
             $content = File::get($filePath);
-            
+
             if (preg_match('/class\s+(\w+)/', $content, $matches)) {
                 return $matches[1];
             }
@@ -324,14 +322,14 @@ class TestDiscoveryService
     /**
      * Extract namespace from PHP file
      *
-     * @param string $filePath Path to the PHP file
+     * @param  string  $filePath  Path to the PHP file
      * @return string|null Namespace or null if not found
      */
     private function extractNamespace(string $filePath): ?string
     {
         try {
             $content = File::get($filePath);
-            
+
             if (preg_match('/namespace\s+([^;]+);/', $content, $matches)) {
                 return trim($matches[1]);
             }
@@ -345,26 +343,26 @@ class TestDiscoveryService
     /**
      * Generate a human-readable display name for the test
      *
-     * @param string $relativePath Relative path to the test file
-     * @param string $className Class name
+     * @param  string  $relativePath  Relative path to the test file
+     * @param  string  $className  Class name
      * @return string Display name
      */
     private function generateDisplayName(string $relativePath, string $className): string
     {
         // Remove .php extension and convert path separators
         $displayPath = str_replace(['/', '\\'], ' › ', dirname($relativePath));
-        
+
         // Clean up class name (remove Test suffix)
         $cleanClassName = preg_replace('/Test$/', '', $className);
-        
+
         // Add spacing to camelCase
         $cleanClassName = preg_replace('/([a-z])([A-Z])/', '$1 $2', $cleanClassName);
-        
+
         if ($displayPath === '.') {
             return $cleanClassName;
         }
-        
-        return $displayPath . ' › ' . $cleanClassName;
+
+        return $displayPath.' › '.$cleanClassName;
     }
 
     /**
@@ -375,7 +373,7 @@ class TestDiscoveryService
     public function getTestStatistics(): array
     {
         $discovered = $this->discoverAllTests();
-        
+
         return [
             'total' => count($discovered['all']),
             'unit' => count($discovered['unit']),
@@ -387,8 +385,6 @@ class TestDiscoveryService
 
     /**
      * Clear the test discovery cache
-     *
-     * @return void
      */
     public function clearCache(): void
     {
@@ -402,22 +398,22 @@ class TestDiscoveryService
     /**
      * Search test files by name or path
      *
-     * @param string $query Search query
-     * @param array|null $categories Categories to search in (null for all)
+     * @param  string  $query  Search query
+     * @param  array|null  $categories  Categories to search in (null for all)
      * @return array<int, array> Matching test files
      */
     public function searchTests(string $query, ?array $categories = null): array
     {
         $discovered = $this->discoverAllTests();
         $searchCategories = $categories ?? ['unit', 'feature', 'livewire', 'browser'];
-        
+
         $results = [];
-        
+
         foreach ($searchCategories as $category) {
-            if (!isset($discovered[$category])) {
+            if (! isset($discovered[$category])) {
                 continue;
             }
-            
+
             foreach ($discovered[$category] as $test) {
                 if (str_contains(strtolower($test['display_name']), strtolower($query)) ||
                     str_contains(strtolower($test['relative_path']), strtolower($query)) ||
@@ -426,7 +422,7 @@ class TestDiscoveryService
                 }
             }
         }
-        
+
         return $results;
     }
 }

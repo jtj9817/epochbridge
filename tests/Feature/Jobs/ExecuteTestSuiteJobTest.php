@@ -1,9 +1,9 @@
 <?php
 
+use App\Contracts\TestProcessFactory;
 use App\Events\TestCompleted;
 use App\Events\TestExecutionCompleted;
 use App\Events\TestExecutionStarted;
-use App\Contracts\TestProcessFactory;
 use App\Jobs\ExecuteTestSuiteJob;
 use App\Services\ErrorRecoveryService;
 use App\Services\MarkdownReportService;

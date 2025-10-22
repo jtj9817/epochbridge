@@ -7,12 +7,11 @@ use Throwable;
 class TestExecutionException extends \RuntimeException
 {
     public const CATEGORY_SYSTEM = 'system';
+
     public const CATEGORY_TEST = 'test';
+
     public const CATEGORY_CONFIGURATION = 'configuration';
 
-    /**
-     * @var string
-     */
     protected string $category;
 
     /**
@@ -21,11 +20,7 @@ class TestExecutionException extends \RuntimeException
     protected array $context;
 
     /**
-     * @param string $message
-     * @param string $category
-     * @param array<string, mixed> $context
-     * @param int $code
-     * @param \Throwable|null $previous
+     * @param  array<string, mixed>  $context
      */
     public function __construct(
         string $message,
@@ -40,9 +35,6 @@ class TestExecutionException extends \RuntimeException
         $this->context = $context;
     }
 
-    /**
-     * @return string
-     */
     public function getCategory(): string
     {
         return $this->category;
@@ -56,4 +48,3 @@ class TestExecutionException extends \RuntimeException
         return $this->context;
     }
 }
-

@@ -58,10 +58,10 @@ class ExecuteTestSuiteJob implements ShouldQueue
     /**
      * Create a new job instance
      *
-     * @param array $testFiles Selected test files
-     * @param string $outputFile Output file path
-     * @param string $commandId Unique identifier
-     * @param array $options Additional options
+     * @param  array  $testFiles  Selected test files
+     * @param  string  $outputFile  Output file path
+     * @param  string  $commandId  Unique identifier
+     * @param  array  $options  Additional options
      */
     public function __construct(array $testFiles, string $outputFile, string $commandId, array $options = [])
     {
@@ -92,8 +92,6 @@ class ExecuteTestSuiteJob implements ShouldQueue
 
     /**
      * Execute the job
-     *
-     * @return void
      */
     public function handle(): void
     {
@@ -111,7 +109,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
                 $this->buildStartMetadata()
             );
 
-            Log::info("Starting test execution", [
+            Log::info('Starting test execution', [
                 'command_id' => $this->commandId,
                 'test_count' => count($this->testFiles),
                 'options' => $this->options,
@@ -169,7 +167,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
             // Generate execution summary
             $summary = $this->generateExecutionSummary($results, $totalDuration);
 
-            Log::info("Test execution completed", [
+            Log::info('Test execution completed', [
                 'command_id' => $this->commandId,
                 'duration' => $totalDuration,
                 'summary' => $summary,
@@ -205,7 +203,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
                 $e
             ));
 
-            Log::error("Test execution failed", [
+            Log::error('Test execution failed', [
                 'command_id' => $this->commandId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -218,8 +216,6 @@ class ExecuteTestSuiteJob implements ShouldQueue
     /**
      * Execute a test (or suite) with recovery-aware retries.
      *
-     * @param mixed $testFile
-     * @param ErrorRecoveryService $errorRecoveryService
      * @return array<string, mixed>
      */
     private function runTestWithRecovery(mixed $testFile, ErrorRecoveryService $errorRecoveryService): array
@@ -236,6 +232,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
 
             if (($result['status'] ?? 'passed') !== 'error') {
                 $result['attempts'] = $attempt;
+
                 return $result;
             }
 
@@ -255,8 +252,9 @@ class ExecuteTestSuiteJob implements ShouldQueue
             $recovery = $errorRecoveryService->handleTestFailure($this->commandId, $context, $exception);
             $result['recovery'] = $recovery;
 
-            if (!($recovery['retry'] ?? false) || $attempt >= $maxAttempts) {
+            if (! ($recovery['retry'] ?? false) || $attempt >= $maxAttempts) {
                 $result['attempts'] = $attempt;
+
                 return $result;
             }
 
@@ -267,23 +265,24 @@ class ExecuteTestSuiteJob implements ShouldQueue
         } while ($attempt < $maxAttempts);
 
         $result['attempts'] = $attempt;
+
         return $result;
     }
 
     /**
      * Execute test command using Symfony Process
      *
-     * @param array|null $testFiles Specific test files to run
+     * @param  array|null  $testFiles  Specific test files to run
      * @return array Execution result
      */
     private function executeTestCommand(?array $testFiles = null): array
     {
         $startTime = microtime(true);
-        
+
         try {
             $command = $this->buildTestCommand($testFiles);
-            
-            Log::debug("Executing test command", [
+
+            Log::debug('Executing test command', [
                 'command' => $command,
                 'test_files' => $testFiles,
             ]);
@@ -320,7 +319,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
             $endTime = microtime(true);
             $duration = round($endTime - $startTime, 2);
 
-            Log::error("Test command execution failed", [
+            Log::error('Test command execution failed', [
                 'error' => $e->getMessage(),
                 'test_files' => $testFiles,
             ]);
@@ -339,7 +338,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
     /**
      * Build the test command based on options and test files
      *
-     * @param array|null $testFiles Specific test files
+     * @param  array|null  $testFiles  Specific test files
      * @return string Command to execute
      */
     private function buildTestCommand(?array $testFiles = null): string
@@ -349,9 +348,9 @@ class ExecuteTestSuiteJob implements ShouldQueue
         // Add parallel execution if enabled
         if ($this->options['parallel']) {
             $command .= ' --parallel';
-            
+
             if ($this->options['processes'] > 1) {
-                $command .= ' --processes=' . $this->options['processes'];
+                $command .= ' --processes='.$this->options['processes'];
             }
         }
 
@@ -366,7 +365,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
         }
 
         // Add specific test files
-        if (!empty($testFiles)) {
+        if (! empty($testFiles)) {
             $testPaths = [];
             foreach ($testFiles as $testFile) {
                 if (is_array($testFile) && isset($testFile['file_path'])) {
@@ -375,9 +374,9 @@ class ExecuteTestSuiteJob implements ShouldQueue
                     $testPaths[] = escapeshellarg($testFile);
                 }
             }
-            
-            if (!empty($testPaths)) {
-                $command .= ' ' . implode(' ', $testPaths);
+
+            if (! empty($testPaths)) {
+                $command .= ' '.implode(' ', $testPaths);
             }
         }
 
@@ -387,7 +386,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
     /**
      * Parse test output for detailed information
      *
-     * @param string $output Raw test output
+     * @param  string  $output  Raw test output
      * @return array Parsed test information
      */
     private function parseTestOutput(string $output): array
@@ -433,7 +432,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
             }
 
         } catch (\Exception $e) {
-            Log::warning("Failed to parse test output", [
+            Log::warning('Failed to parse test output', [
                 'error' => $e->getMessage(),
                 'output_length' => strlen($output),
             ]);
@@ -445,8 +444,8 @@ class ExecuteTestSuiteJob implements ShouldQueue
     /**
      * Generate execution summary from results
      *
-     * @param array $results All execution results
-     * @param float $totalDuration Total execution time
+     * @param  array  $results  All execution results
+     * @param  float  $totalDuration  Total execution time
      * @return array Summary information
      */
     private function generateExecutionSummary(array $results, float $totalDuration): array
@@ -478,15 +477,15 @@ class ExecuteTestSuiteJob implements ShouldQueue
             $summary['total_assertions'] += $result['assertions'] ?? 0;
             $serialDuration += $result['duration'] ?? 0.0;
 
-            if (!empty($result['failures'])) {
+            if (! empty($result['failures'])) {
                 $summary['failures'] = array_merge($summary['failures'], $result['failures']);
             }
 
-            if (!empty($result['warnings'])) {
+            if (! empty($result['warnings'])) {
                 $summary['warnings'] = array_merge($summary['warnings'], $result['warnings']);
             }
 
-            if (!empty($result['recovery'])) {
+            if (! empty($result['recovery'])) {
                 $summary['recovery_actions'][] = [
                     'file' => $result['file'] ?? 'unknown',
                     'details' => $result['recovery'],
@@ -527,12 +526,10 @@ class ExecuteTestSuiteJob implements ShouldQueue
 
     /**
      * Estimate the total number of tests scheduled for execution.
-     *
-     * @return int
      */
     private function estimateTotalTests(): int
     {
-        if (!empty($this->testFiles)) {
+        if (! empty($this->testFiles)) {
             return count($this->testFiles);
         }
 
@@ -542,8 +539,6 @@ class ExecuteTestSuiteJob implements ShouldQueue
     /**
      * Determine the slowest executing tests.
      *
-     * @param array $results
-     * @param int $limit
      * @return array<int, array<string, mixed>>
      */
     private function calculateSlowestTests(array $results, int $limit = 5): array
@@ -568,16 +563,12 @@ class ExecuteTestSuiteJob implements ShouldQueue
 
     /**
      * Calculate the parallel efficiency percentage.
-     *
-     * @param float $serialDuration
-     * @param float $totalDuration
-     * @return float|null
      */
     private function calculateParallelEfficiency(float $serialDuration, float $totalDuration): ?float
     {
         $processes = $this->options['processes'] ?? null;
 
-        if (!$processes || $processes <= 0 || $totalDuration <= 0.0) {
+        if (! $processes || $processes <= 0 || $totalDuration <= 0.0) {
             return null;
         }
 
@@ -604,7 +595,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
     /**
      * Normalise test file paths from mixed arrays/strings.
      *
-     * @param array<int, mixed> $testFiles
+     * @param  array<int, mixed>  $testFiles
      * @return array<int, string>
      */
     private function normalizeTestFiles(array $testFiles): array
@@ -617,9 +608,6 @@ class ExecuteTestSuiteJob implements ShouldQueue
 
     /**
      * Handle a job failure
-     *
-     * @param \Throwable $exception
-     * @return void
      */
     public function failed(\Throwable $exception): void
     {
@@ -635,7 +623,7 @@ class ExecuteTestSuiteJob implements ShouldQueue
             $exception
         ));
 
-        Log::error("ExecuteTestSuiteJob failed permanently", [
+        Log::error('ExecuteTestSuiteJob failed permanently', [
             'command_id' => $this->commandId,
             'exception' => $exception->getMessage(),
             'trace' => $exception->getTraceAsString(),

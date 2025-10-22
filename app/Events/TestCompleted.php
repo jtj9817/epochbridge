@@ -2,11 +2,8 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -47,12 +44,12 @@ class TestCompleted
     /**
      * Create a new event instance
      *
-     * @param string $testFile Path to the test file
-     * @param string $status Test execution status
-     * @param float $duration Execution duration in seconds
-     * @param string $output Test output
-     * @param string $errors Test errors
-     * @param array $metadata Additional metadata
+     * @param  string  $testFile  Path to the test file
+     * @param  string  $status  Test execution status
+     * @param  float  $duration  Execution duration in seconds
+     * @param  string  $output  Test output
+     * @param  string  $errors  Test errors
+     * @param  array  $metadata  Additional metadata
      */
     public function __construct(
         string $testFile,
@@ -86,8 +83,6 @@ class TestCompleted
 
     /**
      * Get the data to broadcast
-     *
-     * @return array
      */
     public function broadcastWith(): array
     {
@@ -103,8 +98,6 @@ class TestCompleted
 
     /**
      * The event's broadcast name
-     *
-     * @return string
      */
     public function broadcastAs(): string
     {
@@ -113,8 +106,6 @@ class TestCompleted
 
     /**
      * Determine if the test passed
-     *
-     * @return bool
      */
     public function hasPassed(): bool
     {
@@ -123,8 +114,6 @@ class TestCompleted
 
     /**
      * Determine if the test failed
-     *
-     * @return bool
      */
     public function hasFailed(): bool
     {
@@ -133,8 +122,6 @@ class TestCompleted
 
     /**
      * Determine if the test was skipped
-     *
-     * @return bool
      */
     public function wasSkipped(): bool
     {
@@ -143,8 +130,6 @@ class TestCompleted
 
     /**
      * Get a human-readable test name
-     *
-     * @return string
      */
     public function getTestName(): string
     {
@@ -153,8 +138,6 @@ class TestCompleted
 
     /**
      * Get the test file relative path
-     *
-     * @return string
      */
     public function getRelativePath(): string
     {
@@ -162,27 +145,26 @@ class TestCompleted
         if (str_starts_with($this->testFile, $basePath)) {
             return str_replace($basePath, '', $this->testFile);
         }
-        
+
         return $this->testFile;
     }
 
     /**
      * Format duration for human reading
-     *
-     * @return string
      */
     public function getFormattedDuration(): string
     {
         if ($this->duration < 0.01) {
             return '< 0.01s';
         } elseif ($this->duration < 1) {
-            return number_format($this->duration, 2) . 's';
+            return number_format($this->duration, 2).'s';
         } elseif ($this->duration < 60) {
-            return number_format($this->duration, 1) . 's';
+            return number_format($this->duration, 1).'s';
         } else {
             $minutes = floor($this->duration / 60);
             $seconds = $this->duration % 60;
-            return $minutes . 'm ' . number_format($seconds, 1) . 's';
+
+            return $minutes.'m '.number_format($seconds, 1).'s';
         }
     }
 }

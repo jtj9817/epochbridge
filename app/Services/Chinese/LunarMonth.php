@@ -10,12 +10,19 @@ use Carbon\CarbonImmutable;
 class LunarMonth
 {
     public CarbonImmutable $startDate;
+
     public CarbonImmutable $endDate;
+
     public float $startJde;
+
     public float $endJde;
+
     public int $number = 0;
+
     public bool $isLeap = false;
+
     public bool $hasMajorSolarTerm = false;
+
     public int $chineseYear = 0;
 
     public function __construct(

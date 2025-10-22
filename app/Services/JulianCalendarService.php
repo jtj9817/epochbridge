@@ -148,4 +148,3 @@ class JulianCalendarService extends CalendarConversionService
             : "{$delta} days behind Gregorian";
     }
 }
-

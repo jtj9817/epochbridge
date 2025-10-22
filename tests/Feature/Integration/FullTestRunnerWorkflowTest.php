@@ -3,10 +3,7 @@
 use App\Contracts\TestProcessFactory;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 use Mockery as m;
-use Symfony\Component\Process\Process;
-
 
 beforeEach(function () {
     Config::set('queue.default', 'sync');
@@ -22,7 +19,7 @@ beforeEach(function () {
     File::ensureDirectoryExists($this->integrationRoot.'/unit');
     File::ensureDirectoryExists($this->integrationRoot.'/feature');
 
-    File::put($this->integrationRoot.'/unit/InlineUnitTest.php', <<<PHP
+    File::put($this->integrationRoot.'/unit/InlineUnitTest.php', <<<'PHP'
 <?php
 
 test('inline unit passes', function () {
@@ -30,7 +27,7 @@ test('inline unit passes', function () {
 });
 PHP);
 
-    File::put($this->integrationRoot.'/feature/InlineFeatureTest.php', <<<PHP
+    File::put($this->integrationRoot.'/feature/InlineFeatureTest.php', <<<'PHP'
 <?php
 
 test('inline feature fails', function () {

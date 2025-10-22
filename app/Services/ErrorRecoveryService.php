@@ -11,9 +11,7 @@ class ErrorRecoveryService
     /**
      * Handle a test failure and determine recovery strategy.
      *
-     * @param string $commandId
-     * @param array<string, mixed> $testContext
-     * @param \Throwable $exception
+     * @param  array<string, mixed>  $testContext
      * @return array<string, mixed>
      */
     public function handleTestFailure(string $commandId, array $testContext, Throwable $exception): array
@@ -48,8 +46,7 @@ class ErrorRecoveryService
     /**
      * Diagnose the failure and classify it.
      *
-     * @param \Throwable $exception
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>  $context
      * @return array<string, mixed>
      */
     public function diagnoseError(Throwable $exception, array $context = []): array
@@ -83,8 +80,8 @@ class ErrorRecoveryService
     /**
      * Attempt recovery and determine whether a retry should occur.
      *
-     * @param array<string, mixed> $diagnosis
-     * @param array<string, mixed> $testContext
+     * @param  array<string, mixed>  $diagnosis
+     * @param  array<string, mixed>  $testContext
      * @return array<string, mixed>
      */
     public function attemptRecovery(array $diagnosis, array $testContext): array
@@ -114,4 +111,3 @@ class ErrorRecoveryService
         };
     }
 }
-

@@ -16,15 +16,15 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         TestExecutionStarted::class => [
-            \App\Listeners\UpdateProgressDisplay::class . '@handleTestExecutionStarted',
+            \App\Listeners\UpdateProgressDisplay::class.'@handleTestExecutionStarted',
         ],
         TestCompleted::class => [
-            \App\Listeners\UpdateMarkdownReport::class . '@handleTestCompleted',
-            \App\Listeners\UpdateProgressDisplay::class . '@handleTestCompleted',
+            \App\Listeners\UpdateMarkdownReport::class.'@handleTestCompleted',
+            \App\Listeners\UpdateProgressDisplay::class.'@handleTestCompleted',
         ],
         TestExecutionCompleted::class => [
-            \App\Listeners\UpdateMarkdownReport::class . '@handleTestExecutionCompleted',
-            \App\Listeners\UpdateProgressDisplay::class . '@handleTestExecutionCompleted',
+            \App\Listeners\UpdateMarkdownReport::class.'@handleTestExecutionCompleted',
+            \App\Listeners\UpdateProgressDisplay::class.'@handleTestExecutionCompleted',
         ],
     ];
 }

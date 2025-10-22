@@ -258,6 +258,7 @@ class ChineseLunisolarCalendar
         foreach ($months as $index => $month) {
             if ($index === 0) {
                 $month->number = 11;
+
                 continue;
             }
 

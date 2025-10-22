@@ -29,8 +29,7 @@ class TestExecutionService
     /**
      * Update the default options used for new executions.
      *
-     * @param array<string, mixed> $options
-     * @return void
+     * @param  array<string, mixed>  $options
      */
     public function setDefaultOptions(array $options): void
     {
@@ -62,9 +61,9 @@ class TestExecutionService
     /**
      * Start test execution with the given parameters
      *
-     * @param array $testFiles Selected test files
-     * @param string $outputFile Output file path
-     * @param array $options Execution options
+     * @param  array  $testFiles  Selected test files
+     * @param  string  $outputFile  Output file path
+     * @param  array  $options  Execution options
      * @return string Command ID for tracking
      */
     public function startTestExecution(array $testFiles, string $outputFile, array $options = []): string
@@ -78,8 +77,8 @@ class TestExecutionService
         $options['report_file'] = $outputFile;
 
         $commandId = $this->generateCommandId();
-        
-        Log::info("Starting test execution", [
+
+        Log::info('Starting test execution', [
             'command_id' => $commandId,
             'test_count' => count($testFiles),
             'output_file' => $outputFile,
@@ -107,22 +106,22 @@ class TestExecutionService
         // Dispatch the test execution job
         try {
             ExecuteTestSuiteJob::dispatch($testFiles, $outputFile, $commandId, $options);
-            
+
             $this->activeExecutions[$commandId]['status'] = 'running';
-            
-            Log::info("Test execution job dispatched", [
+
+            Log::info('Test execution job dispatched', [
                 'command_id' => $commandId,
             ]);
-            
+
         } catch (\Exception $e) {
             $this->activeExecutions[$commandId]['status'] = 'failed';
             $this->activeExecutions[$commandId]['error'] = $e->getMessage();
-            
-            Log::error("Failed to dispatch test execution job", [
+
+            Log::error('Failed to dispatch test execution job', [
                 'command_id' => $commandId,
                 'error' => $e->getMessage(),
             ]);
-            
+
             throw $e;
         }
 
@@ -132,17 +131,17 @@ class TestExecutionService
     /**
      * Track progress for a specific execution
      *
-     * @param string $commandId Command identifier
+     * @param  string  $commandId  Command identifier
      * @return array|null Progress information
      */
     public function trackProgress(string $commandId): ?array
     {
-        if (!isset($this->activeExecutions[$commandId])) {
+        if (! isset($this->activeExecutions[$commandId])) {
             return null;
         }
 
         $execution = $this->activeExecutions[$commandId];
-        
+
         // Calculate progress percentage
         if ($execution['total_tests'] > 0) {
             $execution['progress'] = ($execution['completed_tests'] / $execution['total_tests']) * 100;
@@ -157,13 +156,12 @@ class TestExecutionService
     /**
      * Handle completion of an individual test
      *
-     * @param string $commandId Command identifier
-     * @param string $testFile Test file path
-     * @param string $status Test status (passed, failed, skipped)
-     * @param float $duration Test duration
-     * @param string $output Test output
-     * @param string $errors Test errors
-     * @return void
+     * @param  string  $commandId  Command identifier
+     * @param  string  $testFile  Test file path
+     * @param  string  $status  Test status (passed, failed, skipped)
+     * @param  float  $duration  Test duration
+     * @param  string  $output  Test output
+     * @param  string  $errors  Test errors
      */
     public function handleTestCompletion(
         string $commandId,
@@ -173,21 +171,22 @@ class TestExecutionService
         string $output = '',
         string $errors = ''
     ): void {
-        if (!isset($this->activeExecutions[$commandId])) {
-            Log::warning("Received test completion for unknown execution", [
+        if (! isset($this->activeExecutions[$commandId])) {
+            Log::warning('Received test completion for unknown execution', [
                 'command_id' => $commandId,
                 'test_file' => $testFile,
             ]);
+
             return;
         }
 
         $this->activeExecutions[$commandId]['completed_tests']++;
-        
+
         // Track individual test results
-        if (!isset($this->activeExecutions[$commandId]['test_results'])) {
+        if (! isset($this->activeExecutions[$commandId]['test_results'])) {
             $this->activeExecutions[$commandId]['test_results'] = [];
         }
-        
+
         $this->activeExecutions[$commandId]['test_results'][] = [
             'file' => $testFile,
             'status' => $status,
@@ -197,33 +196,34 @@ class TestExecutionService
             'completed_at' => now(),
         ];
 
-        Log::debug("Test completed", [
+        Log::debug('Test completed', [
             'command_id' => $commandId,
             'test_file' => $testFile,
             'status' => $status,
             'duration' => $duration,
-            'progress' => $this->activeExecutions[$commandId]['completed_tests'] . '/' . $this->activeExecutions[$commandId]['total_tests'],
+            'progress' => $this->activeExecutions[$commandId]['completed_tests'].'/'.$this->activeExecutions[$commandId]['total_tests'],
         ]);
     }
 
     /**
      * Generate execution summary for completed test run
      *
-     * @param string $commandId Command identifier
-     * @param array $summary Execution summary data
+     * @param  string  $commandId  Command identifier
+     * @param  array  $summary  Execution summary data
      * @return array Complete execution report
      */
     public function generateExecutionSummary(string $commandId, array $summary): array
     {
-        if (!isset($this->activeExecutions[$commandId])) {
-            Log::warning("Received execution completion for unknown execution", [
+        if (! isset($this->activeExecutions[$commandId])) {
+            Log::warning('Received execution completion for unknown execution', [
                 'command_id' => $commandId,
             ]);
+
             return $summary;
         }
 
         $execution = $this->activeExecutions[$commandId];
-        
+
         // Mark as completed
         $this->activeExecutions[$commandId]['status'] = $summary['status'] ?? 'completed';
         $this->activeExecutions[$commandId]['completed_at'] = now();
@@ -231,7 +231,7 @@ class TestExecutionService
 
         // Calculate total execution time
         $totalTime = $execution['started_at']->diffInSeconds($this->activeExecutions[$commandId]['completed_at']);
-        
+
         $completeReport = [
             'command_id' => $commandId,
             'execution_info' => [
@@ -247,7 +247,7 @@ class TestExecutionService
             'status' => $summary['status'] ?? 'completed',
         ];
 
-        Log::info("Test execution completed", [
+        Log::info('Test execution completed', [
             'command_id' => $commandId,
             'status' => $completeReport['status'],
             'total_time' => $totalTime,
@@ -271,7 +271,7 @@ class TestExecutionService
     /**
      * Get execution status
      *
-     * @param string $commandId Command identifier
+     * @param  string  $commandId  Command identifier
      * @return string|null Execution status
      */
     public function getExecutionStatus(string $commandId): ?string
@@ -282,12 +282,12 @@ class TestExecutionService
     /**
      * Cancel an active execution
      *
-     * @param string $commandId Command identifier
+     * @param  string  $commandId  Command identifier
      * @return bool Success status
      */
     public function cancelExecution(string $commandId): bool
     {
-        if (!isset($this->activeExecutions[$commandId])) {
+        if (! isset($this->activeExecutions[$commandId])) {
             return false;
         }
 
@@ -296,13 +296,13 @@ class TestExecutionService
             $this->activeExecutions[$commandId]['status'] = 'cancelled';
             $this->activeExecutions[$commandId]['cancelled_at'] = now();
 
-            Log::info("Test execution cancelled", [
+            Log::info('Test execution cancelled', [
                 'command_id' => $commandId,
             ]);
 
             return true;
         } catch (\Exception $e) {
-            Log::error("Failed to cancel test execution", [
+            Log::error('Failed to cancel test execution', [
                 'command_id' => $commandId,
                 'error' => $e->getMessage(),
             ]);
@@ -314,7 +314,7 @@ class TestExecutionService
     /**
      * Clean up completed executions older than specified time
      *
-     * @param int $olderThanMinutes Minutes threshold for cleanup
+     * @param  int  $olderThanMinutes  Minutes threshold for cleanup
      * @return int Number of executions cleaned up
      */
     public function cleanupCompletedExecutions(int $olderThanMinutes = 60): int
@@ -334,7 +334,7 @@ class TestExecutionService
         }
 
         if ($cleanedUp > 0) {
-            Log::info("Cleaned up completed test executions", [
+            Log::info('Cleaned up completed test executions', [
                 'count' => $cleanedUp,
                 'older_than_minutes' => $olderThanMinutes,
             ]);
@@ -346,7 +346,7 @@ class TestExecutionService
     /**
      * Calculate estimated time of arrival for execution completion
      *
-     * @param array $execution Execution data
+     * @param  array  $execution  Execution data
      * @return string|null ETA string or null if cannot calculate
      */
     private function calculateETA(array $execution): ?string
@@ -354,7 +354,7 @@ class TestExecutionService
         if (
             $execution['completed_tests'] === 0 ||
             $execution['total_tests'] === 0 ||
-            !isset($execution['started_at'])
+            ! isset($execution['started_at'])
         ) {
             return null;
         }
@@ -366,17 +366,18 @@ class TestExecutionService
             $estimatedSecondsRemaining = $testsRemaining * $averageTimePerTest;
 
             if ($estimatedSecondsRemaining < 60) {
-                return round($estimatedSecondsRemaining) . ' seconds';
+                return round($estimatedSecondsRemaining).' seconds';
             } elseif ($estimatedSecondsRemaining < 3600) {
-                return round($estimatedSecondsRemaining / 60) . ' minutes';
+                return round($estimatedSecondsRemaining / 60).' minutes';
             } else {
-                return round($estimatedSecondsRemaining / 3600, 1) . ' hours';
+                return round($estimatedSecondsRemaining / 3600, 1).' hours';
             }
         } catch (\Exception $e) {
-            Log::warning("Failed to calculate ETA", [
+            Log::warning('Failed to calculate ETA', [
                 'command_id' => $execution['id'],
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -388,23 +389,23 @@ class TestExecutionService
      */
     private function generateCommandId(): string
     {
-        return 'test_' . Str::random(12) . '_' . time();
+        return 'test_'.Str::random(12).'_'.time();
     }
 
     /**
      * Get execution report by command ID
      *
-     * @param string $commandId Command identifier
+     * @param  string  $commandId  Command identifier
      * @return array|null Execution report
      */
     public function getExecutionReport(string $commandId): ?array
     {
-        if (!isset($this->activeExecutions[$commandId])) {
+        if (! isset($this->activeExecutions[$commandId])) {
             return null;
         }
 
         $execution = $this->activeExecutions[$commandId];
-        
+
         return [
             'command_id' => $commandId,
             'status' => $execution['status'],
@@ -413,7 +414,7 @@ class TestExecutionService
             'progress' => [
                 'completed' => $execution['completed_tests'],
                 'total' => $execution['total_tests'],
-                'percentage' => $execution['total_tests'] > 0 
+                'percentage' => $execution['total_tests'] > 0
                     ? round(($execution['completed_tests'] / $execution['total_tests']) * 100, 2)
                     : 0,
             ],

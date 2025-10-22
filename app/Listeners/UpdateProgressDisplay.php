@@ -20,9 +20,6 @@ class UpdateProgressDisplay
 
     /**
      * Handle the TestExecutionStarted event.
-     *
-     * @param \App\Events\TestExecutionStarted $event
-     * @return void
      */
     public function handleTestExecutionStarted(TestExecutionStarted $event): void
     {
@@ -49,18 +46,16 @@ class UpdateProgressDisplay
 
     /**
      * Handle the TestCompleted event.
-     *
-     * @param \App\Events\TestCompleted $event
-     * @return void
      */
     public function handleTestCompleted(TestCompleted $event): void
     {
         $commandId = Arr::get($event->metadata, 'command_id');
 
-        if (!$commandId) {
+        if (! $commandId) {
             Log::debug('Progress update ignored due to missing command identifier', [
                 'test_file' => $event->testFile,
             ]);
+
             return;
         }
 
@@ -77,9 +72,6 @@ class UpdateProgressDisplay
 
     /**
      * Handle the TestExecutionCompleted event.
-     *
-     * @param \App\Events\TestExecutionCompleted $event
-     * @return void
      */
     public function handleTestExecutionCompleted(TestExecutionCompleted $event): void
     {
@@ -90,14 +82,10 @@ class UpdateProgressDisplay
 
     /**
      * Refresh progress display if output is registered.
-     *
-     * @param string $commandId
-     * @param bool $force
-     * @return void
      */
     private function refreshDisplay(string $commandId, bool $force = false): void
     {
-        if (!app()->bound('interactive-test-runner.output')) {
+        if (! app()->bound('interactive-test-runner.output')) {
             return;
         }
 
@@ -106,4 +94,3 @@ class UpdateProgressDisplay
         $this->progressTrackingService->displayCurrentStatus($output, $commandId, $force);
     }
 }
-

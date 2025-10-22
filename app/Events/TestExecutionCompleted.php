@@ -2,14 +2,11 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use Carbon\Carbon;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Carbon\Carbon;
 
 class TestExecutionCompleted
 {
@@ -38,10 +35,10 @@ class TestExecutionCompleted
     /**
      * Create a new event instance
      *
-     * @param string $commandId Unique command identifier
-     * @param array $summary Execution summary data
-     * @param Carbon $endTime When execution ended
-     * @param array $metadata Additional execution metadata
+     * @param  string  $commandId  Unique command identifier
+     * @param  array  $summary  Execution summary data
+     * @param  Carbon  $endTime  When execution ended
+     * @param  array  $metadata  Additional execution metadata
      */
     public function __construct(string $commandId, array $summary, Carbon $endTime, array $metadata = [])
     {
@@ -59,14 +56,12 @@ class TestExecutionCompleted
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('test-execution.' . $this->commandId),
+            new PrivateChannel('test-execution.'.$this->commandId),
         ];
     }
 
     /**
      * Get the data to broadcast
-     *
-     * @return array
      */
     public function broadcastWith(): array
     {
@@ -81,8 +76,6 @@ class TestExecutionCompleted
 
     /**
      * The event's broadcast name
-     *
-     * @return string
      */
     public function broadcastAs(): string
     {
@@ -91,8 +84,6 @@ class TestExecutionCompleted
 
     /**
      * Determine if the overall execution was successful
-     *
-     * @return bool
      */
     public function wasSuccessful(): bool
     {
@@ -101,8 +92,6 @@ class TestExecutionCompleted
 
     /**
      * Get the total number of tests run
-     *
-     * @return int
      */
     public function getTotalTests(): int
     {
@@ -111,8 +100,6 @@ class TestExecutionCompleted
 
     /**
      * Get the number of passed tests
-     *
-     * @return int
      */
     public function getPassedTests(): int
     {
@@ -121,8 +108,6 @@ class TestExecutionCompleted
 
     /**
      * Get the number of failed tests
-     *
-     * @return int
      */
     public function getFailedTests(): int
     {
@@ -131,8 +116,6 @@ class TestExecutionCompleted
 
     /**
      * Get the number of skipped tests
-     *
-     * @return int
      */
     public function getSkippedTests(): int
     {
@@ -141,8 +124,6 @@ class TestExecutionCompleted
 
     /**
      * Get the success rate percentage
-     *
-     * @return float
      */
     public function getSuccessRate(): float
     {
@@ -151,8 +132,6 @@ class TestExecutionCompleted
 
     /**
      * Get the total execution duration
-     *
-     * @return float
      */
     public function getTotalDuration(): float
     {
@@ -161,28 +140,25 @@ class TestExecutionCompleted
 
     /**
      * Get formatted duration string
-     *
-     * @return string
      */
     public function getFormattedDuration(): string
     {
         $duration = $this->getTotalDuration();
-        
+
         if ($duration < 1) {
-            return number_format($duration, 2) . 's';
+            return number_format($duration, 2).'s';
         } elseif ($duration < 60) {
-            return number_format($duration, 1) . 's';
+            return number_format($duration, 1).'s';
         } else {
             $minutes = floor($duration / 60);
             $seconds = $duration % 60;
-            return $minutes . 'm ' . number_format($seconds, 1) . 's';
+
+            return $minutes.'m '.number_format($seconds, 1).'s';
         }
     }
 
     /**
      * Get test failures
-     *
-     * @return array
      */
     public function getFailures(): array
     {
@@ -191,8 +167,6 @@ class TestExecutionCompleted
 
     /**
      * Get test warnings
-     *
-     * @return array
      */
     public function getWarnings(): array
     {
@@ -201,28 +175,22 @@ class TestExecutionCompleted
 
     /**
      * Determine if there are any failures
-     *
-     * @return bool
      */
     public function hasFailures(): bool
     {
-        return !empty($this->getFailures());
+        return ! empty($this->getFailures());
     }
 
     /**
      * Determine if there are any warnings
-     *
-     * @return bool
      */
     public function hasWarnings(): bool
     {
-        return !empty($this->getWarnings());
+        return ! empty($this->getWarnings());
     }
 
     /**
      * Get execution status summary
-     *
-     * @return string
      */
     public function getStatusSummary(): string
     {
@@ -236,26 +204,24 @@ class TestExecutionCompleted
         }
 
         $parts = [];
-        
+
         if ($passed > 0) {
             $parts[] = "{$passed} passed";
         }
-        
+
         if ($failed > 0) {
             $parts[] = "{$failed} failed";
         }
-        
+
         if ($skipped > 0) {
             $parts[] = "{$skipped} skipped";
         }
 
-        return implode(', ', $parts) . " ({$total} total)";
+        return implode(', ', $parts)." ({$total} total)";
     }
 
     /**
      * Get a short status indicator
-     *
-     * @return string
      */
     public function getStatusIndicator(): string
     {

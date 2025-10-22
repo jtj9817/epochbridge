@@ -12,9 +12,13 @@ use Carbon\CarbonInterface;
 class AstronomyCalculator
 {
     private const JULIAN_DATE_UNIX_EPOCH = 2440587.5;
+
     public const SECONDS_PER_DAY = 86400;
+
     private const SUN_MEAN_LONGITUDE_COEFFS = [280.46646, 36000.76983, 0.0003032];
+
     private const SUN_MEAN_ANOMALY_COEFFS = [357.52911, 35999.05029, -0.0001537, 0.00000048];
+
     private const EARTH_ECCENTRICITY_COEFFS = [1.0, -0.002516, -0.0000074];
 
     /**

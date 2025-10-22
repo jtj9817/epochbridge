@@ -12,11 +12,6 @@ class MarkdownReportService
 {
     /**
      * Initialize the markdown report with the base template and metadata.
-     *
-     * @param string $outputFile
-     * @param int $totalTests
-     * @param \Carbon\CarbonInterface $startTime
-     * @return void
      */
     public function initializeReport(string $outputFile, int $totalTests, CarbonInterface $startTime): void
     {
@@ -26,7 +21,7 @@ class MarkdownReportService
             File::ensureDirectoryExists(dirname($path));
 
             $templatePath = resource_path('views/test-report-template.md');
-            if (!File::exists($templatePath)) {
+            if (! File::exists($templatePath)) {
                 Log::warning('Markdown template missing', ['template_path' => $templatePath]);
                 $initialContent = $this->generateFallbackTemplate($totalTests, $startTime);
             } else {
@@ -52,14 +47,6 @@ class MarkdownReportService
 
     /**
      * Append an individual test result into the markdown report in real time.
-     *
-     * @param string $outputFile
-     * @param string $testFile
-     * @param string $status
-     * @param float $duration
-     * @param string $output
-     * @param string $errors
-     * @return void
      */
     public function updateTestResult(
         string $outputFile,
@@ -81,7 +68,7 @@ class MarkdownReportService
             $notes = $this->buildNotesColumn($status, $output, $errors);
 
             $row = sprintf(
-                '| [`%s`](%s) | %s | ⏱️ %s | %s |' . PHP_EOL,
+                '| [`%s`](%s) | %s | ⏱️ %s | %s |'.PHP_EOL,
                 $testName,
                 $relativePath,
                 $badge,
@@ -94,7 +81,7 @@ class MarkdownReportService
 
             if ($this->isFailureStatus($status)) {
                 $failureSection = $this->buildFailureSection($testName, $relativePath, $durationText, $output, $errors);
-                $content = $this->injectBeforeMarker($content, '<!-- FAILED_TESTS -->', $failureSection . PHP_EOL);
+                $content = $this->injectBeforeMarker($content, '<!-- FAILED_TESTS -->', $failureSection.PHP_EOL);
             }
 
             rewind($handle);
@@ -106,10 +93,6 @@ class MarkdownReportService
 
     /**
      * Generate the summary section and finalize the report.
-     *
-     * @param string $outputFile
-     * @param array $summary
-     * @return void
      */
     public function generateSummarySection(string $outputFile, array $summary): void
     {
@@ -146,8 +129,8 @@ class MarkdownReportService
 
             $content = preg_replace(
                 '/(<!-- LAST_UPDATED -->)(.*?)(<!-- END_LAST_UPDATED -->)/s',
-                '$1' . PHP_EOL . '_Last Updated: ' . $lastUpdated . '_'
-                    . PHP_EOL . '$3',
+                '$1'.PHP_EOL.'_Last Updated: '.$lastUpdated.'_'
+                    .PHP_EOL.'$3',
                 $content
             );
 
@@ -160,9 +143,6 @@ class MarkdownReportService
 
     /**
      * Format raw test output into a fenced code block with escaping.
-     *
-     * @param string $output
-     * @return string
      */
     public function formatTestOutput(string $output): string
     {
@@ -172,16 +152,13 @@ class MarkdownReportService
             return '';
         }
 
-        return '```bash' . PHP_EOL
-            . rtrim($output) . PHP_EOL
-            . '```' . PHP_EOL;
+        return '```bash'.PHP_EOL
+            .rtrim($output).PHP_EOL
+            .'```'.PHP_EOL;
     }
 
     /**
      * Format error stack traces and messages for markdown output.
-     *
-     * @param string $errors
-     * @return string
      */
     public function formatErrorDetails(string $errors): string
     {
@@ -196,19 +173,16 @@ class MarkdownReportService
             $errors
         ) ?? $errors;
 
-        return '<details>' . PHP_EOL
-            . '<summary><strong>Error Details</strong></summary>' . PHP_EOL . PHP_EOL
-            . '```text' . PHP_EOL
-            . rtrim($highlighted) . PHP_EOL
-            . '```' . PHP_EOL
-            . '</details>' . PHP_EOL;
+        return '<details>'.PHP_EOL
+            .'<summary><strong>Error Details</strong></summary>'.PHP_EOL.PHP_EOL
+            .'```text'.PHP_EOL
+            .rtrim($highlighted).PHP_EOL
+            .'```'.PHP_EOL
+            .'</details>'.PHP_EOL;
     }
 
     /**
      * Resolve the absolute path for the output file.
-     *
-     * @param string $outputFile
-     * @return string
      */
     private function resolveOutputPath(string $outputFile): string
     {
@@ -221,10 +195,6 @@ class MarkdownReportService
 
     /**
      * Write content to a file atomically with an exclusive lock.
-     *
-     * @param string $path
-     * @param string $content
-     * @return void
      */
     private function writeAtomically(string $path, string $content): void
     {
@@ -238,11 +208,6 @@ class MarkdownReportService
 
     /**
      * Execute a callback with an exclusive lock on a file handle.
-     *
-     * @param string $path
-     * @param callable $callback
-     * @param string $mode
-     * @return void
      */
     private function withLockedFile(string $path, callable $callback, string $mode = 'c+'): void
     {
@@ -250,15 +215,17 @@ class MarkdownReportService
 
         if ($handle === false) {
             Log::error('Unable to open markdown report file', ['path' => $path]);
+
             return;
         }
 
         $locked = false;
 
         try {
-            if (!flock($handle, LOCK_EX)) {
+            if (! flock($handle, LOCK_EX)) {
                 Log::warning('Could not acquire file lock for markdown report', ['path' => $path]);
                 fclose($handle);
+
                 return;
             }
             $locked = true;
@@ -280,9 +247,7 @@ class MarkdownReportService
     /**
      * Populate template placeholders with their values.
      *
-     * @param string $template
-     * @param array<string, string> $data
-     * @return string
+     * @param  array<string, string>  $data
      */
     private function populateTemplate(string $template, array $data): string
     {
@@ -291,44 +256,38 @@ class MarkdownReportService
 
     /**
      * Generate a fallback template when the primary template is unavailable.
-     *
-     * @param int $totalTests
-     * @param \Carbon\CarbonInterface $startTime
-     * @return string
      */
     private function generateFallbackTemplate(int $totalTests, CarbonInterface $startTime): string
     {
-        $content = '# EpochBridge Test Execution Report' . PHP_EOL . PHP_EOL;
-        $content .= '_Last Updated: ' . $startTime->toDateTimeString() . '_' . PHP_EOL . PHP_EOL;
-        $content .= '## Executive Summary' . PHP_EOL;
-        $content .= '<!-- EXECUTIVE_SUMMARY_START -->' . PHP_EOL;
-        $content .= '| Metric | Value |' . PHP_EOL;
-        $content .= '| --- | --- |' . PHP_EOL;
-        $content .= '| Total Tests | ' . $totalTests . ' |' . PHP_EOL;
-        $content .= '| Passed | 0 |' . PHP_EOL;
-        $content .= '| Failed | 0 |' . PHP_EOL;
-        $content .= '| Skipped | 0 |' . PHP_EOL;
-        $content .= '| Pass Rate | 0% |' . PHP_EOL;
-        $content .= '| Duration | 0s |' . PHP_EOL;
-        $content .= '<!-- EXECUTIVE_SUMMARY_END -->' . PHP_EOL . PHP_EOL;
-        $content .= '## Test Results by Type' . PHP_EOL;
+        $content = '# EpochBridge Test Execution Report'.PHP_EOL.PHP_EOL;
+        $content .= '_Last Updated: '.$startTime->toDateTimeString().'_'.PHP_EOL.PHP_EOL;
+        $content .= '## Executive Summary'.PHP_EOL;
+        $content .= '<!-- EXECUTIVE_SUMMARY_START -->'.PHP_EOL;
+        $content .= '| Metric | Value |'.PHP_EOL;
+        $content .= '| --- | --- |'.PHP_EOL;
+        $content .= '| Total Tests | '.$totalTests.' |'.PHP_EOL;
+        $content .= '| Passed | 0 |'.PHP_EOL;
+        $content .= '| Failed | 0 |'.PHP_EOL;
+        $content .= '| Skipped | 0 |'.PHP_EOL;
+        $content .= '| Pass Rate | 0% |'.PHP_EOL;
+        $content .= '| Duration | 0s |'.PHP_EOL;
+        $content .= '<!-- EXECUTIVE_SUMMARY_END -->'.PHP_EOL.PHP_EOL;
+        $content .= '## Test Results by Type'.PHP_EOL;
         $content .= $this->fallbackResultsSection();
-        $content .= '## Failed Tests' . PHP_EOL . '<!-- FAILED_TESTS -->' . PHP_EOL . PHP_EOL;
-        $content .= '## Performance Metrics' . PHP_EOL;
-        $content .= '<!-- PERFORMANCE_METRICS_START -->' . PHP_EOL;
-        $content .= '_Pending_' . PHP_EOL;
-        $content .= '<!-- PERFORMANCE_METRICS_END -->' . PHP_EOL . PHP_EOL;
-        $content .= '<!-- FOOTER_START -->' . PHP_EOL;
-        $content .= '_Awaiting completion_' . PHP_EOL;
-        $content .= '<!-- FOOTER_END -->' . PHP_EOL;
+        $content .= '## Failed Tests'.PHP_EOL.'<!-- FAILED_TESTS -->'.PHP_EOL.PHP_EOL;
+        $content .= '## Performance Metrics'.PHP_EOL;
+        $content .= '<!-- PERFORMANCE_METRICS_START -->'.PHP_EOL;
+        $content .= '_Pending_'.PHP_EOL;
+        $content .= '<!-- PERFORMANCE_METRICS_END -->'.PHP_EOL.PHP_EOL;
+        $content .= '<!-- FOOTER_START -->'.PHP_EOL;
+        $content .= '_Awaiting completion_'.PHP_EOL;
+        $content .= '<!-- FOOTER_END -->'.PHP_EOL;
 
         return $content;
     }
 
     /**
      * Build the fallback results section markup.
-     *
-     * @return string
      */
     private function fallbackResultsSection(): string
     {
@@ -343,10 +302,10 @@ class MarkdownReportService
         $buffer = '';
 
         foreach ($sections as $header => $marker) {
-            $buffer .= '### ' . $header . PHP_EOL;
-            $buffer .= '| Test | Status | Duration | Details |' . PHP_EOL;
-            $buffer .= '| --- | --- | --- | --- |' . PHP_EOL;
-            $buffer .= $marker . PHP_EOL . PHP_EOL;
+            $buffer .= '### '.$header.PHP_EOL;
+            $buffer .= '| Test | Status | Duration | Details |'.PHP_EOL;
+            $buffer .= '| --- | --- | --- | --- |'.PHP_EOL;
+            $buffer .= $marker.PHP_EOL.PHP_EOL;
         }
 
         return $buffer;
@@ -354,11 +313,6 @@ class MarkdownReportService
 
     /**
      * Build the notes column content based on status and output.
-     *
-     * @param string $status
-     * @param string $output
-     * @param string $errors
-     * @return string
      */
     private function buildNotesColumn(string $status, string $output, string $errors): string
     {
@@ -379,13 +333,6 @@ class MarkdownReportService
 
     /**
      * Build the failure section block for failed tests.
-     *
-     * @param string $testName
-     * @param string $relativePath
-     * @param string $duration
-     * @param string $output
-     * @param string $errors
-     * @return string
      */
     private function buildFailureSection(
         string $testName,
@@ -394,21 +341,21 @@ class MarkdownReportService
         string $output,
         string $errors
     ): string {
-        $section = '### ❌ `' . $testName . '`' . PHP_EOL;
-        $section .= '- File: `' . $relativePath . '`' . PHP_EOL;
-        $section .= '- Duration: ⏱️ ' . $duration . PHP_EOL . PHP_EOL;
+        $section = '### ❌ `'.$testName.'`'.PHP_EOL;
+        $section .= '- File: `'.$relativePath.'`'.PHP_EOL;
+        $section .= '- Duration: ⏱️ '.$duration.PHP_EOL.PHP_EOL;
 
         $formattedErrors = $this->formatErrorDetails($errors);
         if ($formattedErrors !== '') {
-            $section .= $formattedErrors . PHP_EOL;
+            $section .= $formattedErrors.PHP_EOL;
         }
 
         $formattedOutput = $this->formatTestOutput($output);
         if ($formattedOutput !== '') {
-            $section .= '<details>' . PHP_EOL;
-            $section .= '<summary><strong>Test Output</strong></summary>' . PHP_EOL . PHP_EOL;
+            $section .= '<details>'.PHP_EOL;
+            $section .= '<summary><strong>Test Output</strong></summary>'.PHP_EOL.PHP_EOL;
             $section .= $formattedOutput;
-            $section .= '</details>' . PHP_EOL;
+            $section .= '</details>'.PHP_EOL;
         }
 
         return $section;
@@ -416,9 +363,6 @@ class MarkdownReportService
 
     /**
      * Build executive summary table Markdown.
-     *
-     * @param array $summary
-     * @return string
      */
     private function buildExecutiveSummaryTable(array $summary): string
     {
@@ -427,16 +371,16 @@ class MarkdownReportService
             ['Passed', Arr::get($summary, 'total_passed', 0)],
             ['Failed', Arr::get($summary, 'total_failed', 0)],
             ['Skipped', Arr::get($summary, 'total_skipped', 0)],
-            ['Pass Rate', Arr::get($summary, 'success_rate', 0) . '%'],
-            ['Duration', '⏱️ ' . $this->formatDuration(Arr::get($summary, 'total_duration', 0.0))],
+            ['Pass Rate', Arr::get($summary, 'success_rate', 0).'%'],
+            ['Duration', '⏱️ '.$this->formatDuration(Arr::get($summary, 'total_duration', 0.0))],
             ['Assertions', Arr::get($summary, 'total_assertions', 0)],
         ];
 
-        $buffer = '| Metric | Value |' . PHP_EOL;
-        $buffer .= '| --- | --- |' . PHP_EOL;
+        $buffer = '| Metric | Value |'.PHP_EOL;
+        $buffer .= '| --- | --- |'.PHP_EOL;
 
         foreach ($rows as $row) {
-            $buffer .= sprintf('| %s | %s |', $row[0], $row[1]) . PHP_EOL;
+            $buffer .= sprintf('| %s | %s |', $row[0], $row[1]).PHP_EOL;
         }
 
         return $buffer;
@@ -444,41 +388,35 @@ class MarkdownReportService
 
     /**
      * Build performance metrics section content.
-     *
-     * @param array $summary
-     * @return string
      */
     private function buildPerformanceMetrics(array $summary): string
     {
         $metrics = [];
 
         $slowest = Arr::get($summary, 'slowest_tests');
-        if (!empty($slowest)) {
+        if (! empty($slowest)) {
             $metrics[] = $this->buildSlowestTestsTable($slowest);
         }
 
         $avg = Arr::get($summary, 'average_duration');
         if ($avg !== null) {
-            $metrics[] = '- **Average Test Duration:** ⏱️ ' . $this->formatDuration((float) $avg);
+            $metrics[] = '- **Average Test Duration:** ⏱️ '.$this->formatDuration((float) $avg);
         }
 
         $efficiency = Arr::get($summary, 'parallel_efficiency');
         if ($efficiency !== null) {
-            $metrics[] = '- **Parallel Efficiency:** ' . round((float) $efficiency, 2) . '%';
+            $metrics[] = '- **Parallel Efficiency:** '.round((float) $efficiency, 2).'%';
         }
 
         if ($metrics === []) {
             return '_No performance metrics available_';
         }
 
-        return implode(PHP_EOL . PHP_EOL, $metrics);
+        return implode(PHP_EOL.PHP_EOL, $metrics);
     }
 
     /**
      * Build the footer section.
-     *
-     * @param array $summary
-     * @return string
      */
     private function buildFooter(array $summary): string
     {
@@ -486,33 +424,30 @@ class MarkdownReportService
         $completedAt = Arr::get($summary, 'executed_at', now()->toISOString());
         $processes = Arr::get($summary, 'processes');
 
-        $footer = '**Command:** `' . $command . '`' . PHP_EOL;
+        $footer = '**Command:** `'.$command.'`'.PHP_EOL;
 
         if ($processes) {
-            $footer .= '**Parallel Processes:** ' . $processes . PHP_EOL;
+            $footer .= '**Parallel Processes:** '.$processes.PHP_EOL;
         }
 
-        $footer .= '**Completed At:** ' . $completedAt;
+        $footer .= '**Completed At:** '.$completedAt;
 
         return $footer;
     }
 
     /**
      * Build the slowest tests markdown table.
-     *
-     * @param iterable $slowest
-     * @return string
      */
     private function buildSlowestTestsTable(iterable $slowest): string
     {
-        $buffer = '#### Slowest Tests' . PHP_EOL;
-        $buffer .= '| Test | Duration |' . PHP_EOL;
-        $buffer .= '| --- | --- |' . PHP_EOL;
+        $buffer = '#### Slowest Tests'.PHP_EOL;
+        $buffer .= '| Test | Duration |'.PHP_EOL;
+        $buffer .= '| --- | --- |'.PHP_EOL;
 
         foreach ($slowest as $item) {
             $name = Arr::get($item, 'file') ?? Arr::get($item, 'name', 'Unknown');
             $duration = $this->formatDuration((float) Arr::get($item, 'duration', 0));
-            $buffer .= sprintf('| `%s` | ⏱️ %s |', $name, $duration) . PHP_EOL;
+            $buffer .= sprintf('| `%s` | ⏱️ %s |', $name, $duration).PHP_EOL;
         }
 
         return $buffer;
@@ -520,9 +455,6 @@ class MarkdownReportService
 
     /**
      * Determine the appropriate marker for the test results section.
-     *
-     * @param string $relativePath
-     * @return string
      */
     private function determineResultMarker(string $relativePath): string
     {
@@ -549,33 +481,22 @@ class MarkdownReportService
 
     /**
      * Insert content directly before a marker comment.
-     *
-     * @param string $content
-     * @param string $marker
-     * @param string $insertion
-     * @return string
      */
     private function injectBeforeMarker(string $content, string $marker, string $insertion): string
     {
-        if (!str_contains($content, $marker)) {
-            return $content . PHP_EOL . $insertion;
+        if (! str_contains($content, $marker)) {
+            return $content.PHP_EOL.$insertion;
         }
 
         return str_replace(
             $marker,
-            $insertion . $marker,
+            $insertion.$marker,
             $content
         );
     }
 
     /**
      * Replace the content found between two markers.
-     *
-     * @param string $content
-     * @param string $start
-     * @param string $end
-     * @param string $replacement
-     * @return string
      */
     private function replaceBetweenMarkers(string $content, string $start, string $end, string $replacement): string
     {
@@ -584,7 +505,7 @@ class MarkdownReportService
         if (preg_match($pattern, $content) === 1) {
             return preg_replace(
                 $pattern,
-                $start . PHP_EOL . $replacement . PHP_EOL . $end,
+                $start.PHP_EOL.$replacement.PHP_EOL.$end,
                 $content
             ) ?? $content;
         }
@@ -594,9 +515,6 @@ class MarkdownReportService
 
     /**
      * Determine if a status represents a failed execution.
-     *
-     * @param string $status
-     * @return bool
      */
     private function isFailureStatus(string $status): bool
     {
@@ -605,9 +523,6 @@ class MarkdownReportService
 
     /**
      * Retrieve the status badge for a given status.
-     *
-     * @param string $status
-     * @return string
      */
     private function getStatusBadge(string $status): string
     {
@@ -621,9 +536,6 @@ class MarkdownReportService
 
     /**
      * Format a duration into a human readable string.
-     *
-     * @param float $duration
-     * @return string
      */
     private function formatDuration(float $duration): string
     {
@@ -632,24 +544,21 @@ class MarkdownReportService
         }
 
         if ($duration < 1) {
-            return number_format($duration, 2) . 's';
+            return number_format($duration, 2).'s';
         }
 
         if ($duration < 60) {
-            return number_format($duration, 1) . 's';
+            return number_format($duration, 1).'s';
         }
 
         $minutes = floor($duration / 60);
         $seconds = $duration % 60;
 
-        return $minutes . 'm ' . number_format($seconds, 1) . 's';
+        return $minutes.'m '.number_format($seconds, 1).'s';
     }
 
     /**
      * Build a human readable test name.
-     *
-     * @param string $testFile
-     * @return string
      */
     private function displayTestName(string $testFile): string
     {
@@ -658,21 +567,16 @@ class MarkdownReportService
 
     /**
      * Retrieve the path relative to the base test directory.
-     *
-     * @param string $testFile
-     * @return string
      */
     private function relativeTestPath(string $testFile): string
     {
-        $relative = Str::after($testFile, base_path() . DIRECTORY_SEPARATOR);
+        $relative = Str::after($testFile, base_path().DIRECTORY_SEPARATOR);
 
         return $relative !== $testFile ? $relative : $testFile;
     }
 
     /**
      * Retrieve the installed PestPHP version if available.
-     *
-     * @return string
      */
     private function getPestVersion(): string
     {
