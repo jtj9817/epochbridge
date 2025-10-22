@@ -70,35 +70,66 @@
     </div>
 
     <!-- Calendar systems grid -->
-    @if(!empty($conversionData))
-        <div class="p-4">
+    @if($isGuest)
+        <!-- Client-side rendering for guest users (data in localStorage/Alpine.js) -->
+        <div x-show="item.conversion_data && Object.keys(item.conversion_data).length > 0" class="p-4">
             <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                @foreach($conversionData as $system => $data)
-                    @if(!isset($data['error']) && isset($calendarComponents[$system]))
-                        <div class="transform transition-transform hover:scale-[1.02]">
-                            @if($isGuest)
-                                <!-- For guest items, we need to render the card with Alpine.js data binding -->
-                                <div x-data="{ calendarData: {{ json_encode($data) }} }">
-                                    @include($calendarComponents[$system], ['data' => $data])
-                                </div>
-                            @else
-                                @include($calendarComponents[$system], ['data' => $data])
-                            @endif
+                <template x-for="[system, cardData] in Object.entries(item.conversion_data).filter(([k, v]) => typeof v === 'object' && !v?.error)" :key="system">
+                    <div class="transform transition-transform hover:scale-[1.02]">
+                        <!-- Generic calendar card with Alpine.js data binding -->
+                        <div class="bg-white dark:bg-zinc-800/50 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700 flex flex-col">
+                            <div class="p-4 border-b border-zinc-200/80 dark:border-zinc-700/80">
+                                <h3 class="font-bold text-zinc-700 dark:text-zinc-200" x-text="cardData.name || system"></h3>
+                            </div>
+                            <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                                <template x-if="cardData.full_date">
+                                    <div>
+                                        <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider" x-text="cardData.month_name || cardData.month || ''"></div>
+                                        <div class="text-6xl font-bold text-blue-600 dark:text-blue-400 my-1" x-text="cardData.day || ''"></div>
+                                        <div class="text-lg text-zinc-600 dark:text-zinc-300" x-text="cardData.day_of_week || ''"></div>
+                                        <div class="text-sm font-mono text-zinc-400 dark:text-zinc-500 mt-2" x-text="cardData.year || cardData.full_date || ''"></div>
+                                    </div>
+                                </template>
+                                <template x-if="!cardData.full_date && typeof cardData === 'string'">
+                                    <div class="text-2xl font-mono text-zinc-600 dark:text-zinc-300" x-text="cardData"></div>
+                                </template>
+                                <template x-if="!cardData.full_date && typeof cardData === 'number'">
+                                    <div class="text-2xl font-mono text-zinc-600 dark:text-zinc-300" x-text="cardData"></div>
+                                </template>
+                            </div>
                         </div>
-                    @endif
-                @endforeach
+                    </div>
+                </template>
+            </div>
+        </div>
+        
+        <!-- Fallback for guest users with missing/empty data -->
+        <div x-show="!item.conversion_data || Object.keys(item.conversion_data).length === 0" class="p-4">
+            <div class="text-sm text-theme-600 dark:text-theme-300 grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2">
+                <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span x-text="item.conversion_data?.gregorian?.full_date || 'N/A'"></span></div>
+                <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span x-text="item.conversion_data?.jalali?.full_date || 'N/A'"></span></div>
+                <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span x-text="item.conversion_data?.unix || 'N/A'"></span></div>
+                <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">ISO 8601:</strong> <span x-text="item.conversion_data?.iso8601 || 'N/A'"></span></div>
             </div>
         </div>
     @else
-        <!-- Fallback for old format or missing data -->
-        <div class="p-4">
-            <div class="text-sm text-theme-600 dark:text-theme-300 grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2">
-                @if($isGuest)
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span x-text="item.conversion_data?.gregorian?.full_date || 'N/A'"></span></div>
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span x-text="item.conversion_data?.jalali?.full_date || 'N/A'"></span></div>
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span x-text="item.conversion_data?.unix || 'N/A'"></span></div>
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">ISO 8601:</strong> <span x-text="item.conversion_data?.iso8601 || 'N/A'"></span></div>
-                @else
+        <!-- Server-side rendering for authenticated users -->
+        @if(!empty($conversionData))
+            <div class="p-4">
+                <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    @foreach($conversionData as $system => $data)
+                        @if(!isset($data['error']) && isset($calendarComponents[$system]))
+                            <div class="transform transition-transform hover:scale-[1.02]">
+                                @include($calendarComponents[$system], ['data' => $data])
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+        @else
+            <!-- Fallback for authenticated users with old format or missing data -->
+            <div class="p-4">
+                <div class="text-sm text-theme-600 dark:text-theme-300 grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-2">
                     @php
                         $legacyValues = $item->legacy_display_values ?? $item->legacyValues();
                         $hasLegacyData = $item->has_legacy_values ?? $item->hasLegacyValues();
@@ -114,8 +145,8 @@
                             Saved conversion details are unavailable for this entry.
                         </div>
                     @endif
-                @endif
+                </div>
             </div>
-        </div>
+        @endif
     @endif
 </div>
