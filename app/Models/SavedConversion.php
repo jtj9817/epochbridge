@@ -58,7 +58,18 @@ class SavedConversion extends Model
      */
     public function scopeWithConversionData($query)
     {
-        return $query->select(['id', 'user_id', 'original_input', 'conversion_data', 'created_at', 'updated_at']);
+        return $query->select([
+            'id',
+            'user_id',
+            'original_input',
+            'conversion_data',
+            'gregorian_date',
+            'jalali_date',
+            'unix_timestamp',
+            'iso8601_string',
+            'created_at',
+            'updated_at',
+        ]);
     }
 
     /**

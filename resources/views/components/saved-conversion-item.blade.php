@@ -95,10 +95,26 @@
                     <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span x-text="item.gregorian?.full_date || 'N/A'"></span></div>
                     <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span x-text="item.jalali?.full_date || 'N/A'"></span></div>
                     <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span x-text="item.unix || 'N/A'"></span></div>
+                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">ISO 8601:</strong> <span x-text="item.iso8601 || 'N/A'"></span></div>
                 @else
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span>{{ $item->gregorian_date?->format('Y-m-d') ?? 'N/A' }}</span></div>
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span>{{ $item->jalali_date ?? 'N/A' }}</span></div>
-                    <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span>{{ $item->unix_timestamp ?? 'N/A' }}</span></div>
+                    @php
+                        $legacyGregorian = $item->gregorian_date?->format('Y-m-d');
+                        $legacyJalali = $item->jalali_date;
+                        $legacyUnix = $item->unix_timestamp;
+                        $legacyIso = $item->iso8601_string;
+                        $hasLegacyData = $legacyGregorian || $legacyJalali || $legacyUnix || $legacyIso;
+                    @endphp
+
+                    @if($hasLegacyData)
+                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Gregorian:</strong> <span>{{ $legacyGregorian ?? 'N/A' }}</span></div>
+                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Jalali:</strong> <span>{{ $legacyJalali ?? 'N/A' }}</span></div>
+                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">Unix:</strong> <span>{{ $legacyUnix ?? 'N/A' }}</span></div>
+                        <div class="font-mono"><strong class="font-semibold text-theme-500 dark:text-theme-100">ISO 8601:</strong> <span>{{ $legacyIso ?? 'N/A' }}</span></div>
+                    @else
+                        <div class="text-sm text-theme-500 dark:text-theme-400 col-span-full">
+                            Saved conversion details are unavailable for this entry.
+                        </div>
+                    @endif
                 @endif
             </div>
         </div>

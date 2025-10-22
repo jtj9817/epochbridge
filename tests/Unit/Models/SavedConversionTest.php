@@ -144,3 +144,40 @@ test('saved conversion casts gregorian_date as date', function () {
     expect($savedConversion->gregorian_date)->toBeInstanceOf(\Carbon\Carbon::class)
         ->and($savedConversion->gregorian_date->format('Y-m-d'))->toBe('2024-01-15');
 });
+
+test('getPaginatedForUser hydrates conversion data and legacy fields', function () {
+    $user = User::factory()->create();
+
+    $withJson = SavedConversion::factory()->create([
+        'user_id' => $user->id,
+        'created_at' => now(),
+    ]);
+
+    $legacy = SavedConversion::create([
+        'user_id' => $user->id,
+        'original_input' => '2023-05-10',
+        'gregorian_date' => '2023-05-10',
+        'jalali_date' => '1402/02/20',
+        'unix_timestamp' => 1683676800,
+        'iso8601_string' => '2023-05-10T00:00:00Z',
+        'created_at' => now()->subDay(),
+        'updated_at' => now()->subDay(),
+    ]);
+
+    $paginator = SavedConversion::getPaginatedForUser($user->id, 10);
+    $items = collect($paginator->items());
+
+    $jsonItem = $items->firstWhere('id', $withJson->id);
+    $legacyItem = $items->firstWhere('id', $legacy->id);
+
+    expect($jsonItem)->not()->toBeNull()
+        ->and($jsonItem->conversion_data)->toBeArray()
+        ->and($jsonItem->gregorian_date)->toBe($withJson->conversion_data['gregorian']['full_date']);
+
+    expect($legacyItem)->not()->toBeNull()
+        ->and($legacyItem->conversion_data)->toBeNull()
+        ->and($legacyItem->gregorian_date)->toBe('2023-05-10')
+        ->and($legacyItem->jalali_date)->toBe('1402/02/20')
+        ->and($legacyItem->unix_timestamp)->toBe(1683676800)
+        ->and($legacyItem->iso8601_string)->toBe('2023-05-10T00:00:00Z');
+});
