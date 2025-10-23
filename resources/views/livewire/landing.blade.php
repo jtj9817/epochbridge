@@ -122,6 +122,7 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
          additionalResults: @entangle('additionalConversionResults'),
          additionalLoaded: @entangle('additionalCalendarsLoaded'),
          showSaveLimitNotification: false,
+         savingGuest: false,
          dateInput: @entangle('dateInput'),
          inputType: @entangle('inputType'),
          
@@ -183,29 +184,63 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
                  ...basicResults,
                  ...additionalResults
              };
+         },
+         
+         async ensureAllCalendarsLoaded() {
+             if (!this.additionalLoaded) {
+                 // Trigger load-additional-calendars event
+                 this.$wire.dispatch('load-additional-calendars');
+                 
+                 // Wait for additionalLoaded to become true (max 5 seconds)
+                 const maxAttempts = 50;
+                 let attempts = 0;
+                 
+                 while (!this.additionalLoaded && attempts < maxAttempts) {
+                     await new Promise(resolve => setTimeout(resolve, 100));
+                     attempts++;
+                 }
+                 
+                 if (!this.additionalLoaded) {
+                     console.warn('Additional calendars took too long to load');
+                 }
+             }
          }
       }"
       @save-guest-conversion.window="
-         const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
-         if (savedConversions.length >= 3) {
-             showSaveLimitNotification = true;
-             return;
-         }
-         
-         // Get all conversion results (basic + additional calendars)
-         const allResults = getAllConversionResults();
-         
-         // Store complete conversion data with the same structure as database
-         const newConversion = {
-             id: Date.now(),
-             original_input: dateInput,
-             conversion_data: JSON.parse(JSON.stringify(allResults)),
-             created_at: new Date().toISOString()
-         };
-         
-         savedConversions.unshift(newConversion);
-         localStorage.setItem('savedConversions', JSON.stringify(savedConversions.slice(0, 3)));
-         window.dispatchEvent(new CustomEvent('new-guest-conversion', { detail: { conversion: newConversion }}));
+         (async () => {
+             const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
+             if (savedConversions.length >= 3) {
+                 showSaveLimitNotification = true;
+                 return;
+             }
+             
+             // Show loading state
+             savingGuest = true;
+             
+             try {
+                 // Ensure all calendars are loaded before saving
+                 await ensureAllCalendarsLoaded();
+                 
+                 // Get all conversion results (now guaranteed to include additional calendars)
+                 const allResults = getAllConversionResults();
+                 
+                 // Store complete conversion data with the same structure as database
+                 const newConversion = {
+                     id: Date.now(),
+                     original_input: dateInput,
+                     conversion_data: JSON.parse(JSON.stringify(allResults)),
+                     created_at: new Date().toISOString()
+                 };
+                 
+                 savedConversions.unshift(newConversion);
+                 localStorage.setItem('savedConversions', JSON.stringify(savedConversions.slice(0, 3)));
+                 window.dispatchEvent(new CustomEvent('new-guest-conversion', { detail: { conversion: newConversion }}));
+             } catch (error) {
+                 console.error('Failed to save guest conversion:', error);
+             } finally {
+                 savingGuest = false;
+             }
+         })();
       ">
 
     <!-- Header -->

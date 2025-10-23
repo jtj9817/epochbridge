@@ -144,7 +144,9 @@ $displayResults = computed(function() {
                 @else
                     <button
                         @click="$dispatch('save-guest-conversion')"
-                        class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
+                        :disabled="$root.savingGuest"
+                        class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline disabled:opacity-50 disabled:cursor-wait"
+                        x-text="$root.savingGuest ? 'Saving...' : 'Save'">
                         Save
                     </button>
                 @endauth
