@@ -104,12 +104,16 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
      x-data="{
          showResults: @entangle('conversionResults'),
          showSaveLimitNotification: false,
-         savingGuest: false,
          dateInput: @entangle('dateInput'),
          inputType: @entangle('inputType'),
          
          init() {
              this.migrateGuestData();
+             
+             // Watch for date input changes to trigger button state re-evaluation
+             this.$watch('dateInput', () => {
+                 // dateInput changed, button will automatically re-evaluate isConversionSaved()
+             });
          },
          
          migrateGuestData() {
@@ -162,14 +166,26 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
              return this.showResults || {};
          },
          
+         isConversionSaved() {
+             if (!this.dateInput) return false;
+             
+             const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
+             return savedConversions.some(item => item.original_input === this.dateInput);
+         },
+         
          handleGuestSave() {
              const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
+             
+             // Check if already saved
+             if (this.isConversionSaved()) {
+                 return; // Already saved, do nothing
+             }
+             
+             // Check limit
              if (savedConversions.length >= 3) {
                  this.showSaveLimitNotification = true;
                  return;
              }
-             
-             this.savingGuest = true;
              
              try {
                  const allResults = this.getAllConversionResults();
@@ -184,10 +200,13 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
                  savedConversions.unshift(newConversion);
                  localStorage.setItem('savedConversions', JSON.stringify(savedConversions.slice(0, 3)));
                  window.dispatchEvent(new CustomEvent('new-guest-conversion', { detail: { conversion: newConversion }}));
+                 
+                 // Force Alpine reactivity update for button state
+                 this.$nextTick(() => {
+                     // Button will re-evaluate isConversionSaved() and show "Saved"
+                 });
              } catch (error) {
                  console.error('Failed to save guest conversion:', error);
-             } finally {
-                 this.savingGuest = false;
              }
          }
       }"
