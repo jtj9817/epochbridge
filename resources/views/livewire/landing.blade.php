@@ -191,43 +191,49 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
                  // Trigger load-additional-calendars event
                  this.$wire.dispatch('load-additional-calendars');
                  
-                 // Wait for additionalLoaded to become true (max 5 seconds)
-                 const maxAttempts = 50;
-                 let attempts = 0;
-                 
-                 while (!this.additionalLoaded && attempts < maxAttempts) {
-                     await new Promise(resolve => setTimeout(resolve, 100));
-                     attempts++;
-                 }
-                 
-                 if (!this.additionalLoaded) {
-                     console.warn('Additional calendars took too long to load');
-                 }
+                 // Wait for additionalLoaded to become true with proper promise-based polling
+                 return new Promise((resolve) => {
+                     const maxWaitTime = 5000; // 5 seconds max
+                     const startTime = Date.now();
+                     
+                     const checkLoaded = () => {
+                         if (this.additionalLoaded) {
+                             resolve(true);
+                         } else if (Date.now() - startTime > maxWaitTime) {
+                             console.warn('Additional calendars took too long to load');
+                             resolve(false);
+                         } else {
+                             setTimeout(checkLoaded, 100);
+                         }
+                     };
+                     
+                     checkLoaded();
+                 });
              }
-         }
-      }"
-      @save-guest-conversion.window="
-         (async () => {
+             return Promise.resolve(true);
+         },
+         
+         async handleGuestSave() {
              const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
              if (savedConversions.length >= 3) {
-                 showSaveLimitNotification = true;
+                 this.showSaveLimitNotification = true;
                  return;
              }
              
              // Show loading state
-             savingGuest = true;
+             this.savingGuest = true;
              
              try {
                  // Ensure all calendars are loaded before saving
-                 await ensureAllCalendarsLoaded();
+                 await this.ensureAllCalendarsLoaded();
                  
                  // Get all conversion results (now guaranteed to include additional calendars)
-                 const allResults = getAllConversionResults();
+                 const allResults = this.getAllConversionResults();
                  
                  // Store complete conversion data with the same structure as database
                  const newConversion = {
                      id: Date.now(),
-                     original_input: dateInput,
+                     original_input: this.dateInput,
                      conversion_data: JSON.parse(JSON.stringify(allResults)),
                      created_at: new Date().toISOString()
                  };
@@ -238,10 +244,11 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
              } catch (error) {
                  console.error('Failed to save guest conversion:', error);
              } finally {
-                 savingGuest = false;
+                 this.savingGuest = false;
              }
-         })();
-      ">
+         }
+      }"
+      @save-guest-conversion.window="handleGuestSave()">
 
     <!-- Header -->
     <header id="landing-header" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
