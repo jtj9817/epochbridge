@@ -300,6 +300,7 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
                 :conversionError="$conversionError"
                 :searchTerm="$searchTerm"
                 :selectedTypes="$selectedTypes"
+                :dateInput="$dateInput"
                 wire:key="results-grid"
             />
             

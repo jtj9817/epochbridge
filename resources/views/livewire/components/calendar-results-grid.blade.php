@@ -8,6 +8,7 @@ state([
     'conversionError' => '',
     'searchTerm' => '',
     'selectedTypes' => [],
+    'dateInput' => '',
 ])->reactive();
 
 $scalarResultKeys = ['unix', 'iso8601', 'julian-day', 'modified-julian-day'];
@@ -76,13 +77,25 @@ $displayResults = computed(function() {
 
 <div x-data="{
         copiedFeedback: null,
+        currentDateInput: @js($dateInput),
         copyToClipboard(text, type) {
             navigator.clipboard.writeText(text).then(() => {
                 this.copiedFeedback = type;
                 setTimeout(() => { this.copiedFeedback = null }, 3000);
             });
+        },
+        isConversionSaved() {
+            if (!this.currentDateInput) return false;
+            
+            try {
+                const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
+                return savedConversions.some(item => item.original_input === this.currentDateInput);
+            } catch (e) {
+                return false;
+            }
         }
-     }">
+     }"
+     x-init="$watch('$wire.dateInput', value => currentDateInput = value)">
     <!-- Conversion Error Message -->
     @if ($conversionError)
         <div id="conversion-error" class="my-8 p-4 max-w-2xl mx-auto bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -140,10 +153,10 @@ $displayResults = computed(function() {
                 @else
                     <button
                         @click="$dispatch('save-guest-conversion')"
-                        :disabled="$root.isConversionSaved()"
+                        :disabled="isConversionSaved()"
                         class="text-sm font-medium hover:underline disabled:cursor-not-allowed"
-                        :class="$root.isConversionSaved() ? 'text-green-600 dark:text-green-400' : 'text-theme-500 dark:text-theme-100'"
-                        x-text="$root.isConversionSaved() ? 'Saved ✓' : 'Save'">
+                        :class="isConversionSaved() ? 'text-green-600 dark:text-green-400' : 'text-theme-500 dark:text-theme-100'"
+                        x-text="isConversionSaved() ? 'Saved ✓' : 'Save'">
                         Save
                     </button>
                 @endauth

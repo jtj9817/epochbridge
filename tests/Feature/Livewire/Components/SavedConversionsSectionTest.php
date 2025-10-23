@@ -132,15 +132,15 @@ it('renders old format conversions with backward compatibility', function () {
 
     $this->actingAs($user);
 
-Volt::test('components.saved-conversions-section')
-    ->assertSee('2024-01-01')
-    ->assertSee('1402/10/11')
-    ->assertSee('Gregorian:')
-    ->assertSee('Jalali:')
-    ->assertSee('Unix:')
-    ->assertSee('ISO 8601:')
-    ->assertSee('2024-01-01T00:00:00Z')
-    ->assertDontSee('N/A');
+    Volt::test('components.saved-conversions-section')
+        ->assertSee('2024-01-01')
+        ->assertSee('1402/10/11')
+        ->assertSee('Gregorian:')
+        ->assertSee('Jalali:')
+        ->assertSee('Unix:')
+        ->assertSee('ISO 8601:')
+        ->assertSee('2024-01-01T00:00:00Z')
+        ->assertDontSee('N/A');
 });
 
 it('displays multiple saved conversions in correct order', function () {
