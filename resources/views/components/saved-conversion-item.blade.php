@@ -11,14 +11,14 @@
 
 <div class="bg-white dark:bg-theme-800 rounded-xl shadow-lg border border-theme-200 dark:border-theme-700 overflow-hidden">
     <!-- Header with centered input date -->
-    <div class="bg-[#50493E] p-6 border-b border-theme-200 dark:border-theme-700">
+    <div class="bg-[#50493E] p-4 border-b border-theme-200 dark:border-theme-700">
         <div class="flex items-center justify-between">
             <div class="flex-grow text-center">
-                <div class="text-base text-white mb-2">Input Date</div>
-                <div class="text-3xl font-bold text-white font-mono">
+                <div class="text-base text-white mb-1">Input Date</div>
+                <div class="text-sm font-bold text-white font-mono">
                     {{ $originalInput }}
                 </div>
-                <div class="text-xs text-white/80 mt-2">
+                <div class="text-xl text-white/80 mt-1 font-mono">
                     @if($isGuest)
                         Saved: {{ \Carbon\Carbon::parse($createdAt)->format('M j, Y g:i A') }}
                     @else
