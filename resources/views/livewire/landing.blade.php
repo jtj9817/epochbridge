@@ -36,8 +36,6 @@ state('inputTypes', [
     'mayan' => 'Mayan (from Gregorian YYYY/MM/DD)',
 ]);
 state([
-    'additionalConversionResults' => [],
-    'additionalCalendarsLoaded' => false,
     'searchTerm' => '',
     'selectedTypes' => [],
 ]);
@@ -78,20 +76,6 @@ on([
         $this->dateInput = $dateInput;
         $this->inputType = $inputType;
     },
-    'load-additional-calendars' => function (?DateTimeConverterService $converter = null) use ($resolveConverter) {
-        $converter = $resolveConverter($converter);
-        if ($this->additionalCalendarsLoaded || empty($this->conversionResults)) {
-            return;
-        }
-
-        try {
-            $this->additionalConversionResults = $converter->convertAdditional($this->dateInput, $this->inputType);
-        } catch (\Exception $e) {
-            // Silently fail or add a specific error state for additional calendars
-        } finally {
-            $this->additionalCalendarsLoaded = true;
-        }
-    },
     'filters-updated' => function (string $searchTerm, array $selectedTypes) {
         $this->searchTerm = $searchTerm;
         $this->selectedTypes = $selectedTypes;
@@ -103,10 +87,10 @@ on([
 
 $convertDate = function (?DateTimeConverterService $converter = null) use ($resolveConverter) {
     $converter = $resolveConverter($converter);
-    $this->reset('conversionResults', 'conversionError', 'additionalConversionResults', 'additionalCalendarsLoaded');
+    $this->reset('conversionResults', 'conversionError');
 
     try {
-        $this->conversionResults = $converter->convert($this->dateInput, $this->inputType);
+        $this->conversionResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
     } catch (CalendarConversionException|\InvalidArgumentException $e) {
         $this->conversionError = $e->getMessage();
     } catch (\Illuminate\Validation\ValidationException $e) {
@@ -119,8 +103,6 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
 <div id="landing-page-container" class="min-h-screen bg-theme-50 dark:bg-theme-900"
      x-data="{
          showResults: @entangle('conversionResults'),
-         additionalResults: @entangle('additionalConversionResults'),
-         additionalLoaded: @entangle('additionalCalendarsLoaded'),
          showSaveLimitNotification: false,
          savingGuest: false,
          dateInput: @entangle('dateInput'),
@@ -177,60 +159,21 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
          },
          
          getAllConversionResults() {
-             const basicResults = this.showResults || {};
-             const additionalResults = this.additionalResults || {};
-             
-             return {
-                 ...basicResults,
-                 ...additionalResults
-             };
+             return this.showResults || {};
          },
          
-         async ensureAllCalendarsLoaded() {
-             if (!this.additionalLoaded) {
-                 // Trigger load-additional-calendars event
-                 this.$wire.dispatch('load-additional-calendars');
-                 
-                 // Wait for additionalLoaded to become true with proper promise-based polling
-                 return new Promise((resolve) => {
-                     const maxWaitTime = 5000; // 5 seconds max
-                     const startTime = Date.now();
-                     
-                     const checkLoaded = () => {
-                         if (this.additionalLoaded) {
-                             resolve(true);
-                         } else if (Date.now() - startTime > maxWaitTime) {
-                             console.warn('Additional calendars took too long to load');
-                             resolve(false);
-                         } else {
-                             setTimeout(checkLoaded, 100);
-                         }
-                     };
-                     
-                     checkLoaded();
-                 });
-             }
-             return Promise.resolve(true);
-         },
-         
-         async handleGuestSave() {
+         handleGuestSave() {
              const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
              if (savedConversions.length >= 3) {
                  this.showSaveLimitNotification = true;
                  return;
              }
              
-             // Show loading state
              this.savingGuest = true;
              
              try {
-                 // Ensure all calendars are loaded before saving
-                 await this.ensureAllCalendarsLoaded();
-                 
-                 // Get all conversion results (now guaranteed to include additional calendars)
                  const allResults = this.getAllConversionResults();
                  
-                 // Store complete conversion data with the same structure as database
                  const newConversion = {
                      id: Date.now(),
                      original_input: this.dateInput,
@@ -335,8 +278,6 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
             @endif
             <livewire:components.calendar-results-grid
                 :conversionResults="$conversionResults"
-                :additionalConversionResults="$additionalConversionResults"
-                :additionalCalendarsLoaded="$additionalCalendarsLoaded"
                 :conversionError="$conversionError"
                 :searchTerm="$searchTerm"
                 :selectedTypes="$selectedTypes"

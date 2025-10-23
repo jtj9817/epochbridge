@@ -5,8 +5,6 @@ use function Livewire\Volt\{state, computed};
 
 state([
     'conversionResults' => [],
-    'additionalConversionResults' => [],
-    'additionalCalendarsLoaded' => false,
     'conversionError' => '',
     'searchTerm' => '',
     'selectedTypes' => [],
@@ -16,9 +14,8 @@ $scalarResultKeys = ['unix', 'iso8601', 'julian-day', 'modified-julian-day'];
 
 $filteredResults = computed(function() use ($scalarResultKeys) {
     $conversionResults = is_array($this->conversionResults) ? $this->conversionResults : [];
-    $additionalResults = is_array($this->additionalConversionResults) ? $this->additionalConversionResults : [];
 
-    $allResults = array_merge([], $conversionResults, $additionalResults);
+    $allResults = $conversionResults;
     $searchTerm = strtolower((string) $this->searchTerm);
     $selectedTypes = is_array($this->selectedTypes) ? $this->selectedTypes : [];
     $results = [];
@@ -48,9 +45,8 @@ $filteredResults = computed(function() use ($scalarResultKeys) {
 
 $scalarResults = computed(function() use ($scalarResultKeys) {
     $conversionResults = is_array($this->conversionResults) ? $this->conversionResults : [];
-    $additionalResults = is_array($this->additionalConversionResults) ? $this->additionalConversionResults : [];
 
-    $allResults = array_merge([], $conversionResults, $additionalResults);
+    $allResults = $conversionResults;
     $searchTerm = strtolower((string) $this->searchTerm);
     $results = [];
 
@@ -180,14 +176,6 @@ $displayResults = computed(function() {
             @if(empty($displayResults))
                 <div class="md:col-span-2 lg:col-span-3 text-center py-8 text-theme-500 dark:text-theme-100">
                     No calendars match your search criteria.
-                </div>
-            @endif
-            
-            @if(!$additionalCalendarsLoaded)
-                <div x-intersect.once="$wire.dispatch('load-additional-calendars')" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:col-span-2 lg:col-span-3">
-                    @for ($i = 0; $i < 6; $i++)
-                        <x-calendars.loading-skeleton />
-                    @endfor
                 </div>
             @endif
         </div>
