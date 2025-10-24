@@ -116,99 +116,124 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
              });
          },
          
-         migrateGuestData() {
-             const existingData = localStorage.getItem('savedConversions');
-             if (existingData) {
-                 try {
-                     const parsed = JSON.parse(existingData);
-                     // Check if old format (missing conversion_data)
-                     if (parsed.length > 0 && !parsed[0].conversion_data) {
-                         const migratedData = parsed.map(item => {
-                             if (item.conversion_data) {
-                                 return item; // Already migrated
-                             }
-                             
-                             // Migrate old format to new structure
-                             const conversionData = {
-                                 'gregorian': {
-                                     'full_date': item.gregorian?.full_date || item.gregorian_date,
-                                     'name': 'Gregorian',
-                                     'tags': ['modern', 'solar']
-                                 },
-                                 'jalali': {
-                                     'full_date': item.jalali?.full_date || item.jalali_date,
-                                     'name': 'Jalali',
-                                     'tags': ['modern', 'solar']
-                                 },
-                                 'unix': item.unix || item.unix_timestamp,
-                                 'iso8601': item.iso8601 || item.iso8601_string
-                             };
-                             
-                             return {
-                                 ...item,
-                                 conversion_data: conversionData,
-                                 original_input: item.original_input || this.dateInput,
-                                 created_at: item.created_at || new Date().toISOString()
-                             };
-                         });
-                         
-                         localStorage.setItem('savedConversions', JSON.stringify(migratedData));
-                     }
-                 } catch (e) {
-                     console.warn('Failed to migrate guest data:', e);
-                     // Clear corrupted data
-                     localStorage.removeItem('savedConversions');
-                 }
-             }
-         },
+migrateGuestData() {
+              try {
+                  const existingData = localStorage.getItem('savedConversions');
+                  if (!existingData) return;
+                  
+                  const parsed = JSON.parse(existingData);
+                  
+                  // Check if migration is needed
+                  if (parsed.length > 0 && !parsed[0].conversion_data) {
+                      const migratedData = parsed.map(item => {
+                          if (item.conversion_data) {
+                              return item; // Already migrated
+                          }
+                          
+                          // Migrate old format to new structure
+                          const conversionData = {
+                              'gregorian': {
+                                  'full_date': item.gregorian?.full_date || item.gregorian_date,
+                                  'name': 'Gregorian',
+                                  'tags': ['modern', 'solar']
+                              },
+                              'jalali': {
+                                  'full_date': item.jalali?.full_date || item.jalali_date,
+                                  'name': 'Jalali',
+                                  'tags': ['modern', 'solar']
+                              },
+                              'unix': item.unix || item.unix_timestamp,
+                              'iso8601': item.iso8601 || item.iso8601_string
+                          };
+                          
+                          return {
+                              ...item,
+                              conversion_data: conversionData,
+                              original_input: item.original_input || this.dateInput,
+                              created_at: item.created_at || new Date().toISOString()
+                          };
+                      });
+                      
+                      localStorage.setItem('savedConversions', JSON.stringify(migratedData));
+                  }
+              } catch (e) {
+                  console.warn('Failed to migrate guest data:', e);
+                  // Only clear if it's a serialization error
+                  if (e.message && (e.message.includes('JSON') || e.message.includes('toJSON'))) {
+                      localStorage.removeItem('savedConversions');
+                  }
+              }
+          },
          
-         getAllConversionResults() {
-             return this.showResults || {};
-         },
+getAllConversionResults() {
+              if (!this.showResults || typeof this.showResults !== 'object') {
+                  return {};
+              }
+              
+              // Extract the actual value from the proxy and create a clean copy
+              try {
+                  return JSON.parse(JSON.stringify(this.showResults));
+              } catch (e) {
+                  console.warn('Failed to serialize conversion results:', e);
+                  return {};
+              }
+          },
          
-         isConversionSaved() {
-             if (!this.dateInput) return false;
-             
-             const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
-             return savedConversions.some(item => item.original_input === this.dateInput);
-         },
+isConversionSaved() {
+              if (!this.dateInput) return false;
+              
+              try {
+                  const savedConversions = JSON.parse(localStorage.getItem('savedConversions') || '[]');
+                  return savedConversions.some(item => item.original_input === String(this.dateInput));
+              } catch (e) {
+                  console.warn('Failed to check saved conversions:', e);
+                  return false;
+              }
+          },
          
-         handleGuestSave() {
-             const savedConversions = JSON.parse(localStorage.getItem('savedConversions')) || [];
-             
-             // Check if already saved
-             if (this.isConversionSaved()) {
-                 return; // Already saved, do nothing
-             }
-             
-             // Check limit
-             if (savedConversions.length >= 3) {
-                 this.showSaveLimitNotification = true;
-                 return;
-             }
-             
-             try {
-                 const allResults = this.getAllConversionResults();
-                 
-                 const newConversion = {
-                     id: Date.now(),
-                     original_input: this.dateInput,
-                     conversion_data: JSON.parse(JSON.stringify(allResults)),
-                     created_at: new Date().toISOString()
-                 };
-                 
-                 savedConversions.unshift(newConversion);
-                 localStorage.setItem('savedConversions', JSON.stringify(savedConversions.slice(0, 3)));
-                 window.dispatchEvent(new CustomEvent('new-guest-conversion', { detail: { conversion: newConversion }}));
-                 
-                 // Force Alpine reactivity update for button state
-                 this.$nextTick(() => {
-                     // Button will re-evaluate isConversionSaved() and show "Saved"
-                 });
-             } catch (error) {
-                 console.error('Failed to save guest conversion:', error);
-             }
-         }
+handleGuestSave() {
+              try {
+                  const savedConversions = JSON.parse(localStorage.getItem('savedConversions') || '[]');
+                  
+                  if (this.isConversionSaved()) {
+                      return;
+                  }
+                  
+                  if (savedConversions.length >= 3) {
+                      this.showSaveLimitNotification = true;
+                      return;
+                  }
+                  
+                  // Get clean conversion results (no proxies)
+                  const allResults = this.getAllConversionResults();
+                  
+                  const newConversion = {
+                      id: Date.now(),
+                      original_input: String(this.dateInput),
+                      conversion_data: allResults,
+                      created_at: new Date().toISOString()
+                  };
+                  
+                  savedConversions.unshift(newConversion);
+                  localStorage.setItem('savedConversions', JSON.stringify(savedConversions.slice(0, 3)));
+                  
+                  window.dispatchEvent(new CustomEvent('new-guest-conversion', { 
+                      detail: { conversion: newConversion }
+                  }));
+                  
+                  this.$nextTick(() => {
+                      // Force reactivity update
+                  });
+              } catch (error) {
+                  console.error('Failed to save guest conversion:', error);
+                  
+                  // If the error is related to serialization, clear corrupted data
+                  if (error.message && (error.message.includes('toJSON') || error.message.includes('circular'))) {
+                      console.warn('Clearing potentially corrupted localStorage data');
+                      localStorage.removeItem('savedConversions');
+                  }
+              }
+          }
       }"
       @save-guest-conversion.window="handleGuestSave()">
 
