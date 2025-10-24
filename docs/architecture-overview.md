@@ -17,17 +17,20 @@
 
 ## Application Overview
 
-EpochBridge is a comprehensive calendar conversion platform built using the TALL Stack (Tailwind CSS, Alpine.js, Livewire, Laravel) architecture. The application supports 15+ historical and modern calendar systems with complete user management and conversion history features.
+EpochBridge is a comprehensive calendar conversion platform built using the TALL Stack (Tailwind CSS, Alpine.js, Livewire, Laravel) architecture. The application supports 19 calendar systems (15+ historical and modern calendars plus technical formats) with complete user management, persistent conversion history for both authenticated and guest users, and seamless data migration.
 
 ### Core Purpose
-- **Primary Function**: Universal calendar conversion between 15+ calendar systems including modern, historical, and ancient calendars
+- **Primary Function**: Universal calendar conversion between 19 calendar systems including modern, historical, ancient calendars, and technical formats
 - **Target Users**: Historians, developers, researchers, genealogists, and anyone working with diverse calendar systems
 - **Key Features**: 
-  - Real-time conversion between 15+ calendar systems
+  - Real-time conversion between 19 calendar systems
   - Historical accuracy with astronomical calculations
-  - User conversion management and history
+  - Persistent conversion storage for authenticated and guest users
+  - Guest data migration to database on authentication
+  - Complete calendar data storage (all 19 systems per conversion)
   - Clipboard integration for easy data export
   - Comprehensive authentication and user profiles
+  - Date input tracking for smart save state management
 
 ## Technology Stack
 
@@ -96,14 +99,14 @@ MySQL Database
 The presentation layer handles user interface and user experience through:
 
 #### Livewire Volt Components
-- **Landing Page**: `livewire/landing.blade.php` - Main date conversion interface
+- **Landing Page**: `livewire/landing.blade.php` - Main date conversion interface with guest data migration
 - **Modular Components**: `livewire/components/*.blade.php` - Extracted sections:
-  - `calendar-input-section.blade.php` - Date input with validation and error handling
+  - `calendar-input-section.blade.php` - Date input with validation, error handling, and date tracking
   - `calendar-quick-actions.blade.php` - Today/Yesterday/Tomorrow navigation
-  - `calendar-results-grid.blade.php` - Main conversion display with lazy loading
+  - `calendar-results-grid.blade.php` - Main conversion display with immediate loading (all 19 calendars)
   - `calendar-search-filter.blade.php` - Calendar system filtering interface
-  - `saved-conversions-section.blade.php` - User history management
-  - `saved-conversion-item.blade.php` - Individual saved conversion display
+  - `saved-conversions-section.blade.php` - User history management with database/localStorage integration
+  - `saved-conversion-item.blade.php` - Individual saved conversion display with client-side rendering and table layout
 - **Authentication**: `livewire/auth/*.blade.php` - Login, register, password reset
 - **Settings**: `livewire/settings/*.blade.php` - User profile and preferences
 - **Dashboard**: `dashboard.blade.php` - User dashboard (traditional Blade)
@@ -208,7 +211,7 @@ class DateTimeConverterService
 {
     public function convert(string $dateString): array
     {
-        // Converts dates between 15+ calendar systems
+        // Converts dates between 19 calendar systems
         // Returns: comprehensive conversion data with caching
         // Includes: gregorian, jalali, unix, iso8601, all supported calendars
     }
@@ -216,7 +219,7 @@ class DateTimeConverterService
 ```
 
 **Features**:
-- Universal conversion between 15+ calendar systems
+- Universal conversion between 19 calendar systems
 - Input validation and error handling
 - Multi-format date conversion with caching
 - Calendar system categorization (modern, historical, ancient, technical)
@@ -472,7 +475,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
    - Persian month/day names
    - Cultural date formatting
 
-#### 15+ Calendar Service Architecture
+#### Calendar Service Architecture (15+ Calendars)
 ```
 app/Services/
 ├── DateTimeConverterService.php    # Main orchestrator
@@ -514,7 +517,7 @@ Input validation & normalization
     ↓
 Julian Day Number calculation (universal backbone)
     ↓
-Parallel conversion to all 15+ calendar systems:
+Parallel conversion to all 19 calendar systems (15+ calendars + technical formats):
 ├── Modern Calendars (Gregorian, Persian, Hebrew, Islamic)
 ├── Historical Calendars (Julian calendar, French Republican, Coptic, Ethiopian, Egyptian)
 ├── Ancient Calendars (Babylonian, Assyrian, Ancient Macedonian, Mayan)
@@ -724,11 +727,18 @@ users
 saved_conversions
 ├── id (bigint, primary key)
 ├── user_id (bigint, foreign key to users.id, nullable) # Null for guest conversions
-├── conversion_data (json)                              # Full conversion results
-├── input_date (varchar)                               # Original input date
-├── created_at (timestamp)
-└── updated_at (timestamp)
+├── conversion_data (json)                              # Complete conversion results (all 19 calendars)
+├── input_date (varchar)                               # Original input date for tracking
+├── created_at (timestamp)                             # Conversion save timestamp
+├── updated_at (timestamp)
 ```
+
+**Features**:
+- Guest conversions stored with `user_id = null` for guest users
+- Complete calendar data in JSON format including all 19 calendar systems
+- Input date tracking for save state management
+- Automatic migration from localStorage to database on user authentication
+- Supports both authenticated and guest user workflows
 
 #### Japanese Eras Table
 ```sql
@@ -844,17 +854,74 @@ resources/views/flux/
 - **Touch-friendly interfaces** for mobile devices
 
 ### State Management
-**Client-side**: Alpine.js reactive data
+**Client-side**: Alpine.js reactive data with method invocation
 **Server-side**: Livewire component state
-**Synchronization**: Livewire entanglement
+**Synchronization**: Livewire entanglement and event listeners
+**Guest Storage**: Browser localStorage for unauthenticated users
 
 ```javascript
-// Alpine.js state management
+// Alpine.js state management with proper method invocation
 x-data="{
     showResults: @entangle('conversionResults').live,
-    inputValue: @entangle('dateInput').live
+    inputValue: @entangle('dateInput').live,
+    savedConversions: [],
+    
+    // Guest conversion management
+    loadGuestConversions() {
+        const stored = localStorage.getItem('guestConversions');
+        this.savedConversions = stored ? JSON.parse(stored) : [];
+    },
+    
+    saveGuestConversion(data) {
+        this.savedConversions.unshift(data);
+        localStorage.setItem('guestConversions', JSON.stringify(this.savedConversions));
+    }
 }"
+
+// Livewire event handling
+on('converted', function ($data) {
+    // Handle conversion results and update save state
+});
 ```
+
+### Guest Data Migration Architecture
+
+EpochBridge implements a seamless guest-to-authenticated user data migration system:
+
+**Guest User Flow**:
+1. Conversions saved to browser localStorage
+2. Client-side rendering via Alpine.js
+3. Full 19-calendar data stored in JSON format
+4. Persistent across browser sessions
+
+**Authentication Migration**:
+1. On user login/registration, guest data detected in localStorage
+2. Livewire component automatically migrates conversions to database
+3. `user_id` field populated with authenticated user ID
+4. localStorage cleared after successful migration
+5. User sees complete conversion history immediately
+
+**Implementation Details**:
+```php
+// Landing page component - guest data migration
+public function migrateGuestData(array $guestConversions): void
+{
+    foreach ($guestConversions as $conversion) {
+        SavedConversion::create([
+            'user_id' => auth()->id(),
+            'conversion_data' => $conversion['conversion_data'],
+            'input_date' => $conversion['input_date'],
+            'created_at' => $conversion['created_at'] ?? now(),
+        ]);
+    }
+}
+```
+
+**Benefits**:
+- No data loss when guests create accounts
+- Transparent user experience
+- Encourages user registration
+- Maintains data integrity
 
 ## Testing Architecture
 

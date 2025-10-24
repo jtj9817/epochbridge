@@ -1,11 +1,11 @@
 # EpochBridge
 
-A comprehensive calendar conversion platform built with Laravel 12 and the TALL Stack, supporting 15+ historical and modern calendar systems with complete authentication and user management features.
+A comprehensive calendar conversion platform built with Laravel 12 and the TALL Stack, supporting 19 calendar systems (15+ historical and modern calendars plus technical formats) with complete authentication and user management features.
 
 ## Features
 
 ### Calendar Conversion System
-- **15+ Calendar Systems**: Comprehensive support including:
+- **19 Calendar Systems**: Comprehensive support including:
   - **Modern**: Gregorian, Persian/Jalali, Islamic (Hijri), Hebrew
   - **Historical**: Julian, French Republican (with proleptic support), Coptic, Ethiopian, Egyptian
   - **Ancient**: Babylonian, Assyrian, Ancient Macedonian, Mayan
@@ -17,9 +17,13 @@ A comprehensive calendar conversion platform built with Laravel 12 and the TALL 
 
 ### User Experience
 - **Interactive Landing Page**: Modern interface with comprehensive calendar displays
-- **Conversion Management**: Save and manage conversions (authenticated users) or use local storage (guests)
+- **Conversion Management**: Save and manage conversions with persistent storage
+  - **Authenticated Users**: Database-backed conversion history with full management
+  - **Guest Users**: Browser localStorage persistence with automatic migration on login
+  - **Complete Data Storage**: All 19 calendar systems saved for each conversion
 - **Clipboard Integration**: Copy conversion results with one click
 - **Quick Actions**: Today, Yesterday, Tomorrow buttons for rapid navigation
+- **Date Input Tracking**: Smart save state management based on current date input
 - **Responsive Design**: Optimized for desktop and mobile devices
 
 ### Technical Stack
@@ -369,7 +373,7 @@ tests/
 ### Multi-Calendar Conversion Engine
 The core functionality is powered by `DateTimeConverterService` and 15+ specialized calendar services:
 
-- **Universal Conversion**: Convert between any of the 15+ supported calendar systems
+- **Universal Conversion**: Convert between any of the 19 supported calendar systems
 - **Comprehensive Output**: Detailed components for each calendar including:
   - Year, month name, day, day of week in native scripts
   - English transliterations and romanizations
@@ -388,6 +392,8 @@ The core functionality is powered by `DateTimeConverterService` and 15+ speciali
 - **Timezone Aware**: Consistent processing across time zones
 
 ### Supported Calendar Systems
+
+EpochBridge supports **19 calendar systems** across modern, historical, ancient, and technical formats:
 
 #### Modern Calendars
 - **Gregorian**: International standard civil calendar
@@ -412,24 +418,39 @@ The core functionality is powered by `DateTimeConverterService` and 15+ speciali
 - **Chinese Lunisolar**: Traditional Chinese calendar with astronomical calculations, Meeus algorithms for Sun/Moon ephemerides, ΔT corrections, and dìngqì solar term convention for accurate leap month detection
 - **Japanese Era-based**: Calendar with imperial era names
 
+#### Technical Formats
+- **ISO 8601**: International date/time standard
+- **Julian Day Number**: Astronomical day count (primary conversion backbone)
+- **Modified Julian Day**: Reduced Julian Day variant
+- **Unix Timestamp**: Seconds since Unix epoch (1970-01-01)
+
 ### User Features
-- **Conversion Management**: Authenticated users can save and organize conversion history
-- **Guest Storage**: Non-authenticated users utilize local browser storage
+- **Conversion Management**: Save and organize conversion history with full persistence
+  - **Complete Storage**: All 19 calendar systems saved per conversion
+  - **Date Tracking**: Input date and timestamp fields for accurate history
+  - **Smart State Management**: Automatic save button state based on current date input
+- **Guest Features**: Full functionality without authentication
+  - **Persistent Storage**: Browser localStorage with data migration on login
+  - **Client-Side Rendering**: Fast display of guest conversion history
+  - **Automatic Migration**: Seamless transfer of guest data to database on authentication
 - **Clipboard Integration**: One-click copying of conversion results
-- **Bulk Operations**: Save multiple conversions simultaneously
 - **Search & Filter**: Find saved conversions by date or calendar type
+- **Visual Feedback**: Table layout with custom color theme and optimized spacing
 
 ### Interactive Landing Page
 Located at `resources/views/livewire/landing.blade.php` with modular component architecture:
-- **Comprehensive Display**: All 15+ calendars shown simultaneously using individual calendar cards
+- **Comprehensive Display**: All 19 calendar systems shown simultaneously using individual calendar cards
+- **Immediate Loading**: All calendars loaded instantly without lazy-loading for optimal UX
 - **Modular Design**: Separated into focused components for maintainability:
-  - Calendar input section with validation
+  - Calendar input section with validation and date tracking
   - Quick action buttons (Today, Yesterday, Tomorrow)  
-  - Results grid with lazy loading and filtering
-  - Saved conversions management
+  - Results grid with filtering and complete data display
+  - Saved conversions management with table layout
   - Search and filter functionality
+  - Individual saved conversion items with client-side rendering
 - **Real-time Updates**: Instant conversion with Livewire Volt `on()` event listeners
-- **Visual Design**: Unique styling for each calendar system with cultural icons
+- **Alpine.js Integration**: Proper method invocation for save operations and state management
+- **Visual Design**: Unique styling for each calendar system with cultural icons and custom color theme
 - **Responsive Layout**: Optimized grid system for all device sizes
 - **Loading States**: Smooth UX with skeleton components and loading indicators
 

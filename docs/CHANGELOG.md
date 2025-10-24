@@ -5,6 +5,87 @@ All notable changes to EpochBridge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [October 24, 2025] - Guest Conversion Persistence & UI Refinements
+
+### Added
+- **Guest Conversion Persistence**: Complete localStorage-backed conversion storage for unauthenticated users
+  - All 19 calendar systems saved per conversion for guest users
+  - Client-side rendering via Alpine.js for fast display
+  - Persistent storage across browser sessions
+  - Automatic data migration to database on user authentication
+  - Seamless transition from guest to authenticated user experience
+
+- **Date Input Tracking**: Smart save state management based on current date input
+  - `input_date` field added to SavedConversion model
+  - Real-time tracking of date input for accurate save button state
+  - Enhanced user feedback for save operations
+
+- **Complete Calendar Data Storage**: Expansion from selective to comprehensive calendar saves
+  - All 19 calendar systems now saved per conversion (previously selective)
+  - Full conversion data structure preserved in JSON format
+  - Enhanced data integrity and retrieval capabilities
+
+### Changed
+- **Landing Page Architecture**: Major refactor for improved data handling and performance
+  - Removed lazy-loading in favor of immediate display of all 19 calendars
+  - Improved guest data migration logic with error handling
+  - Enhanced Alpine.js integration with proper method invocation for save operations
+  - Better separation of guest vs authenticated user workflows
+
+- **Saved Conversion Item Component**: Complete redesign with table layout
+  - Replaced card-based layout with compressed table format for better density
+  - Custom color theme applied for improved visual hierarchy
+  - Adjusted header spacing and typography for better readability
+  - Client-side rendering support for guest conversions
+
+- **SavedConversion Model**: Enhanced with legacy field support and date casting
+  - Added `user_id` field for authenticated user association
+  - Legacy field hydration for backward compatibility
+  - Improved date handling with Carbon instances
+  - Better accessor methods for conversion data retrieval
+
+### Fixed
+- **Alpine.js Method Invocation**: Resolved stuck saving button issue
+  - Fixed improper method invocation syntax in Alpine.js components
+  - Proper event handling for save operations
+  - Improved reactivity and state management
+
+- **Guest Conversion Save Scope**: Ensured all 19 calendar systems are saved
+  - Previously only saved subset of calendars
+  - Now includes all modern, historical, ancient, and technical format calendars
+  - Consistent data structure across guest and authenticated saves
+
+- **Date Field Handling**: Improved date validation and storage
+  - Proper Carbon instance usage in tests and models
+  - Enhanced date field assertions in unit tests
+  - Better timezone and malformed date exception handling
+
+### UI/UX Improvements
+- **Visual Design Refinements**:
+  - Custom color theme for saved conversion items
+  - Compressed table layout for better information density
+  - Improved spacing and typography in saved conversion headers
+  - Simplified styling for cleaner presentation
+  - Better visual feedback for save operations
+
+### Technical Improvements
+- **Guest-to-Authenticated Migration Pattern**: Production-ready data migration system
+  - Transparent data transfer on user authentication
+  - No data loss for guest users who create accounts
+  - Maintains data integrity and proper timestamps
+  - Encourages user registration without friction
+
+- **Model Enhancement**: Robust data handling for saved conversions
+  - Factory support for legacy field formats
+  - Comprehensive unit tests for model behavior
+  - Proper relationship definitions (User ↔ SavedConversion)
+  - JSON casting for conversion_data field
+
+### Documentation
+- Updated README.md with guest conversion features and 19 calendar system count
+- Enhanced architecture-overview.md with guest data migration architecture
+- Added detailed documentation for localStorage integration patterns
+
 ## [October 21, 2025] - Chinese Calendar Astronomical Implementation & Performance Optimization
 
 ### Added
