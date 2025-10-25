@@ -47,26 +47,6 @@ mount(function () {
 
 $resolveConverter = static fn (?DateTimeConverterService $service = null) => $service ?? app(DateTimeConverterService::class);
 
-$saveConversion = function (DateTimeConverterService $converter) {
-    if (! Auth::check() || empty($this->conversionResults)) {
-        return;
-    }
-
-    $allResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
-
-    Auth::user()->savedConversions()->create([
-        'original_input' => $this->dateInput,
-        'conversion_data' => $allResults,
-        // Keep old fields for backward compatibility during transition
-        'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
-        'jalali_date' => $this->conversionResults['jalali']['full_date'],
-        'unix_timestamp' => $this->conversionResults['unix'],
-        'iso8601_string' => $this->conversionResults['iso8601'],
-    ]);
-
-    $this->dispatch('conversion-saved');
-};
-
 on([
     'date-selected' => function (string $date, ?DateTimeConverterService $converter = null) use ($resolveConverter) {
         $this->dateInput = $date;
@@ -80,8 +60,25 @@ on([
         $this->searchTerm = $searchTerm;
         $this->selectedTypes = $selectedTypes;
     },
-    'save-conversion' => function (?DateTimeConverterService $converter = null) use ($resolveConverter, $saveConversion) {
-        $saveConversion($resolveConverter($converter));
+    'save-conversion' => function () {
+        if (! Auth::check() || empty($this->conversionResults)) {
+            return;
+        }
+
+        $converter = app(DateTimeConverterService::class);
+        $allResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
+
+        Auth::user()->savedConversions()->create([
+            'original_input' => $this->dateInput,
+            'conversion_data' => $allResults,
+            // Keep old fields for backward compatibility during transition
+            'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
+            'jalali_date' => $this->conversionResults['jalali']['full_date'],
+            'unix_timestamp' => $this->conversionResults['unix'],
+            'iso8601_string' => $this->conversionResults['iso8601'],
+        ]);
+
+        $this->dispatch('conversion-saved');
     },
 ]);
 
