@@ -4,9 +4,9 @@ use App\Models\SavedConversion;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\Computed;
 use Livewire\WithPagination;
 
+use function Livewire\Volt\computed;
 use function Livewire\Volt\on;
 use function Livewire\Volt\state;
 use function Livewire\Volt\uses;
@@ -63,17 +63,15 @@ $normalizeConversions = function (?LengthAwarePaginator $paginator) {
     return tap($paginator)->setCollection($items);
 };
 
-#[Computed]
-public function savedConversions()
-{
+$savedConversions = computed(function () {
     if (! Auth::check()) {
         return null;
     }
-    
+
     return $this->normalizeConversions(
         SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage)
     );
-}
+});
 
 on([
     'conversion-saved' => function () {
@@ -107,7 +105,7 @@ $setPage = function ($url) {
         $parsedUrl = parse_url($url);
         parse_str($parsedUrl['query'] ?? '', $query);
         $page = $query['page'] ?? 1;
-        
+
         // Use Livewire's built-in setPage method
         $this->setPage($page);
         // Refresh computed property
