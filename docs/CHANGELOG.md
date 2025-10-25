@@ -5,6 +5,114 @@ All notable changes to EpochBridge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [October 24, 2025] - Google OAuth Integration
+
+### Added
+- **Google OAuth 2.0 Authentication**: Complete social login integration with Google Sign-In
+  - Laravel Socialite dependency installed and configured
+  - OAuth routes for redirect and callback flows (`/auth/google/redirect`, `/auth/google/callback`)
+  - `SocialAuthController` with comprehensive error handling and logging
+  - Support for OAuth-only accounts (password-less authentication)
+  - Automatic email verification for OAuth users
+  
+- **SocialAccount Model**: New model for managing OAuth provider credentials
+  - Encrypted storage for access tokens and refresh tokens
+  - Token expiration tracking with `isTokenExpired()` helper method
+  - One-to-many relationship with User model
+  - Unique constraint on provider and provider_id combination
+  
+- **Database Schema Extensions**:
+  - `social_accounts` table migration with encrypted token fields
+  - Modified `users` table to support nullable passwords and avatar URLs
+  - Cascade delete for social accounts when users are deleted
+  - Indexed fields for optimal query performance
+
+- **User Model OAuth Extensions**:
+  - `socialAccounts()` relationship method
+  - `hasLinkedProvider()` helper method for checking linked providers
+  - `getLinkedProvider()` method for retrieving specific provider accounts
+  - Avatar field for storing OAuth profile images
+
+- **Google Sign-In UI**: OAuth button added to login page
+  - Material Design Google button with SVG logo
+  - "Or continue with" divider for visual separation
+  - Responsive button styling matching application theme
+
+- **Comprehensive Testing**: Feature tests for OAuth flow
+  - OAuth redirect flow testing
+  - New user creation via OAuth
+  - Account linking for existing users by email
+  - Token update logic for returning OAuth users
+  - Error handling and validation tests
+
+### Changed
+- **User Table Schema**: Password field now nullable to support OAuth-only accounts
+  - Allows users to authenticate exclusively via OAuth providers
+  - Maintains backward compatibility with traditional authentication
+  
+- **Authentication Routes**: Expanded to include OAuth endpoints
+  - Added `social.redirect` route for initiating OAuth flow
+  - Added `social.callback` route for handling OAuth provider callbacks
+  - Provider validation via route constraints (currently limited to 'google')
+
+### Security
+- **Token Encryption**: All OAuth tokens encrypted at rest using Laravel's encrypted casting
+  - Access tokens encrypted in database
+  - Refresh tokens encrypted in database
+  - Tokens hidden from JSON serialization
+  
+- **Provider Validation**: Whitelist-based provider checking
+  - Only allowed providers ('google') can be used
+  - Invalid provider requests return 404
+  
+- **Transaction Safety**: Database transactions for user creation and account linking
+  - Rollback on errors to prevent partial data commits
+  - Ensures data consistency across users and social_accounts tables
+  
+- **Comprehensive Error Logging**: OAuth errors logged with context
+  - IP address tracking for security auditing
+  - Error messages without token exposure
+  - Detailed diagnostics for debugging
+
+- **CSRF Protection**: Socialite's built-in state parameter mechanism
+  - Prevents cross-site request forgery attacks
+  - Automatic state validation on callback
+
+### Configuration
+- **Google OAuth Credentials**: New environment variables required
+  - `GOOGLE_CLIENT_ID`: OAuth 2.0 client ID from Google Cloud Console
+  - `GOOGLE_CLIENT_SECRET`: OAuth 2.0 client secret
+  - `GOOGLE_REDIRECT_URI`: Callback URL (defaults to `/auth/google/callback`)
+
+- **Services Configuration**: Added Google OAuth config to `config/services.php`
+  - Client credentials loaded from environment
+  - Redirect URI with sensible default
+
+### Documentation
+- **Google OAuth Integration Guide**: Comprehensive documentation (`docs/google-oauth-integration.md`)
+  - Architecture overview with component descriptions
+  - Step-by-step setup instructions for Google Cloud Console
+  - Authentication flow diagrams and code examples
+  - Account linking scenarios (new user, existing user, returning user)
+  - Security considerations and best practices
+  - Testing guide with code examples
+  - Troubleshooting section for common issues
+  - Future enhancement suggestions
+
+- **Architecture Documentation Updates**: Enhanced `docs/architecture-overview.md`
+  - Multi-provider authentication system section
+  - OAuth flow documentation with detailed diagrams
+  - SocialAccount model schema and relationships
+  - Security considerations for OAuth integration
+  - Database schema updates with social_accounts table
+
+- **README Updates**: Google OAuth features added to main documentation
+  - OAuth listed in Tech Stack section
+  - Setup instructions for Google credentials
+  - Authentication system overview with OAuth support
+  - Project structure updated with SocialAuthController and SocialAccount model
+  - Testing section updated with OAuth test information
+
 ## [October 24, 2025] - Guest Conversion Persistence & UI Refinements
 
 ### Added
