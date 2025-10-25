@@ -438,14 +438,105 @@ Volt::mount([
 
 This allows both traditional Livewire components and page-level Volt components.
 
-### Authentication with Fortify + Livewire
-All authentication flows use Livewire Volt components:
-- Login: `resources/views/livewire/auth/login.blade.php`
+### Authentication with Fortify + Livewire + Socialite
+All authentication flows use Livewire Volt components with OAuth integration:
+- Login: `resources/views/livewire/auth/login.blade.php` (includes Google Sign-In button)
 - Registration: `resources/views/livewire/auth/register.blade.php`
 - Two-Factor: `resources/views/livewire/auth/two-factor-challenge.blade.php`
 - Password Reset: `resources/views/livewire/auth/reset-password.blade.php`
+- OAuth Controller: `app/Http/Controllers/Auth/SocialAuthController.php`
 
 When modifying authentication flows, maintain the existing Volt pattern with `#[Layout('components.layouts.auth')]` attribute.
+
+#### OAuth Authentication Pattern
+The application uses Laravel Socialite for Google OAuth integration. Key patterns:
+
+**Controller Pattern:**
+```php
+class SocialAuthController extends Controller
+{
+    protected $allowedProviders = ['google'];
+    
+    public function redirectToProvider(string $provider)
+    {
+        $this->validateProvider($provider);
+        return Socialite::driver($provider)
+            ->with(['access_type' => 'offline', 'prompt' => 'consent'])
+            ->redirect();
+    }
+    
+    public function handleProviderCallback(Request $request, string $provider)
+    {
+        // Always wrap in DB transaction
+        DB::beginTransaction();
+        try {
+            $socialUser = Socialite::driver($provider)->stateless()->user();
+            $user = $this->findOrCreateUser($socialUser, $provider);
+            DB::commit();
+            Auth::login($user, true);
+            return redirect()->intended('/dashboard');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('OAuth error', ['provider' => $provider, 'error' => $e->getMessage()]);
+            return redirect()->route('login')->withErrors(['oauth' => 'Authentication failed']);
+        }
+    }
+}
+```
+
+**Model Pattern (SocialAccount):**
+```php
+class SocialAccount extends Model
+{
+    protected $fillable = ['user_id', 'provider', 'provider_id', 'access_token', 'refresh_token', 'expires_in'];
+    
+    protected $hidden = ['access_token', 'refresh_token'];
+    
+    protected function casts(): array
+    {
+        return [
+            'access_token' => 'encrypted',
+            'refresh_token' => 'encrypted',
+            'expires_in' => 'integer',
+        ];
+    }
+}
+```
+
+**User Model OAuth Extensions:**
+```php
+// In User model
+public function socialAccounts(): HasMany
+{
+    return $this->hasMany(SocialAccount::class);
+}
+
+public function hasLinkedProvider(string $provider): bool
+{
+    return $this->socialAccounts()->where('provider', $provider)->exists();
+}
+```
+
+**OAuth Routes:**
+```php
+Route::middleware('guest')->group(function () {
+    Route::prefix('auth')->group(function () {
+        Route::get('{provider}/redirect', [SocialAuthController::class, 'redirectToProvider'])
+            ->name('social.redirect')->where('provider', 'google');
+        Route::get('{provider}/callback', [SocialAuthController::class, 'handleProviderCallback'])
+            ->name('social.callback')->where('provider', 'google');
+    });
+});
+```
+
+**Security Best Practices for OAuth:**
+1. Always encrypt OAuth tokens using encrypted casts
+2. Hide tokens in JSON serialization with `$hidden` property
+3. Use database transactions for user/account creation
+4. Validate provider against whitelist
+5. Require email from OAuth provider
+6. Log OAuth errors with IP tracking (never log tokens)
+7. Use cascade delete on social_accounts foreign key
 
 ### Vite Configuration
 The `vite.config.js` includes:
