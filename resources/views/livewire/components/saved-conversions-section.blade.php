@@ -4,9 +4,17 @@ use App\Models\SavedConversion;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
+use Livewire\WithPagination;
 
 use function Livewire\Volt\on;
 use function Livewire\Volt\state;
+use function Livewire\Volt\uses;
+
+// Use pagination trait
+uses([WithPagination::class]);
+
+state(['perPage' => 10]);
 
 $normalizeConversions = function (?LengthAwarePaginator $paginator) {
     if (! $paginator) {
@@ -55,66 +63,55 @@ $normalizeConversions = function (?LengthAwarePaginator $paginator) {
     return tap($paginator)->setCollection($items);
 };
 
-state([
-    'savedConversions' => fn () => Auth::check()
-        ? $normalizeConversions(SavedConversion::getPaginatedForUser(Auth::id(), 10))
-        : null,
-    'perPage' => 10,
-]);
+#[Computed]
+public function savedConversions()
+{
+    if (! Auth::check()) {
+        return null;
+    }
+    
+    return $this->normalizeConversions(
+        SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage)
+    );
+}
 
 on([
-    'conversion-saved' => function () use ($normalizeConversions) {
-        if (Auth::check()) {
-            $this->savedConversions = $normalizeConversions(
-                SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage)
-            );
-        }
-    },
-    'page-updated' => function ($page) use ($normalizeConversions) {
-        if (Auth::check()) {
-            $this->savedConversions = $normalizeConversions(
-                SavedConversion::forUser(Auth::id())
-                    ->withConversionData()
-                    ->paginate($this->perPage, ['*'], 'page', $page)
-            );
-        }
+    'conversion-saved' => function () {
+        // Refresh computed property by resetting page or forcing re-render
+        unset($this->savedConversions);
     },
 ]);
 
-$deleteConversion = function (int $id) use ($normalizeConversions) {
+$deleteConversion = function (int $id) {
     if (Auth::check()) {
         $conversion = SavedConversion::where('user_id', Auth::id())->find($id);
         if ($conversion) {
             $conversion->delete();
-            // Refresh pagination to maintain correct page counts
-            $this->savedConversions = $normalizeConversions(
-                SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage)
-            );
+            // Refresh computed property
+            unset($this->savedConversions);
         }
     }
 };
 
-$updatedPerPage = function ($perPage) use ($normalizeConversions) {
+$updatedPerPage = function ($perPage) {
     $this->perPage = $perPage;
-    if (Auth::check()) {
-        $this->savedConversions = $normalizeConversions(
-            SavedConversion::getPaginatedForUser(Auth::id(), $this->perPage)
-        );
-    }
+    // Reset to first page when changing per-page value
+    $this->resetPage();
+    // Refresh computed property
+    unset($this->savedConversions);
 };
 
-$setPage = function ($url) use ($normalizeConversions) {
+$setPage = function ($url) {
     if (Auth::check() && $url) {
         // Extract page number from URL
         $parsedUrl = parse_url($url);
         parse_str($parsedUrl['query'] ?? '', $query);
         $page = $query['page'] ?? 1;
-
-        $this->savedConversions = $normalizeConversions(
-            SavedConversion::forUser(Auth::id())
-                ->withConversionData()
-                ->paginate($this->perPage, ['*'], 'page', $page)
-        );
+        
+        // Use Livewire's built-in setPage method
+        $this->setPage($page);
+        // Refresh computed property
+        unset($this->savedConversions);
     }
 };
 
@@ -185,7 +182,7 @@ $setPage = function ($url) use ($normalizeConversions) {
     <!-- Saved Conversions for Authenticated Users -->
     @auth
     <div id="saved-conversions-auth">
-        @if ($savedConversions && $savedConversions->isNotEmpty())
+        @if ($this->savedConversions && $this->savedConversions->isNotEmpty())
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-2xl font-bold text-theme-900 dark:text-theme-50 text-center sm:text-left">
                     Your Saved Conversions
@@ -209,21 +206,21 @@ $setPage = function ($url) use ($normalizeConversions) {
             </div>
             
             <div class="space-y-6">
-                @foreach($savedConversions as $item)
+                @foreach($this->savedConversions as $item)
                     <x-saved-conversion-item :item="$item" wire:key="auth-{{ $item->id }}" />
                 @endforeach
             </div>
             
             <!-- Pagination controls -->
-            @if ($savedConversions->hasPages())
+            @if ($this->savedConversions->hasPages())
                 <div class="flex items-center justify-between mt-8">
                     <div class="text-sm text-theme-600 dark:text-theme-300">
-                        Showing {{ $savedConversions->firstItem() }} to {{ $savedConversions->lastItem() }} of {{ $savedConversions->total() }} conversions
+                        Showing {{ $this->savedConversions->firstItem() }} to {{ $this->savedConversions->lastItem() }} of {{ $this->savedConversions->total() }} conversions
                     </div>
                     
                     <div class="flex items-center gap-2">
                         {{-- Previous Button --}}
-                        @if ($savedConversions->onFirstPage())
+                        @if ($this->savedConversions->onFirstPage())
                             <button 
                                 disabled 
                                 class="px-3 py-2 text-sm border border-theme-300 dark:border-theme-600 rounded-md bg-theme-100 dark:bg-theme-800 text-theme-400 dark:text-theme-500 cursor-not-allowed"
@@ -232,7 +229,7 @@ $setPage = function ($url) use ($normalizeConversions) {
                             </button>
                         @else
                             <button 
-                                wire:click="setPage('{{ $savedConversions->previousPageUrl() }}')"
+                                wire:click="setPage('{{ $this->savedConversions->previousPageUrl() }}')"
                                 class="px-3 py-2 text-sm border border-theme-300 dark:border-theme-600 rounded-md bg-theme-50 dark:bg-theme-700 text-theme-900 dark:text-theme-100 hover:bg-theme-100 dark:hover:bg-theme-600 transition-colors"
                             >
                                 Previous
@@ -240,7 +237,7 @@ $setPage = function ($url) use ($normalizeConversions) {
                         @endif
                         
                         {{-- Page Numbers --}}
-                        @foreach ($savedConversions->links()->elements[0] as $page)
+                        @foreach ($this->savedConversions->links()->elements[0] as $page)
                             @if ($page['url'])
                                 <button 
                                     wire:click="setPage('{{ $page['url'] }}')"
@@ -256,9 +253,9 @@ $setPage = function ($url) use ($normalizeConversions) {
                         @endforeach
                         
                         {{-- Next Button --}}
-                        @if ($savedConversions->hasMorePages())
+                        @if ($this->savedConversions->hasMorePages())
                             <button 
-                                wire:click="setPage('{{ $savedConversions->nextPageUrl() }}')"
+                                wire:click="setPage('{{ $this->savedConversions->nextPageUrl() }}')"
                                 class="px-3 py-2 text-sm border border-theme-300 dark:border-theme-600 rounded-md bg-theme-50 dark:bg-theme-700 text-theme-900 dark:text-theme-100 hover:bg-theme-100 dark:hover:bg-theme-600 transition-colors"
                             >
                                 Next
