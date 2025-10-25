@@ -408,39 +408,78 @@ $action = function () {
 
 ## Authentication Architecture
 
-### Laravel Fortify Integration
+### Multi-Provider Authentication System
+
+EpochBridge implements a comprehensive authentication system supporting both traditional and OAuth-based authentication:
+
+#### Laravel Fortify Integration
 **Configuration**: `config/fortify.php`
 
-Fortify provides:
-- User registration
-- Login/logout
-- Password reset
+Fortify provides traditional authentication:
+- User registration with email/password
+- Login/logout functionality
+- Password reset workflow
 - Email verification
 - Two-factor authentication
-- Password confirmation
+- Password confirmation for sensitive operations
+
+#### Laravel Socialite Integration
+**Configuration**: `config/services.php`
+
+Socialite provides OAuth 2.0 authentication:
+- **Google Sign-In**: OAuth 2.0 integration with Google
+- **Account Linking**: Associate OAuth accounts with existing users
+- **Token Management**: Encrypted storage of access/refresh tokens
+- **Auto-verification**: OAuth users skip email verification
+
+**OAuth Configuration**:
+```php
+'google' => [
+    'client_id' => env('GOOGLE_CLIENT_ID'),
+    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+]
+```
 
 ### Authentication Flow
+
 ```
-1. User Registration
+1. Traditional Registration
    ├── Email verification required
-   ├── Password validation
+   ├── Password validation (bcrypt hashing)
    └── Automatic login after verification
 
-2. Two-Factor Authentication
+2. OAuth Authentication (Google)
+   ├── Redirect to OAuth provider
+   ├── User consent and authorization
+   ├── Callback with authorization code
+   ├── Token exchange (access + refresh tokens)
+   ├── User profile retrieval
+   ├── Account creation or linking
+   └── Automatic login (email pre-verified)
+
+3. Account Linking
+   ├── Existing user + new OAuth provider
+   ├── Multiple OAuth providers per user
+   └── Social account relationship management
+
+4. Two-Factor Authentication
    ├── TOTP (Time-based One-Time Password)
    ├── Recovery codes generation
    └── QR code setup
 
-3. Session Management
+5. Session Management
    ├── Web guard authentication
    ├── Session-based storage
    └── Remember me functionality
 ```
 
 ### Authentication Components
+
+#### Livewire Volt Components
 ```
 livewire/auth/
-├── login.blade.php              # Login form
+├── login.blade.php              # Login form with OAuth buttons
 ├── register.blade.php           # Registration form
 ├── forgot-password.blade.php    # Password reset request
 ├── reset-password.blade.php     # Password reset form
@@ -449,16 +488,106 @@ livewire/auth/
 └── two-factor-challenge.blade.php # 2FA challenge
 ```
 
+#### OAuth Controllers
+```
+app/Http/Controllers/Auth/
+└── SocialAuthController.php     # OAuth provider integration
+    ├── redirectToProvider()     # Initiates OAuth flow
+    ├── handleProviderCallback() # Processes OAuth callback
+    ├── findOrCreateUser()       # User lookup/creation logic
+    └── validateProvider()       # Provider whitelist validation
+```
+
+#### OAuth Routes
+```php
+// OAuth authentication routes
+Route::prefix('auth')->group(function () {
+    Route::get('{provider}/redirect', [SocialAuthController::class, 'redirectToProvider'])
+        ->name('social.redirect')
+        ->where('provider', 'google');
+
+    Route::get('{provider}/callback', [SocialAuthController::class, 'handleProviderCallback'])
+        ->name('social.callback')
+        ->where('provider', 'google');
+});
+```
+
+### Data Models
+
+#### User Model Extensions
+```php
+class User extends Authenticatable
+{
+    use HasApiTokens, HasFactory, Notifiable;
+    use TwoFactorAuthenticatable;
+
+    // OAuth relationships
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    // Helper methods
+    public function hasLinkedProvider(string $provider): bool;
+    public function getLinkedProvider(string $provider): ?SocialAccount;
+}
+```
+
+**Features**:
+- Nullable password field (supports OAuth-only accounts)
+- Avatar URL storage from OAuth providers
+- Email verification auto-set for OAuth users
+
+#### SocialAccount Model
+```php
+class SocialAccount extends Model
+{
+    protected $fillable = [
+        'user_id', 'provider', 'provider_id',
+        'access_token', 'refresh_token', 'expires_in',
+        'avatar', 'nickname'
+    ];
+
+    protected $casts = [
+        'access_token' => 'encrypted',    // Encrypted at rest
+        'refresh_token' => 'encrypted',   // Encrypted at rest
+        'expires_in' => 'integer',
+    ];
+
+    public function user(): BelongsTo;
+    public function isTokenExpired(): bool;
+}
+```
+
+**Security Features**:
+- Encrypted token storage using Laravel's encrypted casting
+- Hidden tokens in JSON serialization
+- Token expiration detection
+
 ### Authorization Structure
-- **Middleware**: `auth`, `verified`, `password.confirm`
+- **Middleware**: `auth`, `verified`, `password.confirm`, `guest`
 - **Guards**: `web` (default)
 - **Route Protection**: Applied at route level
 
 ```php
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Protected routes
+    // Protected routes requiring authentication
+});
+
+Route::middleware('guest')->group(function () {
+    // Public routes (login, register, OAuth)
 });
 ```
+
+### OAuth Security Considerations
+
+1. **Provider Validation**: Whitelist-based provider checking
+2. **State Parameter**: CSRF protection via Socialite's state mechanism
+3. **Token Encryption**: All OAuth tokens encrypted at database level
+4. **Email Validation**: Required from OAuth provider
+5. **Transaction Safety**: Database transactions for user creation
+6. **Error Logging**: Comprehensive logging without exposing tokens
+7. **IP Tracking**: OAuth attempt logging with IP addresses
 
 ## Calendar System Integration
 
@@ -701,6 +830,8 @@ database/migrations/
 ├── 2025_01_16_000000_create_historical_calendar_data_table.php
 ├── 2025_09_02_075243_add_two_factor_columns_to_users_table.php
 ├── 2025_10_07_221538_create_saved_conversions_table.php
+├── 2025_10_24_204329_create_social_accounts_table.php
+├── 2025_10_24_204408_modify_users_table_for_social_auth.php
 └── 2025_11_10_000000_create_mayan_calendar_data_table.php
 ```
 
@@ -713,7 +844,8 @@ users
 ├── name (varchar)
 ├── email (varchar, unique)
 ├── email_verified_at (timestamp, nullable)
-├── password (varchar)
+├── password (varchar, nullable)              # Nullable for OAuth-only accounts
+├── avatar (varchar, nullable)                # Profile avatar from OAuth
 ├── remember_token (varchar, nullable)
 ├── two_factor_secret (text, nullable)        # 2FA secret
 ├── two_factor_recovery_codes (text, nullable) # Recovery codes
@@ -721,6 +853,37 @@ users
 ├── created_at (timestamp)
 └── updated_at (timestamp)
 ```
+
+**OAuth Extensions**:
+- Password is now nullable to support OAuth-only accounts
+- Avatar field stores profile image URL from OAuth providers
+- Email is auto-verified for OAuth users
+
+#### Social Accounts Table
+```sql
+social_accounts
+├── id (bigint, primary key)
+├── user_id (bigint, foreign key to users.id, on delete cascade)
+├── provider (varchar)                        # OAuth provider (e.g., 'google')
+├── provider_id (varchar)                     # Unique ID from provider
+├── access_token (text, encrypted)            # Encrypted OAuth access token
+├── refresh_token (text, nullable, encrypted) # Encrypted OAuth refresh token
+├── expires_in (integer, nullable)            # Token expiration time in seconds
+├── avatar (varchar, nullable)                # Provider avatar URL
+├── nickname (varchar, nullable)              # Provider nickname
+├── created_at (timestamp)
+└── updated_at (timestamp)
+
+Indexes:
+├── UNIQUE INDEX on (provider, provider_id)   # One provider account per user
+└── INDEX on user_id                          # Fast user lookup
+```
+
+**Security Features**:
+- Access and refresh tokens encrypted using Laravel's encrypted casting
+- Unique constraint prevents duplicate provider accounts
+- Cascade delete ensures cleanup when user is deleted
+- Token expiration tracking for refresh logic
 
 #### Saved Conversions Table
 ```sql
