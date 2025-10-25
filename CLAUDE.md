@@ -557,3 +557,6 @@ This enables automatic refresh for Blade file changes and integrates Tailwind CS
 - **Asset Compilation**: Run `npm run build` for production-optimized assets
 - **Caching**: Enable Laravel optimization caches with `php artisan optimize`
 - **Environment**: Ensure `APP_DEBUG=false` and proper cache drivers in production
+
+# ABSOLUTE
+DO NOT READ THE USER'S `.env` FILE.
