@@ -133,6 +133,7 @@ $deleteConversion = function (int $id) {
                 this.saveToLocalStorage();
             }
         }"
+        @delete-guest-conversion.window="deleteSaved($event.detail.id)"
         x-show="savedConversions.length > 0"
         x-cloak
     >
