@@ -173,6 +173,19 @@
                                     <span x-text="cardData.day_of_week"></span>
                                 </template>
                             </td>
+                            <!-- Copy button column -->
+                            <td class="px-4 py-2 w-auto text-right">
+                                <button
+                                    @click="copyValue(cardData.full_date || cardData, cardData.name || system)"
+                                    class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
+                                    title="Copy value"
+                                    aria-label="Copy calendar value to clipboard"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                            </td>
                         </tr>
                     </template>
                 </tbody>
@@ -206,6 +219,19 @@
                                     </td>
                                     <td class="px-4 py-2 w-1/3 text-sm text-[#7E7254]">
                                         {{ $data['day_of_week'] ?? '' }}
+                                    </td>
+                                    <!-- Copy button column -->
+                                    <td class="px-4 py-2 w-auto text-right">
+                                        <button
+                                            @click="copyValue('{{ $data['full_date'] ?? (is_scalar($data) ? $data : 'N/A') }}', '{{ $data['name'] ?? ucfirst(str_replace(['_', '-'], ' ', $system)) }}')"
+                                            class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
+                                            title="Copy value"
+                                            aria-label="Copy calendar value to clipboard"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                        </button>
                                     </td>
                                 </tr>
                             @endif
