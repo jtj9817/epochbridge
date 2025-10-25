@@ -11,6 +11,11 @@
 
 <div
     x-data="{
+        @if($isGuest)
+        // For guest users, make item available in Alpine scope
+        item: {{ json_encode($item ?? []) }},
+        @endif
+        
         // Copy individual calendar value
         copyValue(value, calendarName) {
             if (!navigator.clipboard) {
@@ -30,7 +35,13 @@
 
         // Copy all calendar systems
         copyAll() {
-            const data = {{ $isGuest ? 'item.conversion_data' : 'this.getAllData()' }};
+            @if($isGuest)
+            // For guest users, access Alpine.js reactive data
+            const data = this.item.conversion_data || {};
+            @else
+            // For authenticated users, use server-side data through component method
+            const data = this.getAllData();
+            @endif
             const formatted = this.formatAllData(data);
 
             if (!navigator.clipboard) {
@@ -66,9 +77,15 @@
             return text;
         },
 
-        // Get all data for authenticated users
+        // Get all data for both guest and authenticated users
         getAllData() {
+            @if($isGuest)
+            // For guest users, return the Alpine.js reactive data
+            return this.item.conversion_data || {};
+            @else
+            // For authenticated users, return server-side data
             return @json($conversionData ?? []);
+            @endif
         },
 
         // Show success notification
