@@ -28,9 +28,12 @@ A comprehensive calendar conversion platform built with Laravel 12 and the TALL 
 
 ### Technical Stack
 - **TALL Stack Architecture**: Tailwind CSS 4, Alpine.js, Livewire 3, Laravel 12
-- **Authentication System**: Complete auth flow with Laravel Fortify
+- **Authentication System**: Complete auth flow with Laravel Fortify and OAuth integration
+  - **Google Sign-In**: Seamless authentication with Google OAuth 2.0
+  - **Traditional Login**: Email/password authentication with Fortify
+  - **Account Linking**: Link social accounts to existing user accounts
 - **Two-Factor Authentication**: Enhanced security with recovery codes
-- **Email Verification**: Required for new user accounts
+- **Email Verification**: Required for new user accounts (auto-verified for OAuth)
 - **Modern UI**: Built with Flux UI component library
 - **Livewire Volt**: Single-file components for rapid development
 
@@ -40,6 +43,7 @@ A comprehensive calendar conversion platform built with Laravel 12 and the TALL 
 - **Frontend**: Livewire 3, Alpine.js, Tailwind CSS 4
 - **Database**: MySQL 8.0
 - **Build Tool**: Vite with HMR
+- **OAuth**: Laravel Socialite (Google provider)
 - **Testing**: PestPHP, Laravel Dusk
 - **Containerization**: Laravel Sail (Docker)
 
@@ -72,7 +76,22 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-4. Start the development environment
+4. Configure Google OAuth (optional)
+```bash
+# Add to .env file:
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:8080/auth/google/callback
+```
+
+To obtain Google OAuth credentials:
+1. Visit [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Enable Google+ API
+4. Create OAuth 2.0 credentials
+5. Add authorized redirect URI: `http://localhost:8080/auth/google/callback`
+
+5. Start the development environment
 ```bash
 # Using Laravel Sail (recommended)
 ./vendor/bin/sail up
@@ -81,12 +100,12 @@ php artisan key:generate
 composer run dev
 ```
 
-5. Run migrations
+6. Run migrations
 ```bash
 ./vendor/bin/sail artisan migrate
 ```
 
-6. Start the frontend development server
+7. Start the frontend development server
 ```bash
 npm run dev
 ```
@@ -205,10 +224,12 @@ Use the `test-runner` config to customize paths, file patterns, and per-environm
 ## Architecture
 
 ### Authentication
-- **Laravel Fortify**: Handles all authentication logic
+- **Laravel Fortify**: Handles traditional authentication logic
+- **Laravel Socialite**: OAuth authentication with Google Sign-In
 - **Livewire Volt Components**: Modern single-file components for auth forms
 - **Two-Factor Authentication**: TOTP with recovery codes
-- **Email Verification**: Required for account activation
+- **Email Verification**: Required for account activation (auto-verified for OAuth)
+- **Social Account Linking**: Link multiple OAuth providers to one account
 
 ### TALL Stack Components
 - **Tailwind CSS 4**: Utility-first CSS with `@source` directives
@@ -237,6 +258,8 @@ app/
 │   ├── CalendarValidationException.php   # Date component validation errors
 │   └── TestExecutionException.php        # Test runner execution errors
 ├── Http/Controllers/        # HTTP controllers
+│   └── Auth/               # Authentication controllers
+│       └── SocialAuthController.php    # Google OAuth authentication
 ├── Jobs/                   # Laravel jobs
 │   └── ExecuteTestSuiteJob.php        # Background test suite execution
 ├── Listeners/              # Event listeners
@@ -244,7 +267,8 @@ app/
 │   └── UpdateProgressDisplay.php      # Updates real-time progress displays
 ├── Livewire/               # Livewire components
 ├── Models/                 # Eloquent models
-│   ├── User.php           # User model with saved conversions
+│   ├── User.php           # User model with saved conversions and OAuth
+│   ├── SocialAccount.php  # OAuth provider accounts (encrypted tokens)
 │   ├── SavedConversion.php # User conversion history with date casting
 │   ├── JapaneseEra.php    # Japanese era data
 │   ├── HistoricalCalendarData.php # Ancient calendar reference data
@@ -335,6 +359,8 @@ config/
 database/
 ├── migrations/            # Database schema
 │   ├── *_create_saved_conversions_table.php
+│   ├── *_create_social_accounts_table.php
+│   ├── *_modify_users_table_for_social_auth.php
 │   ├── *_create_japanese_eras_table.php
 │   ├── *_create_historical_calendar_data_table.php
 │   └── *_create_mayan_calendar_data_table.php
@@ -345,6 +371,7 @@ database/
 tests/
 ├── Feature/               # Feature tests
 │   ├── Auth/             # Authentication flow tests
+│   │   └── GoogleOAuthTest.php         # Google OAuth integration tests
 │   ├── Console/          # Console command tests
 │   │   └── InteractiveTestRunnerCommandTest.php # Test runner command tests
 │   ├── Integration/      # Integration workflow tests
@@ -497,9 +524,10 @@ Pre-built component library providing:
 ## Testing
 
 The project uses PestPHP for testing with comprehensive coverage:
-- **Feature Tests**: Authentication flows, settings, dashboard
+- **Feature Tests**: Authentication flows (traditional + OAuth), settings, dashboard
 - **Browser Tests**: Full user interactions with Dusk
 - **Unit Tests**: Individual component testing
+- **OAuth Tests**: Google Sign-In integration with mocked providers
 
 Run the full test suite:
 ```bash
