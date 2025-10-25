@@ -24,6 +24,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar',
+        'email_verified_at',
     ];
 
     /**
@@ -67,5 +69,29 @@ class User extends Authenticatable
     public function savedConversions(): HasMany
     {
         return $this->hasMany(SavedConversion::class)->orderBy('created_at', 'desc');
+    }
+
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    public function hasProviderLinked(string $provider): bool
+    {
+        return $this->socialAccounts()
+            ->where('provider', $provider)
+            ->exists();
+    }
+
+    public function getSocialAccount(string $provider)
+    {
+        return $this->socialAccounts()
+            ->where('provider', $provider)
+            ->first();
+    }
+
+    public function hasPassword(): bool
+    {
+        return !is_null($this->password);
     }
 }
