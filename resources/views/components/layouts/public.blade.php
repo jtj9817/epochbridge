@@ -5,6 +5,7 @@
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800 antialiased">
         {{ $slot }}
+        <x-toast-notification />
         @fluxScripts
     </body>
 </html>
