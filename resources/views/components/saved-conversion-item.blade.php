@@ -9,7 +9,92 @@
     $createdAt = $isGuest ? ($item['created_at'] ?? '') : ($item->created_at ?? null);
 @endphp
 
-<div class="bg-white dark:bg-theme-800 rounded-xl shadow-lg border border-theme-200 dark:border-theme-700 overflow-hidden">
+<div
+    x-data="{
+        // Copy individual calendar value
+        copyValue(value, calendarName) {
+            if (!navigator.clipboard) {
+                this.showFallbackCopy(value);
+                return;
+            }
+
+            navigator.clipboard.writeText(value)
+                .then(() => {
+                    this.showCopySuccess(calendarName);
+                })
+                .catch((err) => {
+                    console.error('Copy failed:', err);
+                    this.showCopyError();
+                });
+        },
+
+        // Copy all calendar systems
+        copyAll() {
+            const data = {{ $isGuest ? 'item.conversion_data' : 'this.getAllData()' }};
+            const formatted = this.formatAllData(data);
+
+            if (!navigator.clipboard) {
+                this.showFallbackCopy(formatted);
+                return;
+            }
+
+            navigator.clipboard.writeText(formatted)
+                .then(() => {
+                    this.showCopySuccess('all calendars');
+                })
+                .catch((err) => {
+                    console.error('Copy failed:', err);
+                    this.showCopyError();
+                });
+        },
+
+        // Format all data for copying
+        formatAllData(data) {
+            let text = 'Input Date: {{ $originalInput }}\n\n';
+
+            if (typeof data === 'object' && data !== null) {
+                Object.entries(data).forEach(([system, cardData]) => {
+                    if (!cardData.error) {
+                        const name = cardData.name || system;
+                        const date = cardData.full_date || (typeof cardData === 'string' ? cardData : 'N/A');
+                        const dow = cardData.day_of_week || '';
+                        text += `${name}: ${date}${dow ? ' (' + dow + ')' : ''}\n`;
+                    }
+                });
+            }
+
+            return text;
+        },
+
+        // Get all data for authenticated users
+        getAllData() {
+            return @json($conversionData ?? []);
+        },
+
+        // Show success notification
+        showCopySuccess(itemName) {
+            // Use Alpine toast or temporary button state
+            this.$dispatch('notify', {
+                message: `Copied ${itemName} to clipboard!`,
+                type: 'success'
+            });
+        },
+
+        // Show error notification
+        showCopyError() {
+            this.$dispatch('notify', {
+                message: 'Failed to copy. Please try again.',
+                type: 'error'
+            });
+        },
+
+        // Fallback for older browsers
+        showFallbackCopy(text) {
+            alert('Please manually copy: ' + text);
+        }
+    }"
+    class="bg-white dark:bg-theme-800 rounded-xl shadow-lg border border-theme-200 dark:border-theme-700 overflow-hidden"
+>
     <!-- Header with centered input date -->
     <div class="bg-[#50493E] p-4 border-b border-theme-200 dark:border-theme-700">
         <div class="flex items-center justify-between">
