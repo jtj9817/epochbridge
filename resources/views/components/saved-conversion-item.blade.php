@@ -1,4 +1,4 @@
-@props(['item', 'isGuest' => false])
+@props(['item', 'isGuest' => false, 'itemData' => null])
 
 @php
     // Get conversion data based on whether it's guest or authenticated
@@ -12,8 +12,8 @@
 <div
     x-data="{
         @if($isGuest)
-        // For guest users, make item available in Alpine scope
-        item: {{ json_encode($item ?? []) }},
+        // For guest users, itemData is passed via Alpine binding ::item-data
+        itemData: {},
         @endif
         
         // Copy individual calendar value
@@ -36,8 +36,8 @@
         // Copy all calendar systems
         copyAll() {
             @if($isGuest)
-            // For guest users, access Alpine.js reactive data
-            const data = this.item.conversion_data || {};
+            // For guest users, use itemData bound from parent
+            const data = this.itemData?.conversion_data || {};
             @else
             // For authenticated users, use server-side data through component method
             const data = this.getAllData();
@@ -80,8 +80,8 @@
         // Get all data for both guest and authenticated users
         getAllData() {
             @if($isGuest)
-            // For guest users, return the Alpine.js reactive data
-            return this.item.conversion_data || {};
+            // For guest users, use itemData bound from parent
+            return this.itemData?.conversion_data || {};
             @else
             // For authenticated users, return server-side data
             return @json($conversionData ?? []);
@@ -145,7 +145,7 @@
 
                 <!-- Delete button -->
                 @if($isGuest)
-                    <button @click="$dispatch('delete-guest-conversion', { id: item.id })" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20" title="Delete conversion">
+                    <button @click="$dispatch('delete-guest-conversion', { id: itemData.id })" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20" title="Delete conversion">
                         <span class="sr-only">Delete</span>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -166,10 +166,10 @@
     <!-- Calendar systems table -->
     @if($isGuest)
         <!-- Client-side rendering for guest users (data in localStorage/Alpine.js) -->
-        <div x-show="item.conversion_data && Object.keys(item.conversion_data).length > 0" class="overflow-x-auto bg-[#13100B]">
+        <div x-show="itemData.conversion_data && Object.keys(itemData.conversion_data).length > 0" class="overflow-x-auto bg-[#13100B]">
             <table class="w-full">
                 <tbody class="divide-y divide-[#50493E]">
-                    <template x-for="[system, cardData] in Object.entries(item.conversion_data)" :key="system">
+                    <template x-for="[system, cardData] in Object.entries(itemData.conversion_data || {})" :key="system">
                         <tr class="hover:bg-[#50493E]/30 transition-colors">
                             <td class="px-4 py-2 w-1/3">
                                 <span class="font-bold text-[#F5D2A5]" x-text="cardData.name || system"></span>
@@ -210,7 +210,7 @@
         </div>
         
         <!-- Fallback for guest users with missing/empty data -->
-        <div x-show="!item.conversion_data || Object.keys(item.conversion_data).length === 0" class="p-4 bg-[#13100B]">
+        <div x-show="!itemData.conversion_data || Object.keys(itemData.conversion_data || {}).length === 0" class="p-4 bg-[#13100B]">
             <p class="text-center text-[#7E7254]">No conversion data available</p>
         </div>
     @else
