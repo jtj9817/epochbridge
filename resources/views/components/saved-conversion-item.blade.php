@@ -48,10 +48,13 @@
             } else if (datasetValue !== undefined) {
                 this.collapsed = datasetValue !== 'false';
             }
+
+            this.syncCollapsedAttr();
         },
 
         toggleCollapsed() {
             this.collapsed = !this.collapsed;
+            this.syncCollapsedAttr();
 
             const hasIndex = this.$el.dataset.index !== undefined;
             const indexValue = hasIndex ? Number(this.$el.dataset.index) : null;
@@ -64,6 +67,13 @@
                     collapsed: this.collapsed
                 });
             }
+        },
+
+        syncCollapsedAttr() {
+            const value = this.collapsed ? 'true' : 'false';
+            this.$el.setAttribute('data-collapsed', value);
+            this.$el.dataset.collapsed = value;
+            this.$el.dataset.initialCollapsed = value;
         },
 
         // Copy individual calendar value
@@ -168,17 +178,6 @@
             alert('Please manually copy: ' + text);
         }
     }"
-    x-effect="
-        if ($el.hasAttribute('data-collapsed')) {
-            const attr = $el.getAttribute('data-collapsed');
-            if (attr !== null) {
-                const next = attr !== 'false';
-                if (next !== collapsed) {
-                    collapsed = next;
-                }
-            }
-        }
-    "
     data-initial-collapsed="{{ $initialCollapsedValue }}"
     data-collapsed="{{ $initialCollapsedValue }}"
     @if($cardIndex !== null)
@@ -194,9 +193,9 @@
         class="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
         role="button"
         tabindex="0"
-        @click="toggleCollapsed()"
-        @keydown.enter.prevent="toggleCollapsed()"
-        @keydown.space.prevent="toggleCollapsed()"
+        x-on:click="toggleCollapsed()"
+        x-on:keydown.enter.prevent="toggleCollapsed()"
+        x-on:keydown.space.prevent="toggleCollapsed()"
         :aria-expanded="(!collapsed).toString()"
         aria-controls="{{ $contentId }}"
     >
@@ -232,9 +231,9 @@
                 </svg>
             </div>
 
-            <div class="flex items-center gap-2" @click.stop>
+            <div class="flex items-center gap-2" x-on:click.stop>
                 <button
-                    @click.stop="copyAll()"
+                    x-on:click.stop="copyAll()"
                     class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     title="Copy all conversions"
                     aria-label="Copy all calendar conversions to clipboard"
@@ -246,7 +245,7 @@
 
                 @if($isGuest)
                     <button
-                        @click.stop="$dispatch('delete-guest-conversion', { id: itemData.id })"
+                        x-on:click.stop="$dispatch('delete-guest-conversion', { id: itemData.id })"
                         class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                         title="Delete conversion"
                     >
@@ -323,7 +322,7 @@
                                 </td>
                                 <td class="px-4 py-2 w-auto text-right">
                                     <button
-                                        @click="copyValue(cardData.full_date || cardData.value || cardData.timestamp || cardData.day_number || cardData.long_count || cardData, cardData.name || system)"
+                                        x-on:click="copyValue(cardData.full_date || cardData.value || cardData.timestamp || cardData.day_number || cardData.long_count || cardData, cardData.name || system)"
                                         class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
                                         title="Copy value"
                                         aria-label="Copy calendar value to clipboard"
@@ -375,7 +374,7 @@
                                         </td>
                                         <td class="px-4 py-2 w-auto text-right">
                                             <button
-                                                @click="copyValue('{{ $data['full_date'] ?? $data['value'] ?? $data['timestamp'] ?? $data['day_number'] ?? $data['long_count'] ?? (is_scalar($data) ? $data : 'N/A') }}', '{{ $data['name'] ?? ucfirst(str_replace(['_', '-'], ' ', $system)) }}')"
+                                                x-on:click="copyValue('{{ $data['full_date'] ?? $data['value'] ?? $data['timestamp'] ?? $data['day_number'] ?? $data['long_count'] ?? (is_scalar($data) ? $data : 'N/A') }}', '{{ $data['name'] ?? ucfirst(str_replace(['_', '-'], ' ', $system)) }}')"
                                                 class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
                                                 title="Copy value"
                                                 aria-label="Copy calendar value to clipboard"
@@ -408,7 +407,7 @@
                                         <td class="px-4 py-2 w-1/3"></td>
                                         <td class="px-4 py-2 w-auto text-right">
                                             <button
-                                                @click="copyValue('{{ $legacyValues['gregorian'] }}', 'Gregorian')"
+                                                x-on:click="copyValue('{{ $legacyValues['gregorian'] }}', 'Gregorian')"
                                                 class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
                                                 title="Copy value"
                                                 aria-label="Copy Gregorian calendar value to clipboard"
@@ -427,7 +426,7 @@
                                         <td class="px-4 py-2 w-1/3"></td>
                                         <td class="px-4 py-2 w-auto text-right">
                                             <button
-                                                @click="copyValue('{{ $legacyValues['jalali'] }}', 'Jalali')"
+                                                x-on:click="copyValue('{{ $legacyValues['jalali'] }}', 'Jalali')"
                                                 class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
                                                 title="Copy value"
                                                 aria-label="Copy Jalali calendar value to clipboard"
@@ -446,7 +445,7 @@
                                         <td class="px-4 py-2 w-1/3"></td>
                                         <td class="px-4 py-2 w-auto text-right">
                                             <button
-                                                @click="copyValue('{{ $legacyValues['unix'] }}', 'Unix')"
+                                                x-on:click="copyValue('{{ $legacyValues['unix'] }}', 'Unix')"
                                                 class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
                                                 title="Copy value"
                                                 aria-label="Copy Unix timestamp to clipboard"
@@ -465,7 +464,7 @@
                                         <td class="px-4 py-2 w-1/3"></td>
                                         <td class="px-4 py-2 w-auto text-right">
                                             <button
-                                                @click="copyValue('{{ $legacyValues['iso8601'] }}', 'ISO 8601')"
+                                                x-on:click="copyValue('{{ $legacyValues['iso8601'] }}', 'ISO 8601')"
                                                 class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
                                                 title="Copy value"
                                                 aria-label="Copy ISO 8601 date to clipboard"
