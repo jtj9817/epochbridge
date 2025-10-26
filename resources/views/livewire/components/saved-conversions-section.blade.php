@@ -157,13 +157,20 @@ $deleteConversion = function (int $id) {
         id="saved-conversions-guest"
         x-data="{
             savedConversions: [],
+            collapsedStates: {},
             
             init() {
                 this.loadSavedConversions();
+                this.loadCollapsedStates();
+                this.pruneCollapsedStates();
+                this.saveCollapsedStates();
+
                 window.addEventListener('new-guest-conversion', event => {
                     this.savedConversions.unshift(event.detail.conversion);
                     this.savedConversions = this.savedConversions.slice(0, 3);
                     this.saveToLocalStorage();
+                    this.pruneCollapsedStates();
+                    this.saveCollapsedStates();
                 });
             },
             
@@ -176,12 +183,81 @@ $deleteConversion = function (int $id) {
                 } catch (e) {
                     console.warn('Failed to load guest conversions:', e);
                     this.savedConversions = [];
+                } finally {
+                    this.pruneCollapsedStates();
+                    this.saveCollapsedStates();
+                }
+            },
+
+            loadCollapsedStates() {
+                try {
+                    const stored = localStorage.getItem('conversionCollapsedStates');
+                    this.collapsedStates = stored ? JSON.parse(stored) : {};
+                } catch (e) {
+                    console.warn('Failed to load collapsed states:', e);
+                    this.collapsedStates = {};
+                }
+            },
+
+            saveCollapsedStates() {
+                try {
+                    localStorage.setItem('conversionCollapsedStates', JSON.stringify(this.collapsedStates));
+                } catch (e) {
+                    console.warn('Failed to persist collapsed states:', e);
+                }
+            },
+
+            stateKey(item, index) {
+                if (item && item.id !== undefined && item.id !== null) {
+                    return `id-${item.id}`;
+                }
+                if (item && item.created_at) {
+                    return `created-${item.created_at}`;
+                }
+                return `index-${index}`;
+            },
+
+            isCollapsed(item, index) {
+                const key = this.stateKey(item, index);
+                return this.collapsedStates[key] !== false;
+            },
+
+            pruneCollapsedStates() {
+                const activeKeys = new Set(this.savedConversions.map((item, idx) => this.stateKey(item, idx)));
+
+                Object.keys(this.collapsedStates).forEach(key => {
+                    if (!activeKeys.has(key)) {
+                        delete this.collapsedStates[key];
+                    }
+                });
+            },
+
+            handleCollapsedEvent(detail) {
+                if (!detail) {
+                    return;
+                }
+
+                const { id, index, collapsed } = detail;
+                let key = null;
+
+                if (id !== null && id !== undefined && id !== '') {
+                    key = `id-${id}`;
+                } else if (typeof index === 'number' && index >= 0) {
+                    const item = this.savedConversions[index];
+                    key = item ? this.stateKey(item, index) : `index-${index}`;
+                }
+
+                if (key !== null) {
+                    this.collapsedStates[key] = collapsed;
+                    this.saveCollapsedStates();
                 }
             },
             
             saveToLocalStorage() {
                 try {
                     localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
+                    this.pruneCollapsedStates();
+                    this.saveCollapsedStates();
                 } catch (e) {
                     console.warn('Failed to save guest conversions:', e);
                     // Handle localStorage quota exceeded
@@ -189,6 +265,8 @@ $deleteConversion = function (int $id) {
                         // Keep only the most recent conversion
                         this.savedConversions = this.savedConversions.slice(0, 1);
                         localStorage.setItem('savedConversions', JSON.stringify(this.savedConversions));
+                        this.pruneCollapsedStates();
+                        this.saveCollapsedStates();
                     }
                 }
             },
@@ -198,6 +276,7 @@ $deleteConversion = function (int $id) {
                 this.saveToLocalStorage();
             }
         }"
+        @saved-conversion-collapsed.window="handleCollapsedEvent($event.detail)"
         @delete-guest-conversion.window="deleteSaved($event.detail.id)"
         x-show="savedConversions.length > 0"
         x-cloak
@@ -206,8 +285,16 @@ $deleteConversion = function (int $id) {
             Your Saved Conversions
         </h2>
         <div class="space-y-6">
-            <template x-for="item in savedConversions" :key="item.id">
-                <x-saved-conversion-item :item="null" is-guest ::item-data="item" />
+            <template x-for="(item, itemIndex) in savedConversions" :key="item && item.id ? item.id : itemIndex">
+                <x-saved-conversion-item
+                    :item="null"
+                    is-guest
+                    ::item-data="item"
+                    x-bind:data-collapsed="isCollapsed(item, itemIndex) ? 'true' : 'false'"
+                    x-bind:data-initial-collapsed="isCollapsed(item, itemIndex) ? 'true' : 'false'"
+                    x-bind:data-index="itemIndex"
+                    x-bind:data-conversion-id="item && item.id ? item.id : null"
+                />
             </template>
         </div>
     </div>
