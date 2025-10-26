@@ -65,10 +65,18 @@
 
             if (typeof data === 'object' && data !== null) {
                 Object.entries(data).forEach(([system, cardData]) => {
-                    if (!cardData.error) {
-                        const name = cardData.name || system;
-                        const date = cardData.full_date || (typeof cardData === 'string' ? cardData : 'N/A');
-                        const dow = cardData.day_of_week || '';
+                    if (!cardData?.error) {
+                        const name = cardData?.name || system;
+                        const isObject = typeof cardData === 'object' && cardData !== null;
+                        const date = isObject
+                            ? cardData.full_date
+                                || cardData.value
+                                || cardData.timestamp
+                                || cardData.day_number
+                                || cardData.long_count
+                                || 'N/A'
+                            : (cardData ?? 'N/A');
+                        const dow = isObject ? (cardData.day_of_week || '') : '';
                         text += `${name}: ${date}${dow ? ' (' + dow + ')' : ''}\n`;
                     }
                 });
@@ -178,11 +186,23 @@
                                 <template x-if="cardData.full_date">
                                     <span x-text="cardData.full_date"></span>
                                 </template>
-                                <template x-if="!cardData.full_date && typeof cardData === 'object'">
-                                    <span class="text-[#7E7254]">Complex data</span>
+                                <template x-if="!cardData.full_date && cardData.value">
+                                    <span x-text="cardData.value"></span>
                                 </template>
-                                <template x-if="!cardData.full_date && typeof cardData !== 'object'">
+                                <template x-if="!cardData.full_date && !cardData.value && cardData.timestamp">
+                                    <span x-text="cardData.timestamp"></span>
+                                </template>
+                                <template x-if="!cardData.full_date && !cardData.value && !cardData.timestamp && cardData.day_number">
+                                    <span x-text="cardData.day_number"></span>
+                                </template>
+                                <template x-if="!cardData.full_date && !cardData.value && !cardData.timestamp && !cardData.day_number && cardData.long_count">
+                                    <span x-text="cardData.long_count"></span>
+                                </template>
+                                <template x-if="!cardData.full_date && !cardData.value && !cardData.timestamp && !cardData.day_number && !cardData.long_count && typeof cardData !== 'object'">
                                     <span x-text="cardData"></span>
+                                </template>
+                                <template x-if="!cardData.full_date && !cardData.value && !cardData.timestamp && !cardData.day_number && !cardData.long_count && typeof cardData === 'object'">
+                                    <span class="text-[#7E7254]">N/A</span>
                                 </template>
                             </td>
                             <td class="px-4 py-2 w-1/3 text-sm text-[#7E7254]">
@@ -193,7 +213,7 @@
                             <!-- Copy button column -->
                             <td class="px-4 py-2 w-auto text-right">
                                 <button
-                                    @click="copyValue(cardData.full_date || cardData, cardData.name || system)"
+                                    @click="copyValue(cardData.full_date || cardData.value || cardData.timestamp || cardData.day_number || cardData.long_count || cardData, cardData.name || system)"
                                     class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
                                     title="Copy value"
                                     aria-label="Copy calendar value to clipboard"
@@ -228,10 +248,18 @@
                                     <td class="px-4 py-2 w-1/3 text-[#CDB586]">
                                         @if(isset($data['full_date']))
                                             {{ $data['full_date'] }}
+                                        @elseif(isset($data['value']))
+                                            {{ $data['value'] }}
+                                        @elseif(isset($data['timestamp']))
+                                            {{ $data['timestamp'] }}
+                                        @elseif(isset($data['day_number']))
+                                            {{ $data['day_number'] }}
+                                        @elseif(isset($data['long_count']))
+                                            {{ $data['long_count'] }}
                                         @elseif(is_scalar($data))
                                             {{ $data }}
                                         @else
-                                            <span class="text-[#7E7254]">Complex data</span>
+                                            <span class="text-[#7E7254]">N/A</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-2 w-1/3 text-sm text-[#7E7254]">
@@ -240,7 +268,7 @@
                                     <!-- Copy button column -->
                                     <td class="px-4 py-2 w-auto text-right">
                                         <button
-                                            @click="copyValue('{{ $data['full_date'] ?? (is_scalar($data) ? $data : 'N/A') }}', '{{ $data['name'] ?? ucfirst(str_replace(['_', '-'], ' ', $system)) }}')"
+                                            @click="copyValue('{{ $data['full_date'] ?? $data['value'] ?? $data['timestamp'] ?? $data['day_number'] ?? $data['long_count'] ?? (is_scalar($data) ? $data : 'N/A') }}', '{{ $data['name'] ?? ucfirst(str_replace(['_', '-'], ' ', $system)) }}')"
                                             class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
                                             title="Copy value"
                                             aria-label="Copy calendar value to clipboard"

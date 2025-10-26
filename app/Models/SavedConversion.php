@@ -141,6 +141,28 @@ class SavedConversion extends Model
     }
 
     /**
+     * Get Julian Day Number with backward compatibility.
+     */
+    public function getJulianDayAttribute($value)
+    {
+        return data_get($this->conversion_data, 'julian-day.full_date')
+            ?? data_get($this->conversion_data, 'julian-day.day_number')
+            ?? data_get($this->conversion_data, 'julian_day')
+            ?? $value;
+    }
+
+    /**
+     * Get Modified Julian Day with backward compatibility.
+     */
+    public function getModifiedJulianDayAttribute($value)
+    {
+        return data_get($this->conversion_data, 'modified-julian-day.full_date')
+            ?? data_get($this->conversion_data, 'modified-julian-day.day_number')
+            ?? data_get($this->conversion_data, 'modified_julian_day')
+            ?? $value;
+    }
+
+    /**
      * Get normalized legacy values for display when conversion_data is unavailable.
      */
     public function legacyValues(): array
