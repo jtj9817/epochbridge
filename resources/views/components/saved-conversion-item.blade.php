@@ -29,9 +29,11 @@
     $resolvedConversionKey = $conversionKey
         ?? ($isGuest ? ($item['id'] ?? null) : ($item->id ?? null));
     $conversionKeyValue = $resolvedConversionKey !== null ? (string) $resolvedConversionKey : null;
+    $uniqueIdSuffix = $conversionKeyValue ?? $cardIndex ?? 'guest';
 @endphp
 
 <div
+    id="saved-conversion-item-{{ $uniqueIdSuffix }}"
     x-data="{
         collapsed: true,
         @if($isGuest)
@@ -190,7 +192,8 @@
 >
     <!-- Collapsible header -->
     <div
-        class="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+        id="saved-conversion-header-{{ $uniqueIdSuffix }}"
+        class="bg-[#50493E] p-4 border-b border-theme-200 dark:border-theme-700 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 flex items-center justify-between gap-4"
         role="button"
         tabindex="0"
         x-on:click="toggleCollapsed()"
@@ -199,40 +202,38 @@
         :aria-expanded="(!collapsed).toString()"
         aria-controls="{{ $contentId }}"
     >
-        <div
-            class="flex items-center justify-between gap-4 p-4 transition-colors hover:bg-[#50493E]/15 dark:hover:bg-theme-900/50"
-            :class="collapsed ? 'bg-[#50493E]/10 dark:bg-theme-900/30' : 'bg-[#50493E]/20 dark:bg-theme-900/40'"
-        >
-            <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium uppercase tracking-wide text-[#7E7254] dark:text-theme-300">
-                    Input Date
+        <div class="flex-1 min-w-0">
+            <p id="saved-conversion-label-input-{{ $uniqueIdSuffix }}" class="text-xs font-medium uppercase tracking-wide text-white/70">
+                Input Date
+            </p>
+            <p id="saved-conversion-value-input-{{ $uniqueIdSuffix }}" class="mt-1 font-semibold text-white truncate">
+                {{ $originalInput }}
+            </p>
+            @if($formattedTimestamp)
+                <p id="saved-conversion-timestamp-{{ $uniqueIdSuffix }}" class="mt-1 text-sm text-white/60">
+                    Saved: {{ $formattedTimestamp }}
                 </p>
-                <p class="mt-1 font-semibold text-theme-900 dark:text-theme-50 truncate">
-                    {{ $originalInput }}
-                </p>
-                @if($formattedTimestamp)
-                    <p class="mt-1 text-sm text-[#7E7254] dark:text-theme-300">
-                        Saved: {{ $formattedTimestamp }}
-                    </p>
-                @endif
-            </div>
+            @endif
+        </div>
 
-            <div class="shrink-0 mx-2 text-theme-500 dark:text-theme-200" aria-hidden="true">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    class="w-5 h-5 transition-transform duration-200 ease-in-out"
-                    :class="{ 'rotate-180': !collapsed }"
-                >
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
-            </div>
+        <div class="shrink-0 mx-2 text-white/80" aria-hidden="true">
+            <svg
+                id="saved-conversion-chevron-{{ $uniqueIdSuffix }}"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                class="w-5 h-5 transition-transform duration-200 ease-in-out"
+                :class="{ 'rotate-180': !collapsed }"
+            >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+        </div>
 
-            <div class="flex items-center gap-2" x-on:click.stop>
+        <div class="flex items-center gap-2" x-on:click.stop>
                 <button
+                    id="saved-conversion-btn-copy-all-{{ $uniqueIdSuffix }}"
                     x-on:click.stop="copyAll()"
                     class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     title="Copy all conversions"
@@ -245,6 +246,7 @@
 
                 @if($isGuest)
                     <button
+                        id="saved-conversion-btn-delete-{{ $uniqueIdSuffix }}"
                         x-on:click.stop="$dispatch('delete-guest-conversion', { id: itemData.id })"
                         class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                         title="Delete conversion"
@@ -256,6 +258,7 @@
                     </button>
                 @else
                     <button
+                        id="saved-conversion-btn-delete-{{ $uniqueIdSuffix }}"
                         wire:click="deleteConversion({{ $item->id }})"
                         wire:confirm="Are you sure you want to delete this saved conversion?"
                         class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
@@ -267,7 +270,6 @@
                         </svg>
                     </button>
                 @endif
-            </div>
         </div>
     </div>
 
@@ -285,7 +287,7 @@
     >
         @if($isGuest)
             <div x-show="itemData.conversion_data && Object.keys(itemData.conversion_data || {}).length > 0" class="overflow-x-auto bg-[#13100B]">
-                <table class="w-full">
+                <table id="saved-conversion-table-guest-{{ $uniqueIdSuffix }}" class="w-full">
                     <tbody class="divide-y divide-[#50493E]">
                         <template x-for="[system, cardData] in Object.entries(itemData.conversion_data || {})" :key="system">
                             <tr class="hover:bg-[#50493E]/30 transition-colors">
@@ -344,7 +346,7 @@
         @else
             @if(!empty($conversionData))
                 <div class="overflow-x-auto bg-[#13100B]">
-                    <table class="w-full">
+                    <table id="saved-conversion-table-auth-{{ $item->id }}" class="w-full">
                         <tbody class="divide-y divide-[#50493E]">
                             @foreach($conversionData as $system => $data)
                                 @if(!isset($data['error']))
@@ -398,7 +400,7 @@
                     @endphp
 
                     @if($hasLegacyData)
-                        <table class="w-full">
+                        <table id="saved-conversion-table-legacy-{{ $item->id }}" class="w-full">
                             <tbody class="divide-y divide-[#50493E]">
                                 @if($legacyValues['gregorian'])
                                     <tr class="hover:bg-[#50493E]/30 transition-colors">
