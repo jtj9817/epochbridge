@@ -142,7 +142,7 @@ $deleteConversion = function (int $id) {
         </h2>
         <div class="space-y-6">
             <template x-for="item in savedConversions" :key="item.id">
-                <x-saved-conversion-item :item="null" is-guest x-bind:item="item" />
+                <x-saved-conversion-item :item="null" is-guest ::item-data="item" />
             </template>
         </div>
     </div>
