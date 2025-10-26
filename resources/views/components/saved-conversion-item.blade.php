@@ -84,7 +84,7 @@
             return this.itemData?.conversion_data || {};
             @else
             // For authenticated users, return server-side data
-            return @json($conversionData ?? []);
+            return {{ Js::from($conversionData ?? []) }};
             @endif
         },
 
@@ -166,7 +166,7 @@
     <!-- Calendar systems table -->
     @if($isGuest)
         <!-- Client-side rendering for guest users (data in localStorage/Alpine.js) -->
-        <div x-show="itemData.conversion_data && Object.keys(itemData.conversion_data).length > 0" class="overflow-x-auto bg-[#13100B]">
+        <div x-show="itemData.conversion_data && Object.keys(itemData.conversion_data || {}).length > 0" class="overflow-x-auto bg-[#13100B]">
             <table class="w-full">
                 <tbody class="divide-y divide-[#50493E]">
                     <template x-for="[system, cardData] in Object.entries(itemData.conversion_data || {})" :key="system">
