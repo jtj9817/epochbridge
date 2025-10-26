@@ -193,7 +193,7 @@
     <!-- Collapsible header -->
     <div
         id="saved-conversion-header-{{ $uniqueIdSuffix }}"
-        class="bg-[#50493E] p-4 border-b border-theme-200 dark:border-theme-700 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 flex items-center justify-between gap-4"
+        class="bg-[#50493E] p-1 border-b border-theme-200 dark:border-theme-700 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 flex items-center justify-between gap-4"
         role="button"
         tabindex="0"
         x-on:click="toggleCollapsed()"
@@ -216,15 +216,15 @@
             @endif
         </div>
 
-        <div class="shrink-0 mx-2 text-white/80" aria-hidden="true">
+        <div class="shrink-1 mx-2 text-white/80" aria-hidden="true">
             <svg
                 id="saved-conversion-chevron-{{ $uniqueIdSuffix }}"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.5"
-                class="w-5 h-5 transition-transform duration-200 ease-in-out"
+                stroke-width="3.0"
+                class="w-5 h-5 transition-transform duration-200 ease-in-out color-white"
                 :class="{ 'rotate-180': !collapsed }"
             >
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
