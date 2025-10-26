@@ -42,10 +42,10 @@ class SocialAccount extends Model
 
     public function isTokenExpired(): bool
     {
-        if (!$this->expires_in) {
+        if (! $this->expires_in) {
             return false;
         }
-        
+
         return $this->updated_at->addSeconds($this->expires_in)->isPast();
     }
 }

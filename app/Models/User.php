@@ -92,6 +92,6 @@ class User extends Authenticatable
 
     public function hasPassword(): bool
     {
-        return !is_null($this->password);
+        return ! is_null($this->password);
     }
 }

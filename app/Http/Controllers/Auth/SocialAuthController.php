@@ -49,7 +49,7 @@ class SocialAuthController extends Controller
                 ->withErrors(['oauth' => 'Authentication failed. Please try again.']);
         }
 
-        if (!$socialUser->getEmail()) {
+        if (! $socialUser->getEmail()) {
             return redirect()->route('login')
                 ->withErrors(['oauth' => 'Email not provided by provider. Please use a different method.']);
         }
@@ -87,12 +87,13 @@ class SocialAuthController extends Controller
 
         if ($socialAccount) {
             $this->updateSocialAccount($socialAccount, $socialUser);
+
             return $socialAccount->user;
         }
 
         $user = User::where('email', $socialUser->getEmail())->first();
 
-        if (!$user) {
+        if (! $user) {
             $user = $this->createUser($socialUser);
         }
 
@@ -151,7 +152,7 @@ class SocialAuthController extends Controller
 
     protected function validateProvider(string $provider): void
     {
-        if (!in_array($provider, $this->allowedProviders)) {
+        if (! in_array($provider, $this->allowedProviders)) {
             abort(404, 'Invalid provider');
         }
     }

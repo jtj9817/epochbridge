@@ -9,7 +9,7 @@ test('oauth redirect includes required parameters', function () {
     $response = $this->get(route('social.redirect', 'google'));
 
     $response->assertRedirect();
-    
+
     $location = $response->headers->get('Location');
     expect($location)
         ->toContain('client_id')
@@ -26,16 +26,16 @@ test('user can authenticate with google', function () {
     $response = $this->get(route('social.callback', 'google'));
 
     $response->assertRedirect('/dashboard');
-    
+
     $this->assertAuthenticatedAs(
         User::where('email', '[email protected]')->first()
     );
-    
+
     $this->assertDatabaseHas('social_accounts', [
         'provider' => 'google',
         'provider_id' => '123',
     ]);
-    
+
     $this->assertDatabaseHas('users', [
         'email' => '[email protected]',
         'name' => 'Test User',
@@ -53,13 +53,13 @@ test('existing user can link google account', function () {
     $response = $this->get(route('social.callback', 'google'));
 
     $this->assertAuthenticatedAs($user);
-    
+
     $this->assertDatabaseHas('social_accounts', [
         'user_id' => $user->id,
         'provider' => 'google',
         'provider_id' => 'new_123',
     ]);
-    
+
     expect($user->fresh()->socialAccounts()->count())->toBe(1);
 });
 
@@ -87,7 +87,7 @@ test('missing email from provider is rejected', function () {
 });
 
 test('user cancelled oauth flow is handled', function () {
-    $response = $this->get(route('social.callback', 'google') . '?error=access_denied&error_description=User+cancelled');
+    $response = $this->get(route('social.callback', 'google').'?error=access_denied&error_description=User+cancelled');
 
     $response->assertRedirect('/login');
     $response->assertSessionHasErrors(['oauth']);
@@ -95,7 +95,7 @@ test('user cancelled oauth flow is handled', function () {
 
 test('returning user has tokens updated', function () {
     $user = User::factory()->create(['email' => '[email protected]']);
-    
+
     $socialAccount = SocialAccount::create([
         'user_id' => $user->id,
         'provider' => 'google',
@@ -110,7 +110,7 @@ test('returning user has tokens updated', function () {
     $response = $this->get(route('social.callback', 'google'));
 
     $response->assertRedirect('/dashboard');
-    
+
     $socialAccount->refresh();
     expect($socialAccount->access_token)->toBe('new_token');
     expect($socialAccount->refresh_token)->toBe('new_refresh');

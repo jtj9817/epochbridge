@@ -22,9 +22,9 @@ return new class extends Migration
             $table->string('avatar')->nullable();
             $table->string('nickname')->nullable();
             $table->timestamps();
-            
+
             $table->unique(['provider', 'provider_id'], 'social_accounts_provider_unique');
-            
+
             $table->index('user_id');
         });
     }
