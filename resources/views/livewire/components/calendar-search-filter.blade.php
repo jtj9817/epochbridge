@@ -25,7 +25,20 @@ updated([
 
 ?>
 
-<div class="my-8 max-w-4xl mx-auto" x-data="calendarFilterDebug()">
+<div class="my-8 max-w-4xl mx-auto" x-data="{ 
+    showFilters: false,
+    logCheckboxChange(event) {
+        const selectedTypes = Array.from(
+            this.$root.querySelectorAll('input[type=checkbox][wire\\\\:model\\\\.live=selectedTypes]:checked')
+        ).map(input => input.value);
+        console.info('[CalendarFilter] checkbox toggled', {
+            value: event.target.value,
+            checked: event.target.checked,
+            selectedTypes,
+            timestamp: new Date().toISOString()
+        });
+    }
+}">
     <div class="relative">
         <input
             type="search"
@@ -57,27 +70,7 @@ updated([
 @once
     @push('scripts')
         <script>
-            document.addEventListener('alpine:init', () => {
-                Alpine.data('calendarFilterDebug', () => ({
-                    showFilters: false,
-                    
-                    logCheckboxChange(event) {
-                        // Immediate logging without state storage
-                        const selectedTypes = Array.from(
-                            this.$root.querySelectorAll('input[type="checkbox"][value][wire\\:model\\.live="selectedTypes"]:checked')
-                        ).map((input) => input.value);
-
-                        console.info('[CalendarFilter] checkbox toggled', {
-                            value: event.target.value,
-                            checked: event.target.checked,
-                            selectedTypes,
-                            timestamp: new Date().toISOString()
-                        });
-                    }
-                }));
-            });
-
-            // Listen to Livewire events globally (outside Alpine component)
+            // Listen to Livewire events globally
             document.addEventListener('livewire:init', () => {
                 Livewire.on('filters-updated', (event) => {
                     console.info('[CalendarFilter] filters-updated event received', {
