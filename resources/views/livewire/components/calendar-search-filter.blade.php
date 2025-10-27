@@ -25,20 +25,7 @@ updated([
 
 ?>
 
-<div class="my-8 max-w-4xl mx-auto" x-data="{ 
-    showFilters: false,
-    logCheckboxChange(event) {
-        const selectedTypes = Array.from(
-            this.$root.querySelectorAll('input[type=checkbox][wire\\\\:model\\\\.live=selectedTypes]:checked')
-        ).map(input => input.value);
-        console.info('[CalendarFilter] checkbox toggled', {
-            value: event.target.value,
-            checked: event.target.checked,
-            selectedTypes,
-            timestamp: new Date().toISOString()
-        });
-    }
-}">
+<div class="my-8 max-w-4xl mx-auto" x-data="{ showFilters: false }">
     <div class="relative">
         <input
             type="search"
@@ -59,27 +46,10 @@ updated([
         <div x-show="showFilters" x-transition class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
             @foreach($types as $key => $label)
                 <label class="flex items-center space-x-2 text-sm text-theme-900 dark:text-theme-50">
-                    <input type="checkbox" wire:model.live="selectedTypes" value="{{ $key }}" class="rounded border-theme-300 text-theme-300 focus:ring-theme-300" @change="logCheckboxChange($event)">
+                    <input type="checkbox" wire:model.live="selectedTypes" value="{{ $key }}" class="rounded border-theme-300 text-theme-300 focus:ring-theme-300">
                     <span>{{ $label }}</span>
                 </label>
             @endforeach
         </div>
     </div>
 </div>
-
-@once
-    @push('scripts')
-        <script>
-            // Listen to Livewire events globally
-            document.addEventListener('livewire:init', () => {
-                Livewire.on('filters-updated', (event) => {
-                    console.info('[CalendarFilter] filters-updated event received', {
-                        searchTerm: event.searchTerm ?? event[0] ?? '',
-                        selectedTypes: event.selectedTypes ?? event[1] ?? [],
-                        timestamp: new Date().toISOString()
-                    });
-                });
-            });
-        </script>
-    @endpush
-@endonce

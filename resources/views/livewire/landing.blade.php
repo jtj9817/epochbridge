@@ -59,6 +59,7 @@ on([
     'filters-updated' => function (string $searchTerm, array $selectedTypes) {
         $this->searchTerm = $searchTerm;
         $this->selectedTypes = $selectedTypes;
+        // Do NOT re-dispatch - causes infinite loop with reactive props
     },
     'save-conversion' => function () {
         if (! Auth::check() || empty($this->conversionResults)) {
@@ -88,6 +89,7 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
 
     try {
         $this->conversionResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
+        // Reactive props will automatically update child components - no dispatch needed
     } catch (CalendarConversionException|\InvalidArgumentException $e) {
         $this->conversionError = $e->getMessage();
     } catch (\Illuminate\Validation\ValidationException $e) {
