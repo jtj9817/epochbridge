@@ -73,6 +73,29 @@ $displayResults = computed(function() {
     return array_merge([], $structured, $scalars);
 });
 
+$copyLines = computed(function() {
+    $displayResults = is_array($this->displayResults) ? $this->displayResults : [];
+    $scalarMap = is_array($this->scalarResults) ? $this->scalarResults : [];
+    $lines = [];
+
+    foreach ($displayResults as $key => $data) {
+        if (is_array($data) && ! isset($data['error'])) {
+            $label = $data['name'] ?? ucwords(str_replace('_', ' ', (string) $key));
+            $value = $data['full_date'] ?? json_encode($data);
+
+            $lines[] = "{$label}: {$value}";
+            continue;
+        }
+
+        if (array_key_exists($key, $scalarMap) && is_scalar($data)) {
+            $label = ucwords(str_replace(['_', '-'], ' ', (string) $key));
+            $lines[] = "{$label}: {$data}";
+        }
+    }
+
+    return implode("\n", array_filter($lines));
+});
+
 ?>
 
 <div x-data="{
@@ -112,24 +135,8 @@ $displayResults = computed(function() {
 
         @php
             $displayResults = is_array($this->displayResults) ? $this->displayResults : [];
-            $copyLines = [];
-
-            foreach ($displayResults as $key => $data) {
-                if (is_array($data) && ! isset($data['error'])) {
-                    $label = $data['name'] ?? ucwords(str_replace('_', ' ', (string) $key));
-                    $value = $data['full_date'] ?? json_encode($data);
-
-                    $copyLines[] = "{$label}: {$value}";
-                    continue;
-                }
-
-                if (is_scalar($data)) {
-                    $label = ucwords(str_replace(['_', '-'], ' ', (string) $key));
-                    $copyLines[] = "{$label}: {$data}";
-                }
-            }
-
-            $copyLines = implode("\n", array_filter($copyLines));
+            $scalarResults = is_array($this->scalarResults) ? $this->scalarResults : [];
+            $copyAllPayload = (string) $this->copyLines;
         @endphp
 
         <div class="flex items-center justify-between mb-6">
@@ -138,7 +145,7 @@ $displayResults = computed(function() {
             </h2>
             <div class="flex items-center gap-4">
                 <button
-                    @click="copyToClipboard({{ Js::from($copyLines) }}, 'all')"
+                    @click="copyToClipboard({{ Js::from($copyAllPayload) }}, 'all')"
                     class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline"
                     :class="{ 'text-green-500': copiedFeedback === 'all' }"
                     x-text="copiedFeedback === 'all' ? 'Copied!' : 'Copy All'">
@@ -168,8 +175,7 @@ $displayResults = computed(function() {
                 @foreach($displayResults as $key => $data)
                     @php
                         $shouldRender = is_array($data) && !isset($data['error']);
-                        $scalarMap = is_array($this->scalarResults) ? $this->scalarResults : [];
-                        $allowScalar = array_key_exists($key, $scalarMap) && is_scalar($data);
+                        $allowScalar = array_key_exists($key, $scalarResults) && is_scalar($data);
                     @endphp
                     @if($shouldRender || $allowScalar)
                         @switch($key)
