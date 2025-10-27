@@ -1,6 +1,7 @@
 <?php
 
-use function Livewire\Volt\{state, updated};
+use function Livewire\Volt\state;
+use function Livewire\Volt\updated;
 
 state([
     'searchTerm' => '',
@@ -14,7 +15,7 @@ state([
         'solar' => 'Solar',
         'lunisolar' => 'Lunisolar',
         'system' => 'System',
-    ]
+    ],
 ]);
 
 updated([
@@ -59,34 +60,32 @@ updated([
             document.addEventListener('alpine:init', () => {
                 Alpine.data('calendarFilterDebug', () => ({
                     showFilters: false,
-                    init() {
-                        console.info('[CalendarFilter] Alpine component initialized');
-
-                        this.$watch('$wire.selectedTypes', (value) => {
-                            console.info('[CalendarFilter] $wire.selectedTypes changed', value);
-                        });
-
-                        const logFiltersUpdated = (detail = {}) => {
-                            console.info('[CalendarFilter] filters-updated event payload', detail);
-                            if (Array.isArray(detail.selectedTypes)) {
-                                console.info('[CalendarFilter] filters-updated selectedTypes snapshot', detail.selectedTypes);
-                            }
-                        };
-
-                        if (this.$wire?.on) {
-                            this.$wire.on('filters-updated', logFiltersUpdated);
-                        } else if (window.Livewire?.on) {
-                            window.Livewire.on('filters-updated', logFiltersUpdated);
-                        }
-                    },
+                    
                     logCheckboxChange(event) {
+                        // Immediate logging without state storage
+                        const selectedTypes = Array.from(
+                            this.$root.querySelectorAll('input[type="checkbox"][value][wire\\:model\\.live="selectedTypes"]:checked')
+                        ).map((input) => input.value);
+
                         console.info('[CalendarFilter] checkbox toggled', {
                             value: event.target.value,
                             checked: event.target.checked,
-                            selectedTypes: this.$wire?.selectedTypes ?? null,
+                            selectedTypes,
+                            timestamp: new Date().toISOString()
                         });
-                    },
+                    }
                 }));
+            });
+
+            // Listen to Livewire events globally (outside Alpine component)
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('filters-updated', (event) => {
+                    console.info('[CalendarFilter] filters-updated event received', {
+                        searchTerm: event.searchTerm ?? event[0] ?? '',
+                        selectedTypes: event.selectedTypes ?? event[1] ?? [],
+                        timestamp: new Date().toISOString()
+                    });
+                });
             });
         </script>
     @endpush
