@@ -29,7 +29,7 @@ updated([
     <div class="relative">
         <input
             type="search"
-            wire:model.live.debounce.300ms="searchTerm"
+            wire:model.live="searchTerm"
             placeholder="Search calendars... (e.g., Jalali, Hebrew, Ancient)"
             class="w-full pl-10 pr-4 py-3 border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
         >
@@ -39,11 +39,11 @@ updated([
     </div>
 
     <div class="mt-4">
-        <button @click="showFilters = !showFilters" class="text-sm text-theme-500 dark:text-theme-100 hover:underline">
+        <button type="button" @click="showFilters = !showFilters" class="text-sm text-theme-500 dark:text-theme-100 hover:underline">
             <span x-text="showFilters ? 'Hide Filters' : 'Show Filters'"></span>
         </button>
 
-        <div x-show="showFilters" x-transition class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div x-show="showFilters" x-transition x-cloak class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
             @foreach($types as $key => $label)
                 <label class="flex items-center space-x-2 text-sm text-theme-900 dark:text-theme-50">
                     <input type="checkbox" wire:model.live="selectedTypes" value="{{ $key }}" class="rounded border-theme-300 text-theme-300 focus:ring-theme-300">
