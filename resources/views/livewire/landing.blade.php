@@ -57,8 +57,17 @@ on([
         $this->inputType = $inputType;
     },
     'filters-updated' => function (string $searchTerm, array $selectedTypes) {
+        $normalizedTypes = array_values(array_unique(array_filter(
+            $selectedTypes,
+            static fn ($type) => is_string($type) && $type !== ''
+        )));
+
+        if ($this->searchTerm === $searchTerm && $this->selectedTypes === $normalizedTypes) {
+            return;
+        }
+
         $this->searchTerm = $searchTerm;
-        $this->selectedTypes = $selectedTypes;
+        $this->selectedTypes = $normalizedTypes;
         // Do NOT re-dispatch - causes infinite loop with reactive props
     },
     'save-conversion' => function () {
