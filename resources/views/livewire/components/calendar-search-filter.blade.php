@@ -24,7 +24,7 @@ updated([
 
 ?>
 
-<div class="my-8 max-w-4xl mx-auto" x-data="{ showFilters: false }">
+<div class="my-8 max-w-4xl mx-auto" x-data="calendarFilterDebug()">
     <div class="relative">
         <input
             type="search"
@@ -45,10 +45,49 @@ updated([
         <div x-show="showFilters" x-transition class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
             @foreach($types as $key => $label)
                 <label class="flex items-center space-x-2 text-sm text-theme-900 dark:text-theme-50">
-                    <input type="checkbox" wire:model.live="selectedTypes" value="{{ $key }}" class="rounded border-theme-300 text-theme-300 focus:ring-theme-300">
+                    <input type="checkbox" wire:model.live="selectedTypes" value="{{ $key }}" class="rounded border-theme-300 text-theme-300 focus:ring-theme-300" @change="logCheckboxChange($event)">
                     <span>{{ $label }}</span>
                 </label>
             @endforeach
         </div>
     </div>
 </div>
+
+@once
+    @push('scripts')
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('calendarFilterDebug', () => ({
+                    showFilters: false,
+                    init() {
+                        console.info('[CalendarFilter] Alpine component initialized');
+
+                        this.$watch('$wire.selectedTypes', (value) => {
+                            console.info('[CalendarFilter] $wire.selectedTypes changed', value);
+                        });
+
+                        const logFiltersUpdated = (detail = {}) => {
+                            console.info('[CalendarFilter] filters-updated event payload', detail);
+                            if (Array.isArray(detail.selectedTypes)) {
+                                console.info('[CalendarFilter] filters-updated selectedTypes snapshot', detail.selectedTypes);
+                            }
+                        };
+
+                        if (this.$wire?.on) {
+                            this.$wire.on('filters-updated', logFiltersUpdated);
+                        } else if (window.Livewire?.on) {
+                            window.Livewire.on('filters-updated', logFiltersUpdated);
+                        }
+                    },
+                    logCheckboxChange(event) {
+                        console.info('[CalendarFilter] checkbox toggled', {
+                            value: event.target.value,
+                            checked: event.target.checked,
+                            selectedTypes: this.$wire?.selectedTypes ?? null,
+                        });
+                    },
+                }));
+            });
+        </script>
+    @endpush
+@endonce
