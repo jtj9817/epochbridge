@@ -18,7 +18,20 @@ $filteredResults = computed(function() use ($scalarResultKeys) {
 
     $allResults = $conversionResults;
     $searchTerm = strtolower((string) $this->searchTerm);
-    $selectedTypes = is_array($this->selectedTypes) ? $this->selectedTypes : [];
+    $selectedTypes = collect($this->selectedTypes)
+        ->map(function ($type) {
+            if (! is_string($type)) {
+                return null;
+            }
+
+            $normalized = strtolower(trim($type));
+
+            return $normalized === '' ? null : $normalized;
+        })
+        ->filter()
+        ->unique()
+        ->values()
+        ->all();
     $results = [];
 
     foreach ($allResults as $key => $data) {
@@ -31,7 +44,18 @@ $filteredResults = computed(function() use ($scalarResultKeys) {
         }
 
         $name = strtolower((string) ($data['name'] ?? $key));
-        $tags = is_array($data['tags'] ?? null) ? $data['tags'] : [];
+        $tags = collect($data['tags'] ?? [])
+            ->map(function ($tag) {
+                if (! is_string($tag)) {
+                    return null;
+                }
+
+                return strtolower(trim($tag));
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
         $searchMatch = $searchTerm === '' || str_contains($name, $searchTerm);
         $typeMatch = empty($selectedTypes) || ! empty(array_intersect($selectedTypes, $tags));
