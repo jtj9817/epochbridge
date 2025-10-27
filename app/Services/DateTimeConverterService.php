@@ -117,11 +117,15 @@ class DateTimeConverterService
                 if (isset($this->calendarServices[$key])) {
                     $service = $this->calendarServices[$key];
                     try {
-                        $result[$key] = $service->fromGregorian($carbonDate);
-                        $result[$key]['tags'] = $service->getTags();
-                        $result[$key]['name'] = $service->getName();
+                        $result[$key] = $this->formatCalendarResult(
+                            $service,
+                            $service->fromGregorian($carbonDate)
+                        );
                     } catch (\Throwable $e) {
-                        $result[$key] = ['error' => $e->getMessage()];
+                        $result[$key] = $this->formatCalendarResult(
+                            $service,
+                            ['error' => $e->getMessage()]
+                        );
                     }
                 }
             }
@@ -146,11 +150,15 @@ class DateTimeConverterService
                 }
                 $service = $this->calendarServices[$key];
                 try {
-                    $result[$key] = $service->fromGregorian($carbonDate);
-                    $result[$key]['tags'] = $service->getTags();
-                    $result[$key]['name'] = $service->getName();
+                    $result[$key] = $this->formatCalendarResult(
+                        $service,
+                        $service->fromGregorian($carbonDate)
+                    );
                 } catch (\Throwable $e) {
-                    $result[$key] = ['error' => $e->getMessage()];
+                    $result[$key] = $this->formatCalendarResult(
+                        $service,
+                        ['error' => $e->getMessage()]
+                    );
                 }
             }
 
@@ -243,7 +251,10 @@ class DateTimeConverterService
         $gregorian = $sourceService->toGregorian($sourceDate);
 
         // Convert Gregorian to target
-        return $targetService->fromGregorian($gregorian);
+        return $this->formatCalendarResult(
+            $targetService,
+            $targetService->fromGregorian($gregorian)
+        );
     }
 
     private function convertFromJapaneseEra(string $dateString): Carbon
@@ -276,5 +287,16 @@ class DateTimeConverterService
             'month' => $month,
             'day' => $day,
         ]));
+    }
+
+    /**
+     * Ensure calendar results always include metadata required for filtering.
+     */
+    private function formatCalendarResult(CalendarConversionService $service, array $payload): array
+    {
+        $payload['name'] = $payload['name'] ?? $service->getName();
+        $payload['tags'] = $payload['tags'] ?? $service->getTags();
+
+        return $payload;
     }
 }
