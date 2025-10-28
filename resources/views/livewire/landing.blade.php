@@ -83,20 +83,40 @@ on([
             return;
         }
 
-        $converter = app(DateTimeConverterService::class);
-        $allResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
+        try {
+            $converter = app(DateTimeConverterService::class);
+            $allResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
 
-        Auth::user()->savedConversions()->create([
-            'original_input' => $this->dateInput,
-            'conversion_data' => $allResults,
-            // Keep old fields for backward compatibility during transition
-            'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
-            'jalali_date' => $this->conversionResults['jalali']['full_date'],
-            'unix_timestamp' => $this->conversionResults['unix'],
-            'iso8601_string' => $this->conversionResults['iso8601'],
-        ]);
+            Auth::user()->savedConversions()->create([
+                'original_input' => $this->dateInput,
+                'conversion_data' => $allResults,
+                // Keep old fields for backward compatibility during transition
+                'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
+                'jalali_date' => $this->conversionResults['jalali']['full_date'],
+                'unix_timestamp' => $this->conversionResults['unix'],
+                'iso8601_string' => $this->conversionResults['iso8601'],
+            ]);
 
-        $this->dispatch('conversion-saved');
+            $this->dispatch('conversion-saved');
+            
+            // Dispatch success toast notification
+            $this->dispatch('notify', [
+                'message' => 'Conversion saved successfully!',
+                'type' => 'success'
+            ]);
+        } catch (\Exception $e) {
+            // Dispatch error toast notification
+            $this->dispatch('notify', [
+                'message' => 'Failed to save conversion. Please try again.',
+                'type' => 'error'
+            ]);
+            
+            \Log::error('Failed to save conversion', [
+                'user_id' => Auth::id(),
+                'date_input' => $this->dateInput,
+                'error' => $e->getMessage()
+            ]);
+        }
     },
 ]);
 

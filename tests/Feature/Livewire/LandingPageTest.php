@@ -138,6 +138,57 @@ beforeEach(function () {
                 'difference_label' => '13 days behind Gregorian',
             ],
         ]);
+
+        $mock->shouldReceive('getFullConversionResults')
+            ->andReturnUsing(function (string $dateString, string $inputType = 'gregorian') {
+                return match ($dateString) {
+                    '2024-01-01' => [
+                        'gregorian' => [
+                            'full_date' => '2024-01-01',
+                            'name' => 'Gregorian',
+                            'month_name' => 'January',
+                            'day' => 1,
+                            'day_of_week' => 'Monday',
+                            'year' => 2024,
+                        ],
+                        'jalali' => [
+                            'full_date' => '1402/10/11',
+                            'name' => 'Jalali',
+                            'month_name' => 'Dey',
+                            'month_name_en' => 'Dey',
+                            'day' => 11,
+                            'day_of_week' => 'Doshanbeh',
+                            'day_of_week_en' => 'Monday',
+                            'year' => 1402,
+                        ],
+                        'unix' => 1704067200,
+                        'iso8601' => '2024-01-01T00:00:00+00:00',
+                    ],
+                    default => [
+                        'gregorian' => [
+                            'full_date' => '2024-09-01',
+                            'name' => 'Gregorian',
+                            'month_name' => 'September',
+                            'day' => 1,
+                            'day_of_week' => 'Sunday',
+                            'year' => 2024,
+                        ],
+                        'jalali' => [
+                            'full_date' => '1403/06/11',
+                            'name' => 'Jalali',
+                            'month_name' => 'Shahrivar',
+                            'month_name_en' => 'Shahrivar',
+                            'day' => 11,
+                            'day_of_week' => 'Yekshanbeh',
+                            'day_of_week_en' => 'Sunday',
+                            'year' => 1403,
+                            'tags' => ['solar'],
+                        ],
+                        'unix' => 1725148800,
+                        'iso8601' => '2024-09-01T00:00:00+00:00',
+                    ],
+                };
+            });
     });
 });
 
@@ -244,7 +295,7 @@ it('can save a conversion for an authenticated user', function () {
         ->set('dateInput', '2024-01-01')
         ->call('convertDate')
         ->assertSet('conversionError', '')
-        ->call('saveConversion')
+        ->dispatch('save-conversion')
         ->assertDispatched('conversion-saved');
 
     $this->assertDatabaseHas('saved_conversions', [
@@ -254,11 +305,28 @@ it('can save a conversion for an authenticated user', function () {
     ]);
 });
 
-it('does not save conversion for a guest user via saveConversion method', function () {
+it('does not save conversion for a guest user via save-conversion event', function () {
     Volt::test('landing')
         ->set('dateInput', '2024-01-01')
         ->call('convertDate')
-        ->call('saveConversion');
+        ->dispatch('save-conversion');
 
     $this->assertDatabaseCount('saved_conversions', 0);
+});
+
+it('dispatches success toast when authenticated user saves conversion', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $component = Volt::test('landing')
+        ->set('dateInput', '2024-01-01')
+        ->call('convertDate')
+        ->assertSet('conversionError', '')
+        ->dispatch('save-conversion');
+
+    // Check that conversion-saved event is dispatched (existing functionality)
+    $component->assertDispatched('conversion-saved');
+    
+    // Check that notify event is dispatched (our new toast functionality)
+    $component->assertDispatched('notify');
 });
