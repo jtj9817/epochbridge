@@ -23,6 +23,17 @@
             : $createdAt?->format('M j, Y g:i A');
     }
 
+    $usesLegacyFallback = $isGuest ? false : (bool) ($item->uses_legacy_fallback ?? false);
+    $legacyFallbackData = $isGuest ? [] : ($item->legacy_fallback_data ?? []);
+    $legacyValues = $isGuest ? [] : ($item->legacy_display_values ?? $item->legacyValues());
+    $hasLegacyValues = $isGuest ? false : ($item->has_legacy_values ?? $item->hasLegacyValues());
+
+    if ($usesLegacyFallback) {
+        $conversionData = $legacyFallbackData ?? [];
+    }
+
+    $hasConversionTableData = ! $usesLegacyFallback && ! empty($conversionData);
+
     $contentId = uniqid('saved-conversion-content-');
     $initialCollapsedValue = $initiallyCollapsed ? 'true' : 'false';
     $cardIndex = $index !== null ? (string) $index : null;
@@ -34,6 +45,9 @@
 
 <div
     id="saved-conversion-item-{{ $uniqueIdSuffix }}"
+    @if(!$isGuest && !empty($legacyValues['jalali']))
+        data-legacy-jalali="{{ str_replace('-', '/', $legacyValues['jalali']) }}"
+    @endif
     x-data="{
         collapsed: true,
         @if($isGuest)
@@ -154,7 +168,7 @@
             return this.itemData?.conversion_data || {};
             @else
             // For authenticated users, return server-side data
-            return {{ Js::from($conversionData ?? []) }};
+            return {{ Js::from($usesLegacyFallback ? ($legacyFallbackData ?? []) : ($conversionData ?? [])) }};
             @endif
         },
 
@@ -344,7 +358,7 @@
                 <p class="text-center text-[#7E7254]">No conversion data available</p>
             </div>
         @else
-            @if(!empty($conversionData))
+            @if($hasConversionTableData)
                 <div class="overflow-x-auto bg-[#13100B]">
                     <table id="saved-conversion-table-auth-{{ $item->id }}" class="w-full">
                         <tbody class="divide-y divide-[#50493E]">
@@ -394,17 +408,45 @@
                 </div>
             @else
                 <div class="p-4 bg-[#13100B]">
-                    @php
-                        $legacyValues = $item->legacy_display_values ?? $item->legacyValues();
-                        $hasLegacyData = $item->has_legacy_values ?? $item->hasLegacyValues();
-                    @endphp
-
-                    @if($hasLegacyData)
+                    @if(!empty($legacyFallbackData))
+                        <table id="saved-conversion-table-legacy-{{ $item->id }}" class="w-full">
+                            <tbody class="divide-y divide-[#50493E]">
+                                @foreach($legacyFallbackData as $system => $data)
+                                    @php
+                                        $label = $data['name'] ?? ucfirst(str_replace(['_', '-'], ' ', $system));
+                                        $value = $legacyValues[$system] ?? ($data['full_date'] ?? $data['value'] ?? null);
+                                        if ($system === 'jalali' && is_string($value) && ! str_contains($value, '/')) {
+                                            $value = str_replace('-', '/', $value);
+                                        }
+                                    @endphp
+                                    @if($value)
+                                        <tr class="hover:bg-[#50493E]/30 transition-colors">
+                                            <td class="px-4 py-2 w-1/3"><span class="font-bold text-[#F5D2A5]">{{ $label }}:</span></td>
+                                            <td class="px-4 py-2 w-1/3 text-[#CDB586]">{{ $value }}</td>
+                                            <td class="px-4 py-2 w-1/3 text-[#7E7254]">{{ $data['day_of_week'] ?? '' }}</td>
+                                            <td class="px-4 py-2 w-auto text-right">
+                                                <button
+                                                    x-on:click="copyValue('{{ $value }}', '{{ $label }}')"
+                                                    class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
+                                                    title="Copy value"
+                                                    aria-label="Copy {{ $label }} calendar value to clipboard"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                    </svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @elseif($hasLegacyValues)
                         <table id="saved-conversion-table-legacy-{{ $item->id }}" class="w-full">
                             <tbody class="divide-y divide-[#50493E]">
                                 @if($legacyValues['gregorian'])
                                     <tr class="hover:bg-[#50493E]/30 transition-colors">
-                                        <td class="px-4 py-2 w-1/3"><span class="font-bold text-[#F5D2A5]">Gregorian</span></td>
+                                        <td class="px-4 py-2 w-1/3"><span class="font-bold text-[#F5D2A5]">Gregorian:</span></td>
                                         <td class="px-4 py-2 w-1/3 text-[#CDB586]">{{ $legacyValues['gregorian'] }}</td>
                                         <td class="px-4 py-2 w-1/3"></td>
                                         <td class="px-4 py-2 w-auto text-right">
@@ -423,12 +465,12 @@
                                 @endif
                                 @if($legacyValues['jalali'])
                                     <tr class="hover:bg-[#50493E]/30 transition-colors">
-                                        <td class="px-4 py-2 w-1/3"><span class="font-bold text-[#F5D2A5]">Jalali</span></td>
-                                        <td class="px-4 py-2 w-1/3 text-[#CDB586]">{{ $legacyValues['jalali'] }}</td>
+                                        <td class="px-4 py-2 w-1/3"><span class="font-bold text-[#F5D2A5]">Jalali:</span></td>
+                                        <td class="px-4 py-2 w-1/3 text-[#CDB586]">{{ str_replace('-', '/', $legacyValues['jalali']) }}</td>
                                         <td class="px-4 py-2 w-1/3"></td>
                                         <td class="px-4 py-2 w-auto text-right">
                                             <button
-                                                x-on:click="copyValue('{{ $legacyValues['jalali'] }}', 'Jalali')"
+                                                x-on:click="copyValue('{{ str_replace('-', '/', $legacyValues['jalali']) }}', 'Jalali')"
                                                 class="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
                                                 title="Copy value"
                                                 aria-label="Copy Jalali calendar value to clipboard"
@@ -442,7 +484,7 @@
                                 @endif
                                 @if($legacyValues['unix'])
                                     <tr class="hover:bg-[#50493E]/30 transition-colors">
-                                        <td class="px-4 py-2 w-1/3"><span class="font-bold text-[#F5D2A5]">Unix</span></td>
+                                        <td class="px-4 py-2 w-1/3"><span class="font-bold text-[#F5D2A5]">Unix:</span></td>
                                         <td class="px-4 py-2 w-1/3 text-[#CDB586]">{{ $legacyValues['unix'] }}</td>
                                         <td class="px-4 py-2 w-1/3"></td>
                                         <td class="px-4 py-2 w-auto text-right">
@@ -461,7 +503,7 @@
                                 @endif
                                 @if($legacyValues['iso8601'])
                                     <tr class="hover:bg-[#50493E]/30 transition-colors">
-                                        <td class="px-4 py-2 w-1/3"><span class="font-bold text-[#F5D2A5]">ISO 8601</span></td>
+                                        <td class="px-4 py-2 w-1/3"><span class="font-bold text-[#F5D2A5]">ISO 8601:</span></td>
                                         <td class="px-4 py-2 w-1/3 text-[#CDB586]">{{ $legacyValues['iso8601'] }}</td>
                                         <td class="px-4 py-2 w-1/3"></td>
                                         <td class="px-4 py-2 w-auto text-right">

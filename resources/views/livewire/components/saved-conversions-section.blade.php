@@ -18,12 +18,18 @@ $normalizeConversions = function ($items) {
         }
 
         $legacyValues = $item->legacyValues();
-        $conversionData = $item->conversion_data ?? [];
+        $conversionData = is_array($item->conversion_data) ? $item->conversion_data : [];
+
+        $conversionData = collect($conversionData)
+            ->reject(function ($data) {
+                return is_array($data) && array_key_exists('error', $data);
+            })
+            ->toArray();
 
         $technicalFormats = ['unix', 'julian_day', 'julian-day', 'modified_julian_day', 'modified-julian-day', 'mayan'];
 
         foreach ($technicalFormats as $format) {
-            if (! isset($conversionData[$format])) {
+            if (! array_key_exists($format, $conversionData)) {
                 continue;
             }
 
@@ -59,6 +65,8 @@ $normalizeConversions = function ($items) {
             $conversionData['modified-julian-day'] = $conversionData['modified_julian_day'];
         }
 
+        $usedFallback = false;
+
         if (empty($conversionData)) {
             $fallbackData = array_filter([
                 'gregorian' => $legacyValues['gregorian']
@@ -92,11 +100,18 @@ $normalizeConversions = function ($items) {
             ], fn ($value) => $value !== null && $value !== '');
 
             if (! empty($fallbackData)) {
+                $item->legacy_fallback_data = $fallbackData;
+                $usedFallback = true;
                 $conversionData = $fallbackData;
+            } else {
+                $item->legacy_fallback_data = [];
             }
+        } else {
+            $item->legacy_fallback_data = [];
         }
 
         $item->normalized_conversion_data = $conversionData;
+        $item->uses_legacy_fallback = $usedFallback;
         $item->legacy_display_values = $legacyValues;
         $item->has_legacy_values = $item->hasLegacyValues();
 
