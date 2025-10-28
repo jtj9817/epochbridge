@@ -99,17 +99,25 @@ on([
 
             $this->dispatch('conversion-saved');
             
-            // Dispatch success toast notification
-            $this->dispatch('notify', [
-                'message' => 'Conversion saved successfully!',
-                'type' => 'success'
-            ]);
+            // Dispatch success toast notification to browser
+            $this->js("
+                window.dispatchEvent(new CustomEvent('notify', {
+                    detail: {
+                        message: 'Conversion saved successfully!',
+                        type: 'success'
+                    }
+                }))
+            ");
         } catch (\Exception $e) {
-            // Dispatch error toast notification
-            $this->dispatch('notify', [
-                'message' => 'Failed to save conversion. Please try again.',
-                'type' => 'error'
-            ]);
+            // Dispatch error toast notification to browser
+            $this->js("
+                window.dispatchEvent(new CustomEvent('notify', {
+                    detail: {
+                        message: 'Failed to save conversion. Please try again.',
+                        type: 'error'
+                    }
+                }))
+            ");
             
             \Log::error('Failed to save conversion', [
                 'user_id' => Auth::id(),
