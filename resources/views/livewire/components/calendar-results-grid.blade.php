@@ -18,20 +18,19 @@ $filteredResults = computed(function() use ($scalarResultKeys) {
 
     $allResults = $conversionResults;
     $searchTerm = strtolower((string) $this->searchTerm);
-    $selectedTypes = collect($this->selectedTypes)
-        ->map(function ($type) {
-            if (! is_string($type)) {
-                return null;
-            }
+$rawSelectedTypes = is_array($this->selectedTypes) ? $this->selectedTypes : [];
+$selectedTypes = array_values(array_unique(array_filter(array_map(
+    static function ($type) {
+        if (! is_string($type)) {
+            return null;
+        }
 
-            $normalized = strtolower(trim($type));
+        $normalized = strtolower(trim($type));
 
-            return $normalized === '' ? null : $normalized;
-        })
-        ->filter()
-        ->unique()
-        ->values()
-        ->all();
+        return $normalized === '' ? null : $normalized;
+    },
+    $rawSelectedTypes
+))));
     $results = [];
 
     foreach ($allResults as $key => $data) {
@@ -44,18 +43,19 @@ $filteredResults = computed(function() use ($scalarResultKeys) {
         }
 
         $name = strtolower((string) ($data['name'] ?? $key));
-        $tags = collect($data['tags'] ?? [])
-            ->map(function ($tag) {
+        $rawTags = is_array($data['tags'] ?? null) ? $data['tags'] : [];
+        $tags = array_values(array_unique(array_filter(array_map(
+            static function ($tag) {
                 if (! is_string($tag)) {
                     return null;
                 }
 
-                return strtolower(trim($tag));
-            })
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
+                $normalized = strtolower(trim($tag));
+
+                return $normalized === '' ? null : $normalized;
+            },
+            $rawTags
+        ))));
 
         $searchMatch = $searchTerm === '' || str_contains($name, $searchTerm);
         $typeMatch = empty($selectedTypes) || ! empty(array_intersect($selectedTypes, $tags));

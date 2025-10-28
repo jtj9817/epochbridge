@@ -40,25 +40,31 @@ beforeEach(function () {
         'julian-day' => 2460310,
         'modified-julian-day' => 60309.5,
     ];
+    $this->baseProps = [
+        'conversionResults' => $this->baseResults,
+        'conversionError' => '',
+        'searchTerm' => '',
+        'selectedTypes' => [],
+        'dateInput' => '2024-01-01',
+    ];
 });
 
 it('renders results grid with data', function () {
-    Volt::test('components.calendar-results-grid', ['conversionResults' => $this->baseResults])
+    Volt::test('components.calendar-results-grid', $this->baseProps)
         ->assertSee('Gregorian')
         ->assertSee('Jalali')
         ->assertSee('Unix');
 });
 
 it('shows an error message when passed', function () {
-    Volt::test('components.calendar-results-grid', ['conversionError' => 'Test Error'])
+    Volt::test('components.calendar-results-grid', array_merge($this->baseProps, ['conversionError' => 'Test Error']))
         ->assertSee('Test Error');
 });
 
 it('filters results by search term', function () {
-    Volt::test('components.calendar-results-grid', [
-        'conversionResults' => $this->baseResults,
+    Volt::test('components.calendar-results-grid', array_merge($this->baseProps, [
         'searchTerm' => 'Jalali',
-    ])
+    ]))
         ->assertSee('Jalali')
         ->assertDontSeeText('Gregorian')
         ->assertDontSeeText('Islamic');
@@ -66,10 +72,9 @@ it('filters results by search term', function () {
 
 it('filters results by type', function () {
     // 'islamic' has 'lunar' tag. 'gregorian' and 'jalali' do not.
-    Volt::test('components.calendar-results-grid', [
-        'conversionResults' => $this->baseResults,
+    Volt::test('components.calendar-results-grid', array_merge($this->baseProps, [
         'selectedTypes' => ['lunar'],
-    ])
+    ]))
         ->assertSee('Islamic')
         ->assertDontSeeText('Gregorian')
         ->assertDontSeeText('Jalali')
@@ -78,12 +83,12 @@ it('filters results by type', function () {
         ->assertSee('2024-01-01T00:00:00+00:00'); // ISO8601
 });
 
-it('shows loading skeletons when additional calendars are not loaded', function () {
-    Volt::test('components.calendar-results-grid', [
-        'conversionResults' => $this->baseResults,
-        'additionalCalendarsLoaded' => false,
-    ])
-        ->assertSeeHtmlInOrder(['<div', 'animate-pulse']);
+it('shows an empty state when no calendars match', function () {
+    Volt::test('components.calendar-results-grid', array_merge($this->baseProps, [
+        'selectedTypes' => ['ancient'],
+        'searchTerm' => 'non-existent',
+    ]))
+        ->assertSee('No calendars match your search criteria.');
 });
 
 it('renders french republican calendar details with display format', function () {
@@ -100,7 +105,9 @@ it('renders french republican calendar details with display format', function ()
         ],
     ];
 
-    Volt::test('components.calendar-results-grid', ['conversionResults' => $mockData])
+    Volt::test('components.calendar-results-grid', array_merge($this->baseProps, [
+        'conversionResults' => $mockData,
+    ]))
         ->assertSee('French Republican')
         ->assertSee('16 Fructidor An 232')
         ->assertSee('Quartidi')
@@ -121,7 +128,9 @@ it('renders french republican calendar with paris offset disabled', function () 
         ],
     ];
 
-    Volt::test('components.calendar-results-grid', ['conversionResults' => $mockData])
+    Volt::test('components.calendar-results-grid', array_merge($this->baseProps, [
+        'conversionResults' => $mockData,
+    ]))
         ->assertSee('French Republican')
         ->assertSee('15 Fructidor An 232')
         ->assertSee('Tridi');
@@ -153,11 +162,9 @@ it('renders additional calendar data when loaded', function () {
         ],
     ];
 
-    Volt::test('components.calendar-results-grid', [
-        'conversionResults' => $baseData,
-        'additionalConversionResults' => $additionalData,
-        'additionalCalendarsLoaded' => true,
-    ])
+    Volt::test('components.calendar-results-grid', array_merge($this->baseProps, [
+        'conversionResults' => array_merge($baseData, $additionalData),
+    ]))
         ->assertSee('Julian Calendar')
         ->assertSee('Difference:')
         ->assertSee('13 days behind Gregorian');

@@ -229,6 +229,13 @@ it('updates dateInput when date-selected event is dispatched', function () {
         ->assertSet('dateInput', $today);
 });
 
+it('synchronizes search filters via filters-updated event', function () {
+    Volt::test('landing')
+        ->dispatch('filters-updated', searchTerm: 'Jalali', selectedTypes: ['Solar', 'solar', ''])
+        ->assertSet('searchTerm', 'Jalali')
+        ->assertSet('selectedTypes', ['solar']);
+});
+
 it('can save a conversion for an authenticated user', function () {
     $user = User::factory()->create();
     $this->actingAs($user);

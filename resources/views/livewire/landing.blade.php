@@ -57,10 +57,18 @@ on([
         $this->inputType = $inputType;
     },
     'filters-updated' => function (string $searchTerm, array $selectedTypes) {
-        $normalizedTypes = array_values(array_unique(array_filter(
-            $selectedTypes,
-            static fn ($type) => is_string($type) && $type !== ''
-        )));
+        $normalizedTypes = array_values(array_unique(array_filter(array_map(
+            static function ($type) {
+                if (! is_string($type)) {
+                    return null;
+                }
+
+                $normalized = strtolower(trim($type));
+
+                return $normalized === '' ? null : $normalized;
+            },
+            $selectedTypes
+        ))));
 
         if ($this->searchTerm === $searchTerm && $this->selectedTypes === $normalizedTypes) {
             return;
