@@ -21,3 +21,6 @@ Follow the repository pattern `type: summary` (`feat:`, `fix:`, `docs:`). Keep e
 
 ## Configuration & Security Tips
 Copy `.env.example` to `.env`, then set calendar keys and database credentials before `composer run dev`. Secrets stay out of git—use Sail overrides or Docker secrets instead. If working without Sail, align queue settings in `config/queue.php` and run `php artisan queue:listen --tries=1` locally.
+
+## IMPORTANT
+DO NOT READ THE USER'S `.env` FILE. INSTEAD, ASK FOR PERMISSION TO USE THE `rg` TO VERIFY IF THE `.env` FILE CONTAINS THE TARGET STRING TO LOOK FOR.
