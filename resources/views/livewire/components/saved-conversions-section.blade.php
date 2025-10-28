@@ -20,6 +20,52 @@ $normalizeConversions = function ($items) {
         $legacyValues = $item->legacyValues();
         $conversionData = is_array($item->conversion_data) ? $item->conversion_data : [];
 
+        // Check if this is a legacy conversion (no conversion_data or empty conversion_data)
+        $isLegacyConversion = empty($conversionData) && $item->hasLegacyValues();
+
+        if ($isLegacyConversion) {
+            // For legacy conversions, create fallback data immediately
+            $fallbackData = array_filter([
+                'gregorian' => $legacyValues['gregorian']
+                    ? [
+                        'full_date' => $legacyValues['gregorian'],
+                        'name' => 'Gregorian',
+                        'tags' => ['legacy', 'fallback'],
+                    ]
+                    : null,
+                'jalali' => $legacyValues['jalali']
+                    ? [
+                        'full_date' => $legacyValues['jalali'],
+                        'name' => 'Jalali',
+                        'tags' => ['legacy', 'fallback'],
+                    ]
+                    : null,
+                'unix' => $legacyValues['unix']
+                    ? [
+                        'full_date' => $legacyValues['unix'],
+                        'name' => 'Unix',
+                        'tags' => ['legacy', 'fallback'],
+                    ]
+                    : null,
+                'iso8601' => $legacyValues['iso8601']
+                    ? [
+                        'full_date' => $legacyValues['iso8601'],
+                        'name' => 'ISO 8601',
+                        'tags' => ['legacy', 'fallback'],
+                    ]
+                    : null,
+            ], fn ($value) => $value !== null && $value !== '');
+
+            $item->legacy_fallback_data = $fallbackData;
+            $item->normalized_conversion_data = $fallbackData;
+            $item->uses_legacy_fallback = true;
+            $item->legacy_display_values = $legacyValues;
+            $item->has_legacy_values = $item->hasLegacyValues();
+
+            return $item;
+        }
+
+        // For modern conversions, filter out error entries and normalize technical formats
         $conversionData = collect($conversionData)
             ->reject(function ($data) {
                 return is_array($data) && array_key_exists('error', $data);
@@ -65,9 +111,8 @@ $normalizeConversions = function ($items) {
             $conversionData['modified-julian-day'] = $conversionData['modified_julian_day'];
         }
 
-        $usedFallback = false;
-
-        if (empty($conversionData)) {
+        // If modern conversion has no valid data after filtering errors, check for legacy fallback
+        if (empty($conversionData) && $item->hasLegacyValues()) {
             $fallbackData = array_filter([
                 'gregorian' => $legacyValues['gregorian']
                     ? [
@@ -86,7 +131,7 @@ $normalizeConversions = function ($items) {
                 'unix' => $legacyValues['unix']
                     ? [
                         'full_date' => $legacyValues['unix'],
-                        'name' => 'Unix Timestamp',
+                        'name' => 'Unix',
                         'tags' => ['legacy', 'fallback'],
                     ]
                     : null,
@@ -99,19 +144,15 @@ $normalizeConversions = function ($items) {
                     : null,
             ], fn ($value) => $value !== null && $value !== '');
 
-            if (! empty($fallbackData)) {
-                $item->legacy_fallback_data = $fallbackData;
-                $usedFallback = true;
-                $conversionData = $fallbackData;
-            } else {
-                $item->legacy_fallback_data = [];
-            }
+            $item->legacy_fallback_data = $fallbackData;
+            $item->normalized_conversion_data = $fallbackData;
+            $item->uses_legacy_fallback = true;
         } else {
             $item->legacy_fallback_data = [];
+            $item->normalized_conversion_data = $conversionData;
+            $item->uses_legacy_fallback = false;
         }
 
-        $item->normalized_conversion_data = $conversionData;
-        $item->uses_legacy_fallback = $usedFallback;
         $item->legacy_display_values = $legacyValues;
         $item->has_legacy_values = $item->hasLegacyValues();
 

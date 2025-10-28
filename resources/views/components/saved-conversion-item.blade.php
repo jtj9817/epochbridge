@@ -150,8 +150,8 @@
                                 || cardData.timestamp
                                 || cardData.day_number
                                 || cardData.long_count
-                                || 'N/A'
-                            : (cardData ?? 'N/A');
+                                || 'Unavailable'
+                            : (cardData ?? 'Unavailable');
                         const dow = isObject ? (cardData.day_of_week || '') : '';
                         text += `${name}: ${date}${dow ? ' (' + dow + ')' : ''}\n`;
                     }

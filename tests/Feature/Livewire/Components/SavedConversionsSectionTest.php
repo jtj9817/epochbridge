@@ -122,13 +122,15 @@ it('renders old format conversions with backward compatibility', function () {
     $user = User::factory()->create();
 
     // Create conversion without conversion_data (old format)
-    SavedConversion::factory()->for($user)->create([
-        'original_input' => '2024-01-01',
-        'gregorian_date' => '2024-01-01',
-        'jalali_date' => '1402/10/11',
-        'unix_timestamp' => 1704067200,
-        'iso8601_string' => '2024-01-01T00:00:00Z',
-    ]);
+    $conversion = new SavedConversion();
+    $conversion->user_id = $user->id;
+    $conversion->original_input = '2024-01-01';
+    $conversion->conversion_data = null; // Explicitly set to null for legacy format
+    $conversion->gregorian_date = '2024-01-01';
+    $conversion->jalali_date = '1402/10/11';
+    $conversion->unix_timestamp = 1704067200;
+    $conversion->iso8601_string = '2024-01-01T00:00:00Z';
+    $conversion->save();
 
     $this->actingAs($user);
 
