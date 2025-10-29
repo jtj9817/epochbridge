@@ -21,6 +21,11 @@ A comprehensive calendar conversion platform built with Laravel 12 and the TALL 
   - **Authenticated Users**: Database-backed conversion history with full management
   - **Guest Users**: Browser localStorage persistence with automatic migration on login
   - **Complete Data Storage**: All 19 calendar systems saved for each conversion
+  - **Duplicate Prevention**: Database constraints prevent redundant saves
+- **Toast Notifications**: Real-time feedback for all operations (save, delete, errors)
+  - Auto-dismissing notifications with manual close option
+  - Success/error states with contextual messages
+  - Seamless Livewire-Alpine event bridge integration
 - **Clipboard Integration**: Copy conversion results with one click
 - **Quick Actions**: Today, Yesterday, Tomorrow buttons for rapid navigation
 - **Date Input Tracking**: Smart save state management based on current date input
@@ -44,7 +49,7 @@ A comprehensive calendar conversion platform built with Laravel 12 and the TALL 
 - **Database**: MySQL 8.0
 - **Build Tool**: Vite with HMR
 - **OAuth**: Laravel Socialite (Google provider)
-- **Testing**: PestPHP, Laravel Dusk
+- **Testing**: PestPHP, Pest Browser Plugin, Laravel Dusk
 - **Containerization**: Laravel Sail (Docker)
 
 ## Quick Start

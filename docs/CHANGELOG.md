@@ -5,6 +5,114 @@ All notable changes to EpochBridge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [October 29, 2025] - Toast Notifications, Browser Testing & Duplicate Prevention
+
+### Added
+- **Toast Notification System**: Real-time user feedback for all CRUD operations
+  - Positioned in top-right corner with slide-in animations
+  - 3-second auto-dismiss with manual close option
+  - Implemented for authenticated and guest save operations
+  - Delete operation notifications with success/error states
+  - Livewire-Alpine event bridge for seamless communication
+  - `toast-notification.blade.php` component with Alpine.js reactivity
+  
+- **PestPHP Browser Testing Infrastructure**: Migration from Dusk to Pest Browser Plugin
+  - Added `pestphp/pest-plugin-browser` dependency
+  - Comprehensive migration plan documented in `docs/pest-browser-testing-migration-plan.md`
+  - Phase-based migration strategy (3 phases: Browser, Feature, Unit)
+  - Configuration templates for Playwright/Selenium setup
+  - Test suite organization and parallel execution patterns
+  
+- **Duplicate Conversion Prevention**: Database-level constraint enforcement
+  - Migration `2025_10_20_120000_add_unique_constraint_to_saved_conversions.php`
+  - Unique constraint on `user_id` + `original_input` combination
+  - Automatic duplicate cleanup before constraint application
+  - Enhanced save logic with duplicate detection and user feedback
+  - Test coverage for duplicate save attempt scenarios
+
+### Changed
+- **Landing Page Save Logic**: Enhanced duplicate handling and toast integration
+  - Save button now checks for existing conversions before database insert
+  - Toast notifications replace silent failures for better UX
+  - Proper error handling with QueryException catching
+  - Improved guest-to-authenticated migration with duplicate prevention
+  
+- **Toast Notification Tests**: Migrated from Feature to Browser test suite
+  - Moved `ToastNotificationTest.php` to `tests/Browser/` directory
+  - Updated test assertions for browser-based interactions
+  - Enhanced test coverage for Alpine.js event handling
+  - Component attribute testing for Alpine.js initialization
+
+- **Saved Conversions Section**: Toast notifications for delete operations
+  - Delete confirmation with Alpine.js modal integration
+  - Success toast on successful deletion
+  - Error toast with detailed messages on failure
+  - Improved user feedback throughout deletion workflow
+
+### Fixed
+- **Alpine.js Initialization Timing**: Resolved race condition in saved conversion items
+  - Fixed `x-data` initialization order in `saved-conversion-item.blade.php`
+  - Proper Alpine.js component mounting before event listeners
+  - Corrected syntax for Alpine attribute binding
+  - Improved component reactivity and event propagation
+  
+- **Guest Conversion Data Display**: Fixed missing data and deletion bugs
+  - Proper fallback for legacy conversion data structure
+  - Enhanced null/undefined handling in Alpine.js templates
+  - Fixed deletion logic for guest conversions in localStorage
+  - Improved data consistency across guest and authenticated modes
+  
+- **Toast Event Dispatch**: Corrected Livewire-Alpine bridge communication
+  - Fixed event name consistency (`show-toast` standardization)
+  - Proper event payload structure for Alpine.js consumers
+  - Enhanced event debugging and error handling
+  - Improved cross-component event propagation
+
+### Technical Improvements
+- **Livewire-Alpine Event Bridge Pattern**: Documented architecture for event communication
+  - Comprehensive documentation in `docs/toast-notification-consistency-plan.md`
+  - Event naming conventions and payload structure standardization
+  - Best practices for Livewire `$dispatch()` to Alpine.js `@window` listeners
+  - Cross-component communication patterns for TALL stack apps
+  
+- **Database Integrity**: Enhanced data consistency with constraints
+  - Unique constraint prevents duplicate saved conversions per user
+  - Migration handles existing duplicates gracefully (keeps oldest record)
+  - Improved query performance with indexed constraint columns
+  
+- **Test Migration Strategy**: Comprehensive browser testing roadmap
+  - 901-line migration plan with phase-by-phase approach
+  - Configuration examples for Playwright and Selenium
+  - Test organization patterns for browser, feature, and unit tests
+  - Parallel execution strategies for improved test performance
+
+### Documentation
+- **Toast Notification Architecture**: Complete implementation guide
+  - Livewire-Alpine event bridge pattern documentation
+  - Toast component API and usage examples
+  - Event flow diagrams and debugging strategies
+  - Integration patterns for authenticated and guest operations
+  
+- **Pest Browser Testing Migration Plan**: Comprehensive migration guide
+  - Phase 1: Browser tests migration (Playwright/Selenium)
+  - Phase 2: Feature tests migration (HTTP testing)
+  - Phase 3: Unit tests migration (pure PHP testing)
+  - Configuration templates and best practices
+  - CI/CD integration strategies
+  
+- **Saved Conversion Notes Feature Plan**: Enhanced implementation details
+  - Phase 9 refinements for save modal integration
+  - Toast notification integration for notes CRUD operations
+  - UI/UX improvements for notes display and editing
+  - Database schema updates for notes storage
+
+### Security
+- **Duplicate Prevention**: Protection against data redundancy and storage abuse
+  - Database-level constraint prevents duplicate saves
+  - User-specific constraint prevents cross-user data issues
+  - Proper error handling prevents information disclosure
+  - Enhanced validation for save operations
+
 ## [October 24, 2025] - Google OAuth Integration
 
 ### Added
