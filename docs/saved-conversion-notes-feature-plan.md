@@ -992,35 +992,53 @@ $updateNote = function (int $id, string $note) {
 
 ---
 
-## PHASE 9: Update Results Grid Component
+## PHASE 9: Integrate Save Modal into Results Grid
 
 ### GOAL
-Replace the existing "Save Conversion" button with the new save modal component.
+Integrate the save modal component into the calendar results grid to enable note entry during save operations.
 
 ### CONTEXT
-The calendar results grid currently has a save button that directly triggers save operations. We need to replace this with the new modal component that allows note entry.
+The calendar results grid has two save buttons (lines 179-193 in `calendar-results-grid.blade.php`):
+- **Authenticated users**: `wire:click="$dispatch('save-conversion')"` (line 180)
+- **Guest users**: `@click="$dispatch('save-guest-conversion')"` (line 186)
+
+We need to replace these buttons to open the save modal instead of directly dispatching save events.
 
 ### TASK
-Update the calendar-results-grid component to use the save-conversion-modal component.
+Update the save button section in calendar-results-grid to trigger the modal opening.
 
 ### REQUIREMENTS
-1. Replace existing save button with the modal component
-2. Pass necessary conversion data to the modal
-3. Maintain existing save functionality
-4. Ensure proper event handling for both guest and authenticated users
+1. Replace direct save dispatches with modal opening triggers
+2. Maintain existing "Copy All" button functionality
+3. Keep the "Saved ✓" state indicator for guest users
+4. Ensure proper modal integration for both authenticated and guest users
 
 ### GUIDELINES
 
 **File: `resources/views/livewire/components/calendar-results-grid.blade.php`**
 
-Locate the existing save button and replace it with:
+**Location: Lines 170-194 (action buttons section)**
+
+Replace the save button code:
 
 ```blade
-<!-- Replace the existing save button with the modal component -->
-<livewire:components.save-conversion-modal wire:key="save-modal" />
+<div class="flex items-center gap-4">
+    <button
+        @click="copyToClipboard({{ Js::from($copyAllPayload) }}, 'all')"
+        class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline"
+        :class="{ 'text-green-500': copiedFeedback === 'all' }"
+        x-text="copiedFeedback === 'all' ? 'Copied!' : 'Copy All'">
+        Copy All
+    </button>
+    
+    <!-- Integrate Save Modal Component -->
+    <div class="inline-block">
+        <livewire:components.save-conversion-modal wire:key="save-modal-results-grid" />
+    </div>
+</div>
 ```
 
-If the save button is not in a separate component file, you may need to search for where it's rendered and make the appropriate replacement.
+**Note**: The modal component from Phase 4 will handle the authentication check internally and dispatch the appropriate events (`save-conversion-with-note` for authenticated or `save-guest-conversion-with-note` for guests).
 
 ---
 
