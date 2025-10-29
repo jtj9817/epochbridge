@@ -51,11 +51,23 @@
     x-data="{
         collapsed: true,
         @if($isGuest)
-        // For guest users, itemData is passed via Alpine binding ::item-data
         itemData: {},
         @endif
 
         init() {
+            @if($isGuest)
+            // Read itemData from JSON data attribute
+            const itemJson = this.$el.dataset.itemJson;
+            if (itemJson) {
+                try {
+                    this.itemData = JSON.parse(itemJson);
+                } catch (e) {
+                    console.error('Failed to parse item data:', e);
+                    this.itemData = {};
+                }
+            }
+            @endif
+
             const attr = this.$el.getAttribute('data-collapsed');
             const datasetValue = this.$el.dataset.initialCollapsed;
 

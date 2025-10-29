@@ -405,7 +405,7 @@ $deleteConversion = function (int $id) {
                 <x-saved-conversion-item
                     :item="null"
                     is-guest
-                    ::item-data="item"
+                    x-bind:data-item-json="JSON.stringify(item)"
                     x-bind:data-collapsed="isCollapsed(item, itemIndex) ? 'true' : 'false'"
                     x-bind:data-initial-collapsed="isCollapsed(item, itemIndex) ? 'true' : 'false'"
                     x-bind:data-index="itemIndex"
