@@ -1,11 +1,9 @@
 <?php
 
-namespace Tests\Feature\Livewire;
-
 use App\Models\User;
 use Laravel\Dusk\Browser;
 
-it('shows toast notification when authenticated user saves conversion', function () {
+test('shows toast notification when authenticated user saves conversion', function () {
     $this->browse(function (Browser $browser) {
         $user = User::factory()->create();
         
@@ -24,7 +22,7 @@ it('shows toast notification when authenticated user saves conversion', function
     });
 });
 
-it('shows success toast when guest user saves conversion', function () {
+test('shows success toast when guest user saves conversion', function () {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
             ->waitForLivewireToLoad()
@@ -40,7 +38,7 @@ it('shows success toast when guest user saves conversion', function () {
     });
 });
 
-it('shows info toast when guest user saves already saved conversion', function () {
+test('shows info toast when guest user saves already saved conversion', function () {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
             ->waitForLivewireToLoad()
@@ -57,7 +55,7 @@ it('shows info toast when guest user saves already saved conversion', function (
     });
 });
 
-it('shows info toast when guest user reaches save limit', function () {
+test('shows info toast when guest user reaches save limit', function () {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
             ->waitForLivewireToLoad();
