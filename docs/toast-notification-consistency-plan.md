@@ -667,33 +667,98 @@ public function test_toast_appears_in_top_right_on_save()
 
 ## Technical Implementation Notes
 
-### Alpine.js Event Dispatching
+### CRITICAL: Alpine.js vs Livewire Event Dispatching
+
+**The toast component uses `@notify.window` which listens for BROWSER CustomEvents, not Livewire component events.**
+
+#### Alpine.js Event Dispatching (Client-Side) ✅ WORKS
 ```javascript
-// Client-side (Alpine.js)
+// Client-side (Alpine.js) - Creates browser CustomEvent
 this.$dispatch('notify', {
     message: 'Your message here',
     type: 'success' // or 'error', 'info'
 });
 ```
 
-### Livewire Event Dispatching
+**When to use:** Any client-side logic (guest saves, copy operations, client-side validations)
+
+#### Livewire Event Dispatching (Server-Side) ❌ DOES NOT WORK
 ```php
-// Server-side (Livewire)
+// Server-side (Livewire) - Creates Livewire component event (NOT browser event)
+// THIS WILL NOT TRIGGER THE TOAST!
 $this->dispatch('notify', [
     'message' => 'Your message here',
-    'type' => 'success' // or 'error', 'info'
+    'type' => 'success'
 ]);
 ```
 
+**Why it doesn't work:** Livewire's `$this->dispatch()` creates a component event that stays within Livewire's event system and never reaches Alpine.js window listeners.
+
+#### Correct Livewire-to-Browser Event (Server-Side) ✅ WORKS
+```php
+// Server-side (Livewire) - Dispatches browser CustomEvent via JavaScript
+$this->js("
+    window.dispatchEvent(new CustomEvent('notify', {
+        detail: {
+            message: 'Your message here',
+            type: 'success'
+        }
+    }))
+");
+```
+
+**When to use:** Any server-side logic (authenticated saves/deletes, database operations, API calls)
+
 ### Toast Component Event Listener
 ```blade
-<!-- Toast component listens for window-level events -->
+<!-- Toast component listens for window-level BROWSER events -->
 @notify.window="
     message = $event.detail.message;
     type = $event.detail.type;
     show = true;
 "
 ```
+
+### Event System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Browser Window                           │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ Alpine.js this.$dispatch('notify', {...})              │ │
+│  │           ↓                                            │ │
+│  │   Browser CustomEvent                                  │ │
+│  │           ↓                                            │ │
+│  │   @notify.window listener (Toast Component) ✅         │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ Livewire $this->dispatch('notify', [...])             │ │
+│  │           ↓                                            │ │
+│  │   Livewire Component Event (stays in Livewire)        │ │
+│  │           ✗                                            │ │
+│  │   @notify.window listener CANNOT hear it ❌            │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ Livewire $this->js("window.dispatchEvent(...)")       │ │
+│  │           ↓                                            │ │
+│  │   JavaScript executes on client                        │ │
+│  │           ↓                                            │ │
+│  │   Browser CustomEvent                                  │ │
+│  │           ↓                                            │ │
+│  │   @notify.window listener (Toast Component) ✅         │ │
+│  └────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Quick Reference Guide
+
+| Context | Use This | Example |
+|---------|----------|---------|
+| **Alpine.js method** | `this.$dispatch()` | Guest save, copy operations |
+| **Livewire method** | `$this->js("window.dispatchEvent...")` | Auth save, database operations |
+| **Toast listener** | `@notify.window` | Always browser CustomEvents |
 
 ### Best Practices
 1. **Keep messages concise**: 5-8 words ideal
@@ -704,11 +769,13 @@ $this->dispatch('notify', [
 6. **Error messages**: Be helpful, not technical (user-friendly)
 
 ### Common Pitfalls to Avoid
-1. **Don't dispatch multiple toasts for same action**: One action = one toast
-2. **Don't block user interaction**: Toast should not prevent further actions
-3. **Don't rely solely on toasts**: Critical errors need more prominent UI
-4. **Don't forget error handling**: Every dispatch should have try-catch
-5. **Don't skip confirmation dialogs**: Destructive actions need confirmation
+1. **❌ CRITICAL: Don't use `$this->dispatch('notify')` from Livewire**: This creates a Livewire component event, NOT a browser event. Use `$this->js("window.dispatchEvent...")` instead.
+2. **Don't dispatch multiple toasts for same action**: One action = one toast
+3. **Don't block user interaction**: Toast should not prevent further actions
+4. **Don't rely solely on toasts**: Critical errors need more prominent UI
+5. **Don't forget error handling**: Every dispatch should have try-catch
+6. **Don't skip confirmation dialogs**: Destructive actions need confirmation
+7. **Don't assume Livewire events reach Alpine**: They operate in separate event systems
 
 ---
 
@@ -881,7 +948,59 @@ Auto-dismiss after 3s
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2025-10-28  
+---
+
+## Lessons Learned & Implementation Notes
+
+### Critical Discovery: Livewire-Alpine Event Bridge
+
+During Phase 2 implementation, we discovered a critical architectural issue that required a bug fix:
+
+**Problem**: Toast notifications weren't appearing for authenticated user save operations despite the code looking correct.
+
+**Root Cause**: Livewire's `$this->dispatch()` creates **Livewire component events** that stay within the Livewire event system. Alpine.js `@notify.window` listeners expect **browser CustomEvents** and cannot hear Livewire component events.
+
+**Solution**: Use Livewire's `$this->js()` method to execute JavaScript that dispatches browser CustomEvents:
+
+```php
+// ❌ WRONG - Creates Livewire event (Alpine can't hear)
+$this->dispatch('notify', ['message' => '...', 'type' => 'success']);
+
+// ✅ CORRECT - Creates browser CustomEvent (Alpine can hear)
+$this->js("
+    window.dispatchEvent(new CustomEvent('notify', {
+        detail: { message: '...', type: 'success' }
+    }))
+");
+```
+
+**Impact**: This affects ANY Livewire-to-Alpine communication where Alpine listens with `.window` modifier.
+
+**Key Takeaway**: Always verify the event system match:
+- **Alpine → Alpine**: `this.$dispatch()` works ✅
+- **Livewire → Alpine**: Use `$this->js("window.dispatchEvent...")` ✅
+- **Livewire → Livewire**: `$this->dispatch()` works ✅
+
+### Implementation Timeline
+
+- **Phase 1**: Implemented successfully (toast repositioning)
+- **Phase 2**: Implemented with critical bug fix (authenticated save toasts)
+- **Phase 3**: Implemented successfully (guest save toasts)
+- **Phase 4**: Pending (authenticated delete toasts)
+- **Phase 5**: Pending (guest delete toasts)
+- **Phase 6**: Pending (comprehensive testing)
+
+### Code Quality Improvements
+
+1. **Error Handling**: All toast dispatches wrapped in try-catch blocks
+2. **User Feedback**: Immediate feedback for every user action
+3. **Consistency**: Same event pattern for success/error/info across all operations
+4. **Documentation**: Inline comments explaining event dispatch patterns
+5. **Testing**: Browser tests verify actual toast behavior end-to-end
+
+---
+
+**Document Version**: 1.1  
+**Last Updated**: 2025-10-28 (Updated with Livewire-Alpine bridge documentation)  
 **Author**: Claude Code (Anthropic)  
-**Status**: Ready for Implementation
+**Status**: In Progress (Phases 1-3 Complete)
