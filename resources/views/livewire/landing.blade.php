@@ -2,6 +2,8 @@
 
 use App\Exceptions\CalendarConversionException;
 use App\Services\DateTimeConverterService;
+use App\Models\SavedConversion;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 
 use function Livewire\Volt\layout;
@@ -47,6 +49,20 @@ mount(function () {
 
 $resolveConverter = static fn (?DateTimeConverterService $service = null) => $service ?? app(DateTimeConverterService::class);
 
+$isDuplicateEntry = static function (QueryException $exception): bool {
+    $errorInfo = $exception->errorInfo ?? [];
+
+    if (isset($errorInfo[1]) && (string) $errorInfo[1] === '1062') {
+        return true;
+    }
+
+    if (isset($errorInfo[0]) && (string) $errorInfo[0] === '23000') {
+        return str_contains($exception->getMessage(), 'saved_conversions_user_original_unique');
+    }
+
+    return false;
+};
+
 on([
     'date-selected' => function (string $date, ?DateTimeConverterService $converter = null) use ($resolveConverter) {
         $this->dateInput = $date;
@@ -78,8 +94,32 @@ on([
         $this->selectedTypes = $normalizedTypes;
         // Do NOT re-dispatch - causes infinite loop with reactive props
     },
-    'save-conversion' => function () {
+    'save-conversion' => function () use ($isDuplicateEntry) {
         if (! Auth::check() || empty($this->conversionResults)) {
+            return;
+        }
+
+        $dispatchToast = function (string $message, string $type = 'info') {
+            $messageJson = json_encode($message);
+            $typeJson = json_encode($type);
+
+            $this->js("
+                window.dispatchEvent(new CustomEvent('notify', {
+                    detail: {
+                        message: {$messageJson},
+                        type: {$typeJson}
+                    }
+                }))
+            ");
+        };
+
+        $alreadySaved = SavedConversion::where('user_id', Auth::id())
+            ->where('original_input', $this->dateInput)
+            ->exists();
+
+        if ($alreadySaved) {
+            $dispatchToast('This conversion is already saved!', 'info');
+
             return;
         }
 
@@ -98,27 +138,24 @@ on([
             ]);
 
             $this->dispatch('conversion-saved');
-            
-            // Dispatch success toast notification to browser
-            $this->js("
-                window.dispatchEvent(new CustomEvent('notify', {
-                    detail: {
-                        message: 'Conversion saved successfully!',
-                        type: 'success'
-                    }
-                }))
-            ");
+            $dispatchToast('Conversion saved successfully!', 'success');
+        } catch (QueryException $e) {
+            if ($isDuplicateEntry($e)) {
+                $dispatchToast('This conversion is already saved!', 'info');
+
+                return;
+            }
+
+            $dispatchToast('Failed to save conversion. Please try again.', 'error');
+
+            \Log::error('Failed to save conversion', [
+                'user_id' => Auth::id(),
+                'date_input' => $this->dateInput,
+                'error' => $e->getMessage()
+            ]);
         } catch (\Exception $e) {
-            // Dispatch error toast notification to browser
-            $this->js("
-                window.dispatchEvent(new CustomEvent('notify', {
-                    detail: {
-                        message: 'Failed to save conversion. Please try again.',
-                        type: 'error'
-                    }
-                }))
-            ");
-            
+            $dispatchToast('Failed to save conversion. Please try again.', 'error');
+
             \Log::error('Failed to save conversion', [
                 'user_id' => Auth::id(),
                 'date_input' => $this->dateInput,

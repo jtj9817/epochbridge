@@ -331,3 +331,20 @@ it('dispatches success toast when authenticated user saves conversion', function
     // Note: $this->js() doesn't create a Livewire event, so we can't assert it directly
     // This is tested via browser tests instead
 });
+
+it('does not dispatch conversion-saved when authenticated user saves duplicate conversion', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $component = Volt::test('landing')
+        ->set('dateInput', '2024-01-01')
+        ->call('convertDate')
+        ->dispatch('save-conversion');
+
+    $component->assertDispatched('conversion-saved');
+
+    $component->dispatch('save-conversion')
+        ->assertNotDispatched('conversion-saved');
+
+    $this->assertDatabaseCount('saved_conversions', 1);
+});
