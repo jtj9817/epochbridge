@@ -205,7 +205,7 @@ migrateGuestData() {
                   const parsed = JSON.parse(existingData);
                   
                   // Check if migration is needed
-                  if (parsed.length > 0 && !parsed[0].conversion_data) {
+                  if (parsed.length > 0 && (!parsed[0].conversion_data || !parsed[0].hasOwnProperty('note'))) {
                       const migratedData = parsed.map(item => {
                           if (item.conversion_data) {
                               return item; // Already migrated
@@ -230,6 +230,7 @@ migrateGuestData() {
                           return {
                               ...item,
                               conversion_data: conversionData,
+                              note: item.note || '',
                               original_input: item.original_input || this.dateInput,
                               created_at: item.created_at || new Date().toISOString()
                           };
@@ -272,7 +273,7 @@ isConversionSaved() {
               }
           },
          
-handleGuestSave() {
+handleGuestSave(note = '') {
               try {
                   const savedConversions = JSON.parse(localStorage.getItem('savedConversions') || '[]');
                   
@@ -302,6 +303,7 @@ handleGuestSave() {
                       id: Date.now(),
                       original_input: String(this.dateInput),
                       conversion_data: allResults,
+                      note: String(note || ''),
                       created_at: new Date().toISOString()
                   };
                   
@@ -338,7 +340,8 @@ handleGuestSave() {
               }
           }
       }"
-      @save-guest-conversion.window="handleGuestSave()">
+      @save-guest-conversion.window="handleGuestSave()"
+      @save-guest-conversion-with-note.window="handleGuestSave($event.detail.note)">
 
     <!-- Header -->
     <header id="landing-header" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
