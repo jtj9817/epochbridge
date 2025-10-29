@@ -239,11 +239,21 @@ handleGuestSave() {
               try {
                   const savedConversions = JSON.parse(localStorage.getItem('savedConversions') || '[]');
                   
+                  // Check if already saved
                   if (this.isConversionSaved()) {
+                      this.$dispatch('notify', {
+                          message: 'This conversion is already saved!',
+                          type: 'info'
+                      });
                       return;
                   }
                   
+                  // Check save limit
                   if (savedConversions.length >= 3) {
+                      this.$dispatch('notify', {
+                          message: 'Guest limit reached (3 max). Register for unlimited saves!',
+                          type: 'info'
+                      });
                       this.showSaveLimitNotification = true;
                       return;
                   }
@@ -265,11 +275,23 @@ handleGuestSave() {
                       detail: { conversion: newConversion }
                   }));
                   
+                  // Success toast
+                  this.$dispatch('notify', {
+                      message: 'Conversion saved! (Guest mode: 3 max)',
+                      type: 'success'
+                  });
+                  
                   this.$nextTick(() => {
                       // Force reactivity update
                   });
               } catch (error) {
                   console.error('Failed to save guest conversion:', error);
+                  
+                  // Error toast
+                  this.$dispatch('notify', {
+                      message: 'Failed to save conversion. Please try again.',
+                      type: 'error'
+                  });
                   
                   // If the error is related to serialization, clear corrupted data
                   if (error.message && (error.message.includes('toJSON') || error.message.includes('circular'))) {
