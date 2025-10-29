@@ -56,16 +56,18 @@
 
         init() {
             @if($isGuest)
-            // Read itemData from JSON data attribute
-            const itemJson = this.$el.dataset.itemJson;
-            if (itemJson) {
-                try {
-                    this.itemData = JSON.parse(itemJson);
-                } catch (e) {
-                    console.error('Failed to parse item data:', e);
-                    this.itemData = {};
+            // Use $nextTick to ensure Alpine bindings are applied
+            this.$nextTick(() => {
+                const itemJson = this.$el.dataset.itemJson;
+                if (itemJson) {
+                    try {
+                        this.itemData = JSON.parse(itemJson);
+                    } catch (e) {
+                        console.error('Failed to parse item data:', e);
+                        this.itemData = {};
+                    }
                 }
-            }
+            });
             @endif
 
             const attr = this.$el.getAttribute('data-collapsed');
