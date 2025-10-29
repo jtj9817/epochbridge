@@ -261,7 +261,11 @@
                 @if($isGuest)
                     <button
                         id="saved-conversion-btn-delete-{{ $uniqueIdSuffix }}"
-                        x-on:click.stop="$dispatch('delete-guest-conversion', { id: itemData.id })"
+                        x-on:click.stop="
+                            if (confirm('Are you sure you want to delete this saved conversion?')) {
+                                $dispatch('delete-guest-conversion', { id: itemData.id })
+                            }
+                        "
                         class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                         title="Delete conversion"
                     >

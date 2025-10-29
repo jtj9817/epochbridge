@@ -195,11 +195,49 @@ on([
 
 $deleteConversion = function (int $id) {
     if (Auth::check()) {
-        $conversion = SavedConversion::where('user_id', Auth::id())->find($id);
-        if ($conversion) {
-            $conversion->delete();
-            // Refresh computed property
-            unset($this->savedConversions);
+        try {
+            $conversion = SavedConversion::where('user_id', Auth::id())->find($id);
+            if ($conversion) {
+                $conversion->delete();
+                // Refresh computed property
+                unset($this->savedConversions);
+                
+                // Dispatch success toast notification to browser
+                $this->js("
+                    window.dispatchEvent(new CustomEvent('notify', {
+                        detail: {
+                            message: 'Conversion deleted successfully!',
+                            type: 'success'
+                        }
+                    }))
+                ");
+            } else {
+                // Dispatch error toast for not found case
+                $this->js("
+                    window.dispatchEvent(new CustomEvent('notify', {
+                        detail: {
+                            message: 'Conversion not found or already deleted.',
+                            type: 'error'
+                        }
+                    }))
+                ");
+            }
+        } catch (\Exception $e) {
+            // Dispatch error toast notification to browser
+            $this->js("
+                window.dispatchEvent(new CustomEvent('notify', {
+                    detail: {
+                        message: 'Failed to delete conversion. Please try again.',
+                        type: 'error'
+                    }
+                }))
+            ");
+            
+            \Log::error('Failed to delete conversion', [
+                'user_id' => Auth::id(),
+                'conversion_id' => $id,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 };
@@ -328,8 +366,30 @@ $deleteConversion = function (int $id) {
             },
             
             deleteSaved(id) {
-                this.savedConversions = this.savedConversions.filter(item => item.id !== id);
-                this.saveToLocalStorage();
+                try {
+                    // Find the conversion before deleting (for better UX)
+                    const conversionToDelete = this.savedConversions.find(item => item.id === id);
+                    
+                    // Filter out the conversion
+                    this.savedConversions = this.savedConversions.filter(item => item.id !== id);
+                    
+                    // Save to localStorage
+                    this.saveToLocalStorage();
+                    
+                    // Dispatch success toast
+                    this.$dispatch('notify', {
+                        message: 'Conversion deleted successfully!',
+                        type: 'success'
+                    });
+                } catch (error) {
+                    console.error('Failed to delete guest conversion:', error);
+                    
+                    // Error toast
+                    this.$dispatch('notify', {
+                        message: 'Failed to delete conversion. Please try again.',
+                        type: 'error'
+                    });
+                }
             }
         }"
         @saved-conversion-collapsed.window="handleCollapsedEvent($event.detail)"
