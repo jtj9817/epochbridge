@@ -746,13 +746,14 @@
         <div
             x-show="showNoteModal"
             x-cloak
-            x-transition.opacity
             class="fixed inset-0 z-50 overflow-y-auto"
             @keydown.escape.window="closeNoteModal()"
-            x-on:click.self="closeNoteModal()"
         >
             <!-- Backdrop -->
-            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            <div 
+                class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                @click="closeNoteModal()"
+            ></div>
 
             <!-- Modal Content -->
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20">
@@ -764,7 +765,7 @@
                     x-transition:leave="ease-in duration-200"
                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                     x-transition:leave-end="opacity-0 translate-y-4 scale-95"
-                    class="inline-block align-bottom bg-white dark:bg-theme-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full"
+                    class="relative inline-block align-bottom bg-white dark:bg-theme-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full z-10"
                     @click.stop
                 >
                     <!-- Modal Header -->
