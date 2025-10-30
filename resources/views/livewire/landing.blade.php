@@ -94,76 +94,84 @@ on([
         $this->selectedTypes = $normalizedTypes;
         // Do NOT re-dispatch - causes infinite loop with reactive props
     },
-    'save-conversion' => function () use ($isDuplicateEntry) {
-        if (! Auth::check() || empty($this->conversionResults)) {
-            return;
-        }
-
-        $dispatchToast = function (string $message, string $type = 'info') {
-            $messageJson = json_encode($message);
-            $typeJson = json_encode($type);
-
-            $this->js("
-                window.dispatchEvent(new CustomEvent('notify', {
-                    detail: {
-                        message: {$messageJson},
-                        type: {$typeJson}
-                    }
-                }))
-            ");
-        };
-
-        $alreadySaved = SavedConversion::where('user_id', Auth::id())
-            ->where('original_input', $this->dateInput)
-            ->exists();
-
-        if ($alreadySaved) {
-            $dispatchToast('This conversion is already saved!', 'info');
-
-            return;
-        }
-
-        try {
-            $converter = app(DateTimeConverterService::class);
-            $allResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
-
-            Auth::user()->savedConversions()->create([
-                'original_input' => $this->dateInput,
-                'conversion_data' => $allResults,
-                // Keep old fields for backward compatibility during transition
-                'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
-                'jalali_date' => $this->conversionResults['jalali']['full_date'],
-                'unix_timestamp' => $this->conversionResults['unix'],
-                'iso8601_string' => $this->conversionResults['iso8601'],
-            ]);
-
-            $this->dispatch('conversion-saved');
-            $dispatchToast('Conversion saved successfully!', 'success');
-        } catch (QueryException $e) {
-            if ($isDuplicateEntry($e)) {
-                $dispatchToast('This conversion is already saved!', 'info');
-
-                return;
-            }
-
-            $dispatchToast('Failed to save conversion. Please try again.', 'error');
-
-            \Log::error('Failed to save conversion', [
-                'user_id' => Auth::id(),
-                'date_input' => $this->dateInput,
-                'error' => $e->getMessage()
-            ]);
-        } catch (\Exception $e) {
-            $dispatchToast('Failed to save conversion. Please try again.', 'error');
-
-            \Log::error('Failed to save conversion', [
-                'user_id' => Auth::id(),
-                'date_input' => $this->dateInput,
-                'error' => $e->getMessage()
-            ]);
-        }
+    // Legacy event (no note) - keep for backwards compatibility
+    'save-conversion' => function () {
+        $this->saveConversion();
+    },
+    
+    // New event (with note) - for modal integration
+    'save-conversion-with-note' => function (string $note = '') {
+        $this->saveConversion($note);
     },
 ]);
+
+$saveConversion = function (string $note = '') use ($isDuplicateEntry) {
+    if (! Auth::check() || empty($this->conversionResults)) {
+        return;
+    }
+
+    $dispatchToast = function (string $message, string $type = 'info') {
+        $messageJson = json_encode($message);
+        $typeJson = json_encode($type);
+
+        $this->js("
+            window.dispatchEvent(new CustomEvent('notify', {
+                detail: {
+                    message: {$messageJson},
+                    type: {$typeJson}
+                }
+            }))
+        ");
+    };
+
+    $alreadySaved = SavedConversion::where('user_id', Auth::id())
+        ->where('original_input', $this->dateInput)
+        ->exists();
+
+    if ($alreadySaved) {
+        $dispatchToast('This conversion is already saved!', 'info');
+        return;
+    }
+
+    try {
+        $converter = app(DateTimeConverterService::class);
+        $allResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
+
+        Auth::user()->savedConversions()->create([
+            'original_input' => $this->dateInput,
+            'conversion_data' => $allResults,
+            'note' => trim($note),  // Add note field
+            'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
+            'jalali_date' => $this->conversionResults['jalali']['full_date'],
+            'unix_timestamp' => $this->conversionResults['unix'],
+            'iso8601_string' => $this->conversionResults['iso8601'],
+        ]);
+
+        $this->dispatch('conversion-saved');
+        $dispatchToast('Conversion saved successfully!', 'success');
+    } catch (QueryException $e) {
+        if ($isDuplicateEntry($e)) {
+            $dispatchToast('This conversion is already saved!', 'info');
+            return;
+        }
+
+        $dispatchToast('Failed to save conversion. Please try again.', 'error');
+
+        \Log::error('Failed to save conversion', [
+            'user_id' => Auth::id(),
+            'date_input' => $this->dateInput,
+            'error' => $e->getMessage()
+        ]);
+    } catch (\Exception $e) {
+        $dispatchToast('Failed to save conversion. Please try again.', 'error');
+
+        \Log::error('Failed to save conversion', [
+            'user_id' => Auth::id(),
+            'date_input' => $this->dateInput,
+            'error' => $e->getMessage()
+        ]);
+    }
+};
 
 $convertDate = function (?DateTimeConverterService $converter = null) use ($resolveConverter) {
     $converter = $resolveConverter($converter);
