@@ -242,6 +242,79 @@ $deleteConversion = function (int $id) {
     }
 };
 
+$updateNote = function (int $id, string $note) {
+    if (!Auth::check()) {
+        $this->js("
+            window.dispatchEvent(new CustomEvent('notify', {
+                detail: {
+                    message: 'You must be logged in to update notes.',
+                    type: 'error'
+                }
+            }))
+        ");
+        return;
+    }
+    
+    try {
+        $note = trim($note);
+        
+        // Validate note length
+        if (strlen($note) > 2048) {
+            $this->js("
+                window.dispatchEvent(new CustomEvent('notify', {
+                    detail: {
+                        message: 'Note must not exceed 2048 characters.',
+                        type: 'error'
+                    }
+                }))
+            ");
+            return;
+        }
+        
+        $conversion = SavedConversion::where('user_id', Auth::id())->find($id);
+        
+        if ($conversion) {
+            $conversion->update(['note' => $note]);
+            
+            // Refresh computed property
+            unset($this->savedConversions);
+            
+            $this->js("
+                window.dispatchEvent(new CustomEvent('notify', {
+                    detail: {
+                        message: 'Note updated successfully!',
+                        type: 'success'
+                    }
+                }))
+            ");
+        } else {
+            $this->js("
+                window.dispatchEvent(new CustomEvent('notify', {
+                    detail: {
+                        message: 'Conversion not found.',
+                        type: 'error'
+                    }
+                }))
+            ");
+        }
+    } catch (\Exception $e) {
+        $this->js("
+            window.dispatchEvent(new CustomEvent('notify', {
+                detail: {
+                    message: 'Failed to update note. Please try again.',
+                    type: 'error'
+                }
+            }))
+        ");
+        
+        \Log::error('Failed to update conversion note', [
+            'user_id' => Auth::id(),
+            'conversion_id' => $id,
+            'error' => $e->getMessage()
+        ]);
+    }
+};
+
 ?>
 
 <div class="mt-16 max-w-4xl mx-auto">
