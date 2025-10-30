@@ -19,8 +19,8 @@ $saveWithNote = function () {
     // Trim and validate note length
     $this->note = trim($this->note);
     
-    if (strlen($this->note) > 1000) {
-        $this->addError('note', 'Note must not exceed 1000 characters.');
+    if (strlen($this->note) > 2048) {
+        $this->addError('note', 'Note must not exceed 2048 characters.');
         return;
     }
     
@@ -97,12 +97,12 @@ $saveWithNote = function () {
                             id="conversion-note"
                             wire:model="note"
                             rows="4"
-                            maxlength="1000"
+                            maxlength="2048"
                             placeholder="e.g., Birthday, Anniversary, Project Deadline..."
                             class="w-full px-3 py-2 border border-theme-300 dark:border-theme-600 rounded-lg focus:ring-2 focus:ring-theme-500 focus:border-transparent bg-white dark:bg-theme-900 text-theme-900 dark:text-theme-50 placeholder-theme-400 dark:placeholder-theme-500"
                         ></textarea>
                         <p class="mt-1 text-xs text-theme-500 dark:text-theme-400">
-                            <span x-text="$wire.note.length"></span>/1000 characters
+                            <span x-text="$wire.note.length"></span>/2048 characters
                         </p>
                         @error('note')
                             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>

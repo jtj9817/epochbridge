@@ -361,10 +361,10 @@
                         placeholder="Add a note about this conversion..."
                         class="w-full text-sm bg-white/10 text-white placeholder-white/50 border border-white/20 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-white/50 focus:border-white/50 resize-none"
                         rows="2"
-                        maxlength="500"
+                        maxlength="2048"
                     ></textarea>
                     <div class="flex items-center justify-between">
-                        <span class="text-xs text-white/60" x-text="noteText.length + '/500'"></span>
+                        <span class="text-xs text-white/60" x-text="noteText.length + '/2048'"></span>
                         <div class="flex items-center gap-2">
                             <button
                                 x-on:click.stop="cancelEditingNote()"
