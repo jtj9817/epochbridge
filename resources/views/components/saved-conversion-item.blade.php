@@ -440,7 +440,7 @@
             </svg>
         </div>
 
-        <div class="flex items-center gap-2" x-on:click.stop>
+        <div class="flex items-center gap-2" @click.stop.prevent>
                 <button
                     id="saved-conversion-btn-copy-all-{{ $uniqueIdSuffix }}"
                     x-on:click.stop="copyAll()"
@@ -751,7 +751,7 @@
         >
             <!-- Backdrop -->
             <div 
-                class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                class="fixed inset-0 bg-gray-900 bg-opacity-25 transition-opacity"
                 @click="closeNoteModal()"
             ></div>
 
