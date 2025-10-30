@@ -5,6 +5,123 @@ All notable changes to EpochBridge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [October 30, 2025] - Saved Conversion Notes Feature
+
+### Added
+- **Note Support for Saved Conversions**: Complete note annotation system for conversion history
+  - Database schema update with nullable `note` TEXT column in `saved_conversions` table
+  - Support for notes up to 2048 characters (increased from initial 500 character limit)
+  - `SavedConversion` model enhancement with note field in fillable attributes
+  - Factory support for generating test notes with realistic sample data
+  
+- **Save Conversion Modal Component**: New modal interface for saving conversions with notes
+  - `save-conversion-modal.blade.php` Livewire component with Alpine.js integration
+  - Character counter showing remaining characters (2048 limit)
+  - Optional note field with textarea input and clear visual feedback
+  - Toast notification integration for save success/error states
+  - Proper event handling for modal open/close lifecycle
+  
+- **Note Editing Functionality**: Complete CRUD operations for conversion notes
+  - Shared `edit-note-modal.blade.php` Livewire component for note editing
+  - Edit button on saved conversion items with pencil icon
+  - Modal-based editing interface with character limit validation
+  - Real-time character counter during editing
+  - Server-side validation and error handling
+  - Toast notifications for successful updates and errors
+  
+- **Guest Note Support**: localStorage-based note persistence for unauthenticated users
+  - Guest conversions now include note field in localStorage structure
+  - Seamless note migration when guest users authenticate
+  - Client-side note rendering via Alpine.js for fast display
+  - Consistent note display between guest and authenticated modes
+
+- **Comprehensive Test Coverage**: Full testing suite for notes functionality
+  - **Browser Tests**: `ConversionNoteManagementTest.php` (250 lines) - Full user interaction testing
+  - **Component Tests**: 
+    - `EditNoteModalTest.php` (235 lines) - Modal component behavior testing
+    - `SaveNoteUpdateEventTest.php` (192 lines) - Event handling and communication
+  - **Feature Tests**:
+    - `SaveConversionWithNoteTest.php` (228 lines) - Save operations with notes
+    - `UpdateConversionNoteTest.php` (218 lines) - Note update workflows
+  - **Unit Tests**: `SavedConversionNoteTest.php` (313 lines) - Model behavior and validation
+  - Total test coverage: 1,436 lines of comprehensive test code
+
+### Changed
+- **Landing Page Save Logic**: Refactored to integrate note modal
+  - Removed inline save button in favor of modal-based workflow
+  - Enhanced save conversion method to accept note parameter
+  - Improved duplicate detection with note preservation
+  - Better separation of concerns between display and save operations
+  
+- **Saved Conversions Section**: Enhanced UI for note display and editing
+  - Note display area added to saved conversion items
+  - Truncated note preview with "Read more" expansion for long notes
+  - Edit and delete actions consolidated in action area
+  - Improved visual hierarchy with note styling
+  
+- **Calendar Results Grid**: Integrated save modal trigger
+  - Save button now opens modal instead of direct save operation
+  - Enhanced user experience with explicit note capture opportunity
+  - Better feedback during save process with loading states
+
+- **SavedConversion Factory**: Enhanced test data generation
+  - Added realistic note generation with 60% probability
+  - Variety of sample notes for different use cases
+  - Character limit testing support with boundary cases
+  - Improved factory flexibility for comprehensive testing
+
+### Refactored
+- **Note Modal Component Architecture**: Extracted shared editing component
+  - Created reusable `edit-note-modal.blade.php` for note editing across contexts
+  - Reduced code duplication between different note editing locations
+  - Centralized note update logic in `saved-conversions-section.blade.php`
+  - Improved maintainability with single source of truth for note editing UI
+  
+- **Save Conversion Flow**: Streamlined save operation architecture
+  - Moved note editing from calendar results grid to saved conversions section
+  - Consolidated save logic in landing page component
+  - Better event-driven communication between components
+  - Cleaner separation between save and edit operations
+
+### Fixed
+- **Modal Interaction Issues**: Resolved backdrop and event propagation problems
+  - Fixed backdrop click handling to properly close modals
+  - Removed event propagation blocking from copy button
+  - Improved Alpine.js event handling for nested interactive elements
+  - Enhanced modal lifecycle management for better UX
+  
+- **UI Consistency**: Improved layout and interaction patterns
+  - Simplified edit note modal layout for better visual clarity
+  - Consistent button styling across save and edit modals
+  - Proper spacing and alignment for note display areas
+  - Enhanced mobile responsiveness for modal interfaces
+
+### Technical Improvements
+- **Character Limit Management**: Consistent 2048 character limit enforcement
+  - Database column supports TEXT datatype (65,535 chars) for future flexibility
+  - Application-level validation enforces 2048 character user-facing limit
+  - Real-time character counter provides clear feedback
+  - Server-side validation prevents exceeding limits
+  
+- **Event-Driven Architecture**: Enhanced component communication
+  - `save-note-updated` event for note update notifications
+  - `open-save-modal` event for triggering save modal from results grid
+  - Proper Livewire `$dispatch()` to Alpine.js `@window` listener patterns
+  - Clean separation of concerns with event-based integration
+  
+- **Guest-Authenticated Parity**: Consistent feature experience
+  - Notes fully supported in both guest localStorage and authenticated database
+  - Automatic note migration preserves user data on authentication
+  - Identical UI/UX patterns for both user types
+  - Seamless transition between guest and authenticated states
+
+### Documentation
+- **Implementation Complete**: Saved conversion notes feature fully implemented
+  - All 9 phases from feature plan completed
+  - Database schema, models, UI components, and tests all in place
+  - Guest and authenticated user workflows implemented
+  - Comprehensive test coverage across all layers
+
 ## [October 29, 2025] - Toast Notifications, Browser Testing & Duplicate Prevention
 
 ### Added
