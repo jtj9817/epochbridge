@@ -28,6 +28,10 @@
     $legacyValues = $isGuest ? [] : ($item->legacy_display_values ?? $item->legacyValues());
     $hasLegacyValues = $isGuest ? false : ($item->has_legacy_values ?? $item->hasLegacyValues());
 
+    // Note handling for both guest and authenticated users
+    $note = $isGuest ? ($item['note'] ?? '') : ($item->note ?? '');
+    $hasNote = !empty($note);
+
     if ($usesLegacyFallback) {
         $conversionData = $legacyFallbackData ?? [];
     }
@@ -53,6 +57,12 @@
         @if($isGuest)
         itemData: {},
         @endif
+        
+        // Note editing state
+        editingNote: false,
+        noteText: '{{ addslashes($note) }}',
+        originalNote: '{{ addslashes($note) }}',
+        hasNote: {{ $hasNote ? 'true' : 'false' }},
 
         init() {
             @if($isGuest)
@@ -206,6 +216,84 @@
         // Fallback for older browsers
         showFallbackCopy(text) {
             alert('Please manually copy: ' + text);
+        },
+
+        // Note editing methods
+        startEditingNote() {
+            this.editingNote = true;
+            this.originalNote = this.noteText;
+            // Focus the textarea after Alpine renders it
+            this.$nextTick(() => {
+                const textarea = this.$el.querySelector('[data-note-textarea]');
+                if (textarea) {
+                    textarea.focus();
+                    textarea.select();
+                }
+            });
+        },
+
+        cancelEditingNote() {
+            this.editingNote = false;
+            this.noteText = this.originalNote;
+        },
+
+        async saveNote() {
+            const trimmedNote = this.noteText.trim();
+            
+            @if($isGuest)
+            // For guest users, update localStorage
+            if (this.itemData && this.itemData.id) {
+                try {
+                    // Update local item data
+                    this.itemData.note = trimmedNote;
+                    this.hasNote = trimmedNote.length > 0;
+                    
+                    // Dispatch event to parent component to handle localStorage update
+                    this.$dispatch('update-guest-note', {
+                        id: this.itemData.id,
+                        note: trimmedNote
+                    });
+                    
+                    this.editingNote = false;
+                    this.originalNote = trimmedNote;
+                    
+                    // Show success notification
+                    this.$dispatch('notify', {
+                        message: 'Note updated successfully!',
+                        type: 'success'
+                    });
+                } catch (error) {
+                    console.error('Failed to update guest note:', error);
+                    this.$dispatch('notify', {
+                        message: 'Failed to update note. Please try again.',
+                        type: 'error'
+                    });
+                }
+            }
+            @else
+            // For authenticated users, call Livewire method
+            try {
+                // Call the updateNote method (will be implemented in Phase 8)
+                await $wire.updateNote({{ $item->id }}, trimmedNote);
+                
+                this.hasNote = trimmedNote.length > 0;
+                this.editingNote = false;
+                this.originalNote = trimmedNote;
+                
+                // Success notification will be handled by Livewire component
+            } catch (error) {
+                console.error('Failed to update note:', error);
+                this.$dispatch('notify', {
+                    message: 'Failed to update note. Please try again.',
+                    type: 'error'
+                });
+            }
+            @endif
+        },
+
+        // Handle note text changes
+        updateNoteText(event) {
+            this.noteText = event.target.value;
         }
     }"
     data-initial-collapsed="{{ $initialCollapsedValue }}"
@@ -242,6 +330,74 @@
                     Saved: {{ $formattedTimestamp }}
                 </p>
             @endif
+
+            <!-- Note Display and Editing Section -->
+            <div class="mt-2" x-show="hasNote || editingNote" x-cloak>
+                <!-- Note Display Mode -->
+                <div x-show="!editingNote && hasNote" class="flex items-start gap-2">
+                    <p id="saved-conversion-note-{{ $uniqueIdSuffix }}" 
+                       class="text-sm text-white/80 flex-1 break-words"
+                       x-text="noteText">
+                        {{ $note }}
+                    </p>
+                    <button
+                        x-on:click.stop="startEditingNote()"
+                        class="text-white/60 hover:text-white transition-colors p-1 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+                        title="Edit note"
+                        aria-label="Edit conversion note"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Note Editing Mode -->
+                <div x-show="editingNote" class="space-y-2">
+                    <textarea
+                        data-note-textarea
+                        x-model="noteText"
+                        x-on:input="updateNoteText($event)"
+                        placeholder="Add a note about this conversion..."
+                        class="w-full text-sm bg-white/10 text-white placeholder-white/50 border border-white/20 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-white/50 focus:border-white/50 resize-none"
+                        rows="2"
+                        maxlength="500"
+                    ></textarea>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-white/60" x-text="noteText.length + '/500'"></span>
+                        <div class="flex items-center gap-2">
+                            <button
+                                x-on:click.stop="cancelEditingNote()"
+                                class="text-white/60 hover:text-white text-xs px-2 py-1 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+                                type="button"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                x-on:click.stop="saveNote()"
+                                class="bg-white text-[#50493E] hover:bg-white/90 text-xs px-3 py-1 rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                type="button"
+                                :disabled="noteText === originalNote"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Note Button (when no note exists) -->
+                <button
+                    x-show="!hasNote && !editingNote"
+                    x-on:click.stop="startEditingNote()"
+                    class="text-white/60 hover:text-white text-xs flex items-center gap-1 transition-colors p-1 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+                    type="button"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add note
+                </button>
+            </div>
         </div>
 
         <div class="shrink-1 mx-2 text-white/80" aria-hidden="true">

@@ -390,10 +390,33 @@ $deleteConversion = function (int $id) {
                         type: 'error'
                     });
                 }
+            },
+
+            updateGuestNote(id, note) {
+                try {
+                    // Find the conversion to update
+                    const conversionIndex = this.savedConversions.findIndex(item => item.id === id);
+                    
+                    if (conversionIndex !== -1) {
+                        // Update the note in the conversion
+                        this.savedConversions[conversionIndex].note = note;
+                        
+                        // Save to localStorage
+                        this.saveToLocalStorage();
+                        
+                        return true;
+                    }
+                    
+                    return false;
+                } catch (error) {
+                    console.error('Failed to update guest note:', error);
+                    return false;
+                }
             }
         }"
         @saved-conversion-collapsed.window="handleCollapsedEvent($event.detail)"
         @delete-guest-conversion.window="deleteSaved($event.detail.id)"
+        @update-guest-note.window="updateGuestNote($event.detail.id, $event.detail.note)"
         x-show="savedConversions.length > 0"
         x-cloak
     >
