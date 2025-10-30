@@ -22,6 +22,11 @@ A comprehensive calendar conversion platform built with Laravel 12 and the TALL 
   - **Guest Users**: Browser localStorage persistence with automatic migration on login
   - **Complete Data Storage**: All 19 calendar systems saved for each conversion
   - **Duplicate Prevention**: Database constraints prevent redundant saves
+  - **Notes**: Annotate saved conversions with custom notes (up to 2048 characters)
+    - Modal-based interface for adding notes during save
+    - Edit existing notes with dedicated modal component
+    - Full CRUD operations with server-side validation
+    - Guest and authenticated note support with migration on login
 - **Toast Notifications**: Real-time feedback for all operations (save, delete, errors)
   - Auto-dismissing notifications with manual close option
   - Success/error states with contextual messages
@@ -274,7 +279,7 @@ app/
 ├── Models/                 # Eloquent models
 │   ├── User.php           # User model with saved conversions and OAuth
 │   ├── SocialAccount.php  # OAuth provider accounts (encrypted tokens)
-│   ├── SavedConversion.php # User conversion history with date casting
+│   ├── SavedConversion.php # User conversion history with date casting and notes
 │   ├── JapaneseEra.php    # Japanese era data
 │   ├── HistoricalCalendarData.php # Ancient calendar reference data
 │   └── MayanCalendarData.php # Mayan calendar calculations
@@ -350,7 +355,9 @@ resources/
     │   │   ├── calendar-results-grid.blade.php     # Main conversion display
     │   │   ├── calendar-search-filter.blade.php    # Calendar filtering
     │   │   ├── saved-conversions-section.blade.php # User history management
-    │   │   └── saved-conversion-item.blade.php     # Individual saved item
+    │   │   ├── saved-conversion-item.blade.php     # Individual saved item
+    │   │   ├── save-conversion-modal.blade.php     # Modal for saving with notes
+    │   │   └── edit-note-modal.blade.php           # Shared note editing modal
     │   ├── auth/                          # Authentication forms
     │   └── settings/                      # User settings pages
     └── pages/             # Page-level Volt components
@@ -364,6 +371,7 @@ config/
 database/
 ├── migrations/            # Database schema
 │   ├── *_create_saved_conversions_table.php
+│   ├── *_add_note_column_to_saved_conversions_table.php
 │   ├── *_create_social_accounts_table.php
 │   ├── *_modify_users_table_for_social_auth.php
 │   ├── *_create_japanese_eras_table.php
@@ -384,8 +392,15 @@ tests/
 │   ├── Jobs/             # Background job tests
 │   │   └── ExecuteTestSuiteJobTest.php         # Test suite execution job tests
 │   ├── Livewire/         # Livewire component tests
+│   │   ├── SaveConversionWithNoteTest.php      # Save operations with notes
+│   │   ├── UpdateConversionNoteTest.php        # Note update workflows
+│   │   └── Components/                          # Component-specific tests
+│   │       ├── EditNoteModalTest.php            # Note editing modal tests
+│   │       └── SaveNoteUpdateEventTest.php      # Note event handling tests
 │   └── Settings/         # User settings tests
 ├── Unit/                  # Unit tests
+│   ├── Models/           # Model tests
+│   │   └── SavedConversionNoteTest.php         # Note field behavior tests
 │   └── Services/         # Service layer tests
 │       ├── Calendar Services/                   # Calendar conversion service tests
 │       └── Test Runner Services/               # Test runner service tests
@@ -394,8 +409,9 @@ tests/
 │           ├── ProgressTrackingServiceTest.php # Progress tracking tests
 │           └── TestDiscoveryServiceTest.php    # Test discovery tests
 ├── Browser/               # Dusk browser tests
-│   ├── LandingPageTest.php      # Full page interaction tests
-│   └── Components/              # Component-specific browser tests
+│   ├── LandingPageTest.php              # Full page interaction tests
+│   ├── ConversionNoteManagementTest.php # Complete note management workflows
+│   └── Components/                       # Component-specific browser tests
 └── Support/               # Test support utilities
     └── PromptSequence.php      # Interactive command testing utilities
 ```
@@ -461,10 +477,15 @@ EpochBridge supports **19 calendar systems** across modern, historical, ancient,
   - **Complete Storage**: All 19 calendar systems saved per conversion
   - **Date Tracking**: Input date and timestamp fields for accurate history
   - **Smart State Management**: Automatic save button state based on current date input
+  - **Notes Support**: Add custom annotations to saved conversions (up to 2048 characters)
+    - Modal interface for note creation and editing
+    - Character counter with real-time validation
+    - Full CRUD operations with proper error handling
 - **Guest Features**: Full functionality without authentication
   - **Persistent Storage**: Browser localStorage with data migration on login
   - **Client-Side Rendering**: Fast display of guest conversion history
-  - **Automatic Migration**: Seamless transfer of guest data to database on authentication
+  - **Automatic Migration**: Seamless transfer of guest data (including notes) to database on authentication
+  - **Note Support**: Guest users can add and edit notes in localStorage
 - **Clipboard Integration**: One-click copying of conversion results
 - **Search & Filter**: Find saved conversions by date or calendar type
 - **Visual Feedback**: Table layout with custom color theme and optimized spacing
@@ -495,6 +516,8 @@ Single-file components combining PHP logic and Blade templates with modern event
   - `calendar-results-grid.blade.php` - Main conversion display
   - `calendar-search-filter.blade.php` - Calendar filtering UI
   - `saved-conversions-section.blade.php` - History management
+  - `save-conversion-modal.blade.php` - Save modal with note support
+  - `edit-note-modal.blade.php` - Shared note editing component
 - **Authentication forms**: `resources/views/livewire/auth/` - Login, register, password reset, 2FA
 - **Settings pages**: `resources/views/livewire/settings/` - User profile, password, appearance, 2FA management
 - **Page components**: `resources/views/pages/` - Additional page-level components
@@ -529,14 +552,31 @@ Pre-built component library providing:
 ## Testing
 
 The project uses PestPHP for testing with comprehensive coverage:
-- **Feature Tests**: Authentication flows (traditional + OAuth), settings, dashboard
-- **Browser Tests**: Full user interactions with Dusk
-- **Unit Tests**: Individual component testing
+- **Feature Tests**: Authentication flows (traditional + OAuth), settings, dashboard, note management
+- **Browser Tests**: Full user interactions with Dusk including note CRUD workflows
+- **Unit Tests**: Individual component testing including model behavior with notes
+- **Component Tests**: Livewire component testing with note modal interactions
 - **OAuth Tests**: Google Sign-In integration with mocked providers
 
 Run the full test suite:
 ```bash
 php artisan test
+```
+
+Note-specific test coverage:
+```bash
+# Browser tests for complete note workflows
+php artisan test tests/Browser/ConversionNoteManagementTest.php
+
+# Feature tests for note operations
+php artisan test tests/Feature/Livewire/SaveConversionWithNoteTest.php
+php artisan test tests/Feature/Livewire/UpdateConversionNoteTest.php
+
+# Component tests for note modals
+php artisan test tests/Feature/Livewire/Components/EditNoteModalTest.php
+
+# Unit tests for note model behavior
+php artisan test tests/Unit/Models/SavedConversionNoteTest.php
 ```
 
 ## Production Deployment
