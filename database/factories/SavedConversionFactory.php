@@ -38,10 +38,29 @@ class SavedConversionFactory extends Factory
             'iso8601' => $date->clone()->utc()->toIso8601String(),
         ];
 
+        $noteExamples = [
+            'Birthday',
+            'Anniversary',
+            'Project deadline',
+            'Important meeting',
+            'Launch date',
+            'Vacation start',
+            'Contract expiration',
+            'License renewal',
+            'Historical event',
+            'Release date',
+            '',
+        ];
+
+        $note = $this->faker->boolean(70)
+            ? $this->faker->randomElement($noteExamples)
+            : '';
+
         return [
             'user_id' => User::factory(),
             'original_input' => $date->format('Y-m-d'),
             'conversion_data' => $conversionData,
+            'note' => $note,
             'gregorian_date' => $conversionData['gregorian']['full_date'],
             'jalali_date' => $conversionData['jalali']['full_date'],
             'unix_timestamp' => $conversionData['unix'],
