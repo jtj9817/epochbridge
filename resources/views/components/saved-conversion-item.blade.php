@@ -440,7 +440,7 @@
             </svg>
         </div>
 
-        <div class="flex items-center gap-2" @click.stop.prevent>
+        <div class="flex items-center gap-2">
                 <button
                     id="saved-conversion-btn-copy-all-{{ $uniqueIdSuffix }}"
                     x-on:click.stop="copyAll()"
