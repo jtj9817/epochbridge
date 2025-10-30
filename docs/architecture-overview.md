@@ -28,6 +28,9 @@ EpochBridge is a comprehensive calendar conversion platform built using the TALL
   - Persistent conversion storage for authenticated and guest users
   - Guest data migration to database on authentication
   - Complete calendar data storage (all 19 systems per conversion)
+  - Notes support for annotating saved conversions (up to 2048 characters)
+  - Modal-based interface for adding and editing notes
+  - Guest and authenticated note support with migration on login
   - Clipboard integration for easy data export
   - Comprehensive authentication and user profiles
   - Date input tracking for smart save state management
@@ -107,6 +110,8 @@ The presentation layer handles user interface and user experience through:
   - `calendar-search-filter.blade.php` - Calendar system filtering interface
   - `saved-conversions-section.blade.php` - User history management with database/localStorage integration
   - `saved-conversion-item.blade.php` - Individual saved conversion display with client-side rendering and table layout
+  - `save-conversion-modal.blade.php` - Modal for saving conversions with optional notes (up to 2048 characters)
+  - `edit-note-modal.blade.php` - Shared modal component for editing conversion notes
 - **Authentication**: `livewire/auth/*.blade.php` - Login, register, password reset
 - **Settings**: `livewire/settings/*.blade.php` - User profile and preferences
 - **Dashboard**: `dashboard.blade.php` - User dashboard (traditional Blade)
@@ -891,6 +896,7 @@ saved_conversions
 ├── id (bigint, primary key)
 ├── user_id (bigint, foreign key to users.id, nullable) # Null for guest conversions
 ├── conversion_data (json)                              # Complete conversion results (all 19 calendars)
+├── note (text, nullable)                               # Optional user note (up to 2048 chars)
 ├── input_date (varchar)                               # Original input date for tracking
 ├── created_at (timestamp)                             # Conversion save timestamp
 ├── updated_at (timestamp)
@@ -899,9 +905,11 @@ saved_conversions
 **Features**:
 - Guest conversions stored with `user_id = null` for guest users
 - Complete calendar data in JSON format including all 19 calendar systems
+- Optional note field for user annotations (2048 character limit)
 - Input date tracking for save state management
 - Automatic migration from localStorage to database on user authentication
-- Supports both authenticated and guest user workflows
+- Supports both authenticated and guest user workflows with notes
+- Notes persisted in guest localStorage and migrated on authentication
 
 #### Japanese Eras Table
 ```sql
@@ -1055,24 +1063,27 @@ EpochBridge implements a seamless guest-to-authenticated user data migration sys
 1. Conversions saved to browser localStorage
 2. Client-side rendering via Alpine.js
 3. Full 19-calendar data stored in JSON format
-4. Persistent across browser sessions
+4. Notes stored alongside conversion data
+5. Persistent across browser sessions
 
 **Authentication Migration**:
 1. On user login/registration, guest data detected in localStorage
 2. Livewire component automatically migrates conversions to database
 3. `user_id` field populated with authenticated user ID
-4. localStorage cleared after successful migration
-5. User sees complete conversion history immediately
+4. Notes migrated along with conversion data
+5. localStorage cleared after successful migration
+6. User sees complete conversion history with notes immediately
 
 **Implementation Details**:
 ```php
-// Landing page component - guest data migration
+// Landing page component - guest data migration with notes
 public function migrateGuestData(array $guestConversions): void
 {
     foreach ($guestConversions as $conversion) {
         SavedConversion::create([
             'user_id' => auth()->id(),
             'conversion_data' => $conversion['conversion_data'],
+            'note' => $conversion['note'] ?? null,
             'input_date' => $conversion['input_date'],
             'created_at' => $conversion['created_at'] ?? now(),
         ]);
@@ -1081,10 +1092,11 @@ public function migrateGuestData(array $guestConversions): void
 ```
 
 **Benefits**:
-- No data loss when guests create accounts
+- No data loss when guests create accounts (including notes)
 - Transparent user experience
 - Encourages user registration
 - Maintains data integrity
+- Preserves user annotations across authentication
 
 ## Testing Architecture
 
@@ -1142,15 +1154,21 @@ tests/
 │   │   ├── ProfileUpdateTest.php            # Profile modification
 │   │   └── TwoFactorAuthenticationTest.php  # 2FA setup/management
 │   ├── Livewire/               # Livewire component tests
+│   │   ├── SaveConversionWithNoteTest.php   # Save operations with notes
+│   │   ├── UpdateConversionNoteTest.php     # Note update workflows
 │   │   ├── Components/         # Modular component tests
 │   │   │   ├── CalendarQuickActionsTest.php     # Quick action buttons
 │   │   │   ├── CalendarResultsGridTest.php      # Conversion display grid
 │   │   │   ├── CalendarSearchFilterTest.php     # Calendar filtering
-│   │   │   └── SavedConversionsSectionTest.php  # Saved conversions
+│   │   │   ├── SavedConversionsSectionTest.php  # Saved conversions
+│   │   │   ├── EditNoteModalTest.php            # Note editing modal
+│   │   │   └── SaveNoteUpdateEventTest.php      # Note event handling
 │   │   └── LandingPageTest.php # Main landing page component testing
 │   ├── DashboardTest.php       # Dashboard tests
 │   └── ExampleTest.php         # Example feature test
 ├── Unit/                       # Unit tests
+│   ├── Models/                 # Model tests
+│   │   └── SavedConversionNoteTest.php      # Note field behavior tests
 │   ├── Services/               # Service layer tests
 │   │   ├── Calendar Services/  # Calendar conversion service tests
 │   │   │   ├── ChineseCalendarServiceTest.php   # Chinese calendar service
@@ -1168,6 +1186,7 @@ tests/
 ├── Support/                    # Test support utilities
 │   └── PromptSequence.php      # Interactive command testing utilities
 └── Browser/                    # Dusk browser tests
+    ├── ConversionNoteManagementTest.php # Complete note management workflows
     ├── Components/             # Component-specific browser tests
     ├── Pages/                  # Page object models
     │   ├── HomePage.php        # Home page object model
