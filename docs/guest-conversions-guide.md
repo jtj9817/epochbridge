@@ -61,6 +61,7 @@ EpochBridge provides full conversion storage functionality for both authenticate
       "islamic": { /* full islamic data */ },
       // ... all 19 calendar systems
     },
+    "note": "Important historical date for project milestone",  // Optional note (up to 2048 chars)
     "input_date": "2024-01-15",
     "created_at": "2024-01-15T10:30:00.000000Z"
   },
@@ -86,9 +87,10 @@ x-data="{
         this.guestConversions = stored ? JSON.parse(stored) : [];
     },
     
-    saveGuestConversion(conversionData, inputDate) {
+    saveGuestConversion(conversionData, inputDate, note = null) {
         const conversion = {
             conversion_data: conversionData,
+            note: note,  // Optional note field
             input_date: inputDate,
             created_at: new Date().toISOString()
         };

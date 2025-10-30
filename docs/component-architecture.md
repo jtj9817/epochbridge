@@ -14,8 +14,10 @@ The architecture follows a "smart parent, dumb children" pattern. The main `land
   ├── components/calendar-quick-actions.blade.php
   ├── components/calendar-search-filter.blade.php
   ├── components/calendar-results-grid.blade.php
+  │   ├── components/save-conversion-modal.blade.php (Save with notes)
   │   └── components/calendars/*.blade.php (Individual Calendar Cards)
   └── components/saved-conversions-section.blade.php
+      ├── components/edit-note-modal.blade.php (Shared note editing)
       └── components/saved-conversion-item.blade.php
 ```
 
