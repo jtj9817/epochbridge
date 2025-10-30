@@ -81,25 +81,22 @@ $saveNote = function () {
 
             <!-- Modal Body -->
             <div class="bg-white dark:bg-theme-800 px-6 py-4">
-                <div class="mb-4">
-                    <label for="edit-note-textarea" class="block text-sm font-medium text-theme-700 dark:text-theme-300 mb-2">
-                        Note (optional)
-                    </label>
-                    <textarea
-                        id="edit-note-textarea"
-                        wire:model="currentNote"
-                        rows="4"
-                        maxlength="2048"
-                        placeholder="e.g., Birthday, Anniversary, Project Deadline..."
-                        class="w-full px-3 py-2 border border-theme-300 dark:border-theme-600 rounded-lg focus:ring-2 focus:ring-theme-500 focus:border-transparent bg-white dark:bg-theme-900 text-theme-900 dark:text-theme-50 placeholder-theme-400 dark:placeholder-theme-500"
-                    ></textarea>
-                    <p class="mt-1 text-xs text-theme-500 dark:text-theme-400">
-                        <span x-text="$wire.currentNote.length"></span>/2048 characters
+                <textarea
+                    id="edit-note-textarea"
+                    wire:model="currentNote"
+                    rows="6"
+                    maxlength="2048"
+                    placeholder="e.g., Birthday, Anniversary, Project Deadline..."
+                    class="block w-full px-3 py-2 border border-theme-300 dark:border-theme-600 rounded-lg focus:ring-2 focus:ring-theme-500 focus:border-transparent bg-white dark:bg-theme-900 text-theme-900 dark:text-theme-50 placeholder-theme-400 dark:placeholder-theme-500 resize-none"
+                ></textarea>
+                <div class="mt-2 flex justify-end">
+                    <p class="text-xs text-theme-500 dark:text-theme-400">
+                        <span x-text="$wire.currentNote.length"></span>/2048
                     </p>
-                    @error('currentNote')
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
                 </div>
+                @error('currentNote')
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Modal Footer -->
