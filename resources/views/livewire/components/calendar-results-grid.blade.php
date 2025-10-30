@@ -175,8 +175,22 @@ $copyLines = computed(function() {
                     x-text="copiedFeedback === 'all' ? 'Copied!' : 'Copy All'">
                     Copy All
                 </button>
-                
-                <livewire:components.save-conversion-modal wire:key="save-modal-results-grid" />
+                @auth
+                    <button
+                        wire:click="$dispatch('save-conversion')"
+                        class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
+                        Save
+                    </button>
+                @else
+                    <button
+                        @click="$dispatch('save-guest-conversion')"
+                        :disabled="isConversionSaved()"
+                        class="text-sm font-medium hover:underline disabled:cursor-not-allowed"
+                        :class="isConversionSaved() ? 'text-green-600 dark:text-green-400' : 'text-theme-500 dark:text-theme-100'"
+                        x-text="isConversionSaved() ? 'Saved ✓' : 'Save'">
+                        Save
+                    </button>
+                @endauth
             </div>
         </div>
 
