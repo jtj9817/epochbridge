@@ -63,10 +63,6 @@
         noteText: '{{ addslashes($note) }}',
         originalNote: '{{ addslashes($note) }}',
         hasNote: {{ $hasNote ? 'true' : 'false' }},
-        
-        // Note modal state
-        showNoteModal: false,
-        modalNoteText: '',
 
         init() {
             @if($isGuest)
@@ -94,6 +90,30 @@
             }
 
             this.syncCollapsedAttr();
+            
+            @if($isGuest)
+            // Listen for note updates from modal
+            window.addEventListener('update-guest-note', (event) => {
+                if (event.detail.conversionId === this.itemData.id) {
+                    this.noteText = event.detail.note;
+                    this.originalNote = event.detail.note;
+                    this.hasNote = event.detail.note.length > 0;
+                    
+                    // Update localStorage
+                    try {
+                        const savedConversions = JSON.parse(localStorage.getItem('savedConversions') || '[]');
+                        const index = savedConversions.findIndex(item => item.id === this.itemData.id);
+                        if (index !== -1) {
+                            savedConversions[index].note = event.detail.note;
+                            this.itemData.note = event.detail.note;
+                            localStorage.setItem('savedConversions', JSON.stringify(savedConversions));
+                        }
+                    } catch (e) {
+                        console.error('Failed to update note in localStorage:', e);
+                    }
+                }
+            });
+            @endif
         },
 
         toggleCollapsed() {
@@ -299,27 +319,6 @@
         updateNoteText(event) {
             this.noteText = event.target.value;
         },
-        
-        // Note modal methods
-        openNoteModal() {
-            this.modalNoteText = this.noteText;
-            this.showNoteModal = true;
-            this.$nextTick(() => {
-                const modal = this.$el.querySelector('[data-note-modal-textarea]');
-                modal && modal.focus();
-            });
-        },
-        
-        closeNoteModal() {
-            this.showNoteModal = false;
-            this.modalNoteText = '';
-        },
-        
-        async saveNoteFromModal() {
-            this.noteText = this.modalNoteText.trim();
-            await this.saveNote();
-            this.closeNoteModal();
-        }
     }"
     data-initial-collapsed="{{ $initialCollapsedValue }}"
     data-collapsed="{{ $initialCollapsedValue }}"
@@ -456,7 +455,7 @@
                 <!-- Add/Edit Note Button -->
                 <button
                     id="saved-conversion-btn-note-{{ $uniqueIdSuffix }}"
-                    x-on:click.stop="openNoteModal()"
+                    @click.stop="$dispatch('open-note-modal', { conversionId: {{ $isGuest ? 'itemData.id' : $item->id }}, currentNote: noteText, isGuest: {{ $isGuest ? 'true' : 'false' }} })"
                     class="transition-colors p-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     :class="hasNote ? 'text-yellow-500 hover:text-yellow-700 dark:text-yellow-400 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/20'"
                     :title="hasNote ? 'Edit note' : 'Add note'"
@@ -741,82 +740,5 @@
                 </div>
             @endif
         @endif
-        
-        <!-- Note Edit Modal -->
-        <div
-            x-show="showNoteModal"
-            x-cloak
-            class="fixed inset-0 z-50 overflow-y-auto"
-            @keydown.escape.window="closeNoteModal()"
-        >
-            <!-- Backdrop -->
-            <div 
-                class="fixed inset-0 bg-gray-900 bg-opacity-25 transition-opacity"
-                @click="closeNoteModal()"
-            ></div>
-
-            <!-- Modal Content -->
-            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20">
-                <div
-                    x-show="showNoteModal"
-                    x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                    x-transition:leave="ease-in duration-200"
-                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                    x-transition:leave-end="opacity-0 translate-y-4 scale-95"
-                    class="relative inline-block align-bottom bg-white dark:bg-theme-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full z-10"
-                    @click.stop
-                >
-                    <!-- Modal Header -->
-                    <div class="bg-theme-100 dark:bg-theme-700 px-6 py-4 border-b border-theme-200 dark:border-theme-600">
-                        <h3 class="text-lg font-semibold text-theme-900 dark:text-theme-50" x-text="hasNote ? 'Edit Note' : 'Add Note'">
-                        </h3>
-                    </div>
-
-                    <!-- Modal Body -->
-                    <div class="bg-white dark:bg-theme-800 px-6 py-4">
-                        <div class="mb-4">
-                            <label for="note-modal-textarea-{{ $uniqueIdSuffix }}" class="block text-sm font-medium text-theme-700 dark:text-theme-300 mb-2">
-                                Note (optional)
-                            </label>
-                            <textarea
-                                id="note-modal-textarea-{{ $uniqueIdSuffix }}"
-                                data-note-modal-textarea
-                                x-model="modalNoteText"
-                                rows="4"
-                                maxlength="2048"
-                                placeholder="e.g., Birthday, Anniversary, Project Deadline..."
-                                class="w-full px-3 py-2 border border-theme-300 dark:border-theme-600 rounded-lg focus:ring-2 focus:ring-theme-500 focus:border-transparent bg-white dark:bg-theme-900 text-theme-900 dark:text-theme-50 placeholder-theme-400 dark:placeholder-theme-500"
-                                @keydown.meta.enter="saveNoteFromModal()"
-                                @keydown.ctrl.enter="saveNoteFromModal()"
-                            ></textarea>
-                            <p class="mt-1 text-xs text-theme-500 dark:text-theme-400">
-                                <span x-text="modalNoteText.length"></span>/2048 characters
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="bg-theme-50 dark:bg-theme-900 px-6 py-4 flex justify-end gap-3">
-                        <button
-                            x-on:click="closeNoteModal()"
-                            type="button"
-                            class="px-4 py-2 border border-theme-300 dark:border-theme-600 rounded-lg text-theme-700 dark:text-theme-300 hover:bg-theme-100 dark:hover:bg-theme-800 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            x-on:click="saveNoteFromModal()"
-                            type="button"
-                            class="px-4 py-2 bg-theme-500 hover:bg-theme-600 text-white rounded-lg transition-colors"
-                            :disabled="modalNoteText === noteText"
-                        >
-                            Save
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>

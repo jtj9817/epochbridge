@@ -191,6 +191,22 @@ on([
         // Refresh computed property by resetting page or forcing re-render
         unset($this->savedConversions);
     },
+    'save-note-update' => function ($data) {
+        if ($data['isGuest']) {
+            // Guest note update handled by Alpine in saved-conversion-item
+            $this->js("
+                window.dispatchEvent(new CustomEvent('update-guest-note', {
+                    detail: {
+                        conversionId: {$data['conversionId']},
+                        note: " . json_encode($data['note']) . "
+                    }
+                }))
+            ");
+        } else {
+            // Authenticated user - update via PHP
+            $this->updateNote($data['conversionId'], $data['note']);
+        }
+    },
 ]);
 
 $deleteConversion = function (int $id) {
@@ -528,4 +544,7 @@ $updateNote = function (int $id, string $note) {
         @endif
     </div>
     @endauth
+    
+    <!-- Edit Note Modal (Shared) -->
+    <livewire:components.edit-note-modal wire:key="edit-note-modal" />
 </div>
