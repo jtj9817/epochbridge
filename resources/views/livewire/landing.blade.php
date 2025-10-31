@@ -354,24 +354,30 @@ handleGuestSave(note = '') {
     <!-- Header -->
     <header id="landing-header" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         @if (Route::has('login'))
-            <nav id="auth-navigation" class="flex items-center justify-end gap-4">
-                @auth
-                    <a id="link-dashboard" href="{{ url('/dashboard') }}"
-                       class="inline-block px-5 py-2 bg-theme-100 dark:bg-theme-500 border border-theme-300 dark:border-theme-300 rounded-lg text-sm font-medium text-theme-500 dark:text-theme-50 transition-colors">
-                        Dashboard
-                    </a>
-                @else
-                    <a id="link-login" href="{{ route('login') }}"
-                       class="inline-block px-5 py-2 text-theme-500 dark:text-theme-50 hover:text-theme-900 dark:hover:text-white rounded-lg text-sm font-medium transition-colors">
-                        Log in
-                    </a>
-                    @if (Route::has('register'))
-                        <a id="link-register" href="{{ route('register') }}"
-                           class="inline-block px-5 py-2 bg-theme-300 hover:bg-theme-500 text-white rounded-lg text-sm font-medium transition-colors">
-                            Register
+            <nav id="auth-navigation" class="flex items-center justify-between gap-4">
+                <!-- Left: Calendars Info Button -->
+                <livewire:components.calendars-info-modal wire:key="calendars-modal" />
+
+                <!-- Right: Auth Links -->
+                <div class="flex items-center gap-4">
+                    @auth
+                        <a id="link-dashboard" href="{{ url('/dashboard') }}"
+                           class="inline-block px-5 py-2 bg-theme-100 dark:bg-theme-500 border border-theme-300 dark:border-theme-300 rounded-lg text-sm font-medium text-theme-500 dark:text-theme-50 transition-colors">
+                            Dashboard
                         </a>
-                    @endif
-                @endauth
+                    @else
+                        <a id="link-login" href="{{ route('login') }}"
+                           class="inline-block px-5 py-2 text-theme-500 dark:text-theme-50 hover:text-theme-900 dark:hover:text-white rounded-lg text-sm font-medium transition-colors">
+                            Log in
+                        </a>
+                        @if (Route::has('register'))
+                            <a id="link-register" href="{{ route('register') }}"
+                               class="inline-block px-5 py-2 bg-theme-300 hover:bg-theme-500 text-white rounded-lg text-sm font-medium transition-colors">
+                                Register
+                            </a>
+                        @endif
+                    @endauth
+                </div>
             </nav>
         @endif
     </header>
@@ -470,69 +476,6 @@ handleGuestSave(note = '') {
 
             <!-- Saved Conversions Section -->
             <livewire:components.saved-conversions-section wire:key="saved-conversions" />
-
-            <!-- Features Preview -->
-            <div id="features-preview-section" class="mt-20 max-w-6xl mx-auto">
-                <h2 id="features-preview-heading" class="text-3xl font-bold text-theme-900 dark:text-theme-50 mb-12">
-                    Supported Calendar Systems
-                </h2>
-
-                <div id="features-grid" class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    <div id="feature-card-gregorian" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">📅</div>
-                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Gregorian Calendar</h3>
-                        <p class="text-theme-500 dark:text-theme-100">Standard international calendar system</p>
-                    </div>
-
-                    <div id="feature-card-jalali" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">🌙</div>
-                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Jalali Calendar</h3>
-                        <p class="text-theme-500 dark:text-theme-100">Persian solar calendar system</p>
-                    </div>
-
-                    <div id="feature-card-unix" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">⏰</div>
-                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Unix Timestamp</h3>
-                        <p class="text-theme-500 dark:text-theme-100">Seconds since Unix epoch</p>
-                    </div>
-
-                    <div id="feature-card-chinese" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">🐉</div>
-                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Chinese Lunisolar Calendar</h3>
-                        <p class="text-theme-500 dark:text-theme-100">Traditional Chinese calendar with zodiac and solar terms</p>
-                    </div>
-
-                    <div id="feature-card-japanese" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">🌸</div>
-                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Japanese Era Calendar</h3>
-                        <p class="text-theme-500 dark:text-theme-100">Imperial era-based calendar system (e.g., Reiwa)</p>
-                    </div>
-
-                    <div id="feature-card-coptic" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">☦️</div>
-                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Coptic Calendar</h3>
-                        <p class="text-theme-500 dark:text-theme-100">Alexandrian calendar used by the Coptic Orthodox Church</p>
-                    </div>
-
-                    <div id="feature-card-egyptian" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">🏺</div>
-                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Ancient Egyptian Calendar</h3>
-                        <p class="text-theme-500 dark:text-theme-100">Historical civil calendar with 365 days per year</p>
-                    </div>
-
-                    <div id="feature-card-ethiopian" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">🇪🇹</div>
-                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Ethiopian Calendar</h3>
-                        <p class="text-theme-500 dark:text-theme-100">Principal calendar in Ethiopia with a 13-month structure</p>
-                    </div>
-
-                    <div id="feature-card-mayan" class="bg-theme-100 dark:bg-theme-500 rounded-xl p-6 shadow-lg border border-theme-300 dark:border-theme-300">
-                        <div class="text-theme-300 dark:text-theme-100 text-3xl mb-4">🗿</div>
-                        <h3 class="text-xl font-semibold text-theme-900 dark:text-theme-50 mb-2">Mayan Calendar</h3>
-                        <p class="text-theme-500 dark:text-theme-100">Complex system with Long Count, Tzolk'in, and Haab' cycles</p>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 
