@@ -343,16 +343,20 @@
     <!-- Collapsible header -->
     <div
         id="saved-conversion-header-{{ $uniqueIdSuffix }}"
-        class="bg-[#50493E] p-1 border-b border-theme-200 dark:border-theme-700 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 flex items-center justify-between gap-4"
-        role="button"
-        tabindex="0"
-        x-on:click="toggleCollapsed()"
-        x-on:keydown.enter.prevent="toggleCollapsed()"
-        x-on:keydown.space.prevent="toggleCollapsed()"
-        :aria-expanded="(!collapsed).toString()"
-        aria-controls="{{ $contentId }}"
+        class="bg-[#50493E] p-4 border-b border-theme-200 dark:border-theme-700 flex items-start justify-between gap-4"
     >
-        <div class="flex-1 min-w-0">
+        <!-- Input Date Information Container -->
+        <div
+            id="saved-conversion-info-container-{{ $uniqueIdSuffix }}"
+            class="flex-1 min-w-0 cursor-pointer"
+            role="button"
+            tabindex="0"
+            x-on:click="toggleCollapsed()"
+            x-on:keydown.enter.prevent="toggleCollapsed()"
+            x-on:keydown.space.prevent="toggleCollapsed()"
+            :aria-expanded="(!collapsed).toString()"
+            aria-controls="{{ $contentId }}"
+        >
             <p id="saved-conversion-label-input-{{ $uniqueIdSuffix }}" class="text-xs font-medium uppercase tracking-wide text-white/70">
                 Input Date
             </p>
@@ -365,22 +369,8 @@
                 </p>
             @endif
 
-            <!-- Note Preview (Always visible when note exists) -->
-            <div class="mt-2" x-show="hasNote" x-cloak>
-                <div class="flex items-start gap-2 bg-white/10 rounded px-2 py-1.5 cursor-pointer hover:bg-white/15 transition-colors"
-                     x-on:click.stop="$dispatch('open-note-modal', { conversionId: {{ $isGuest ? 'itemData.id' : $item->id }}, currentNote: noteText, isGuest: {{ $isGuest ? 'true' : 'false' }} })"
-                     title="Click to view/edit note">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                    </svg>
-                    <p class="text-sm text-white/90 flex-1 line-clamp-2" x-text="noteText.length > 80 ? noteText.substring(0, 80) + '...' : noteText">
-                        {{ $note }}
-                    </p>
-                </div>
-            </div>
-
             <!-- Note Display and Editing Section (Legacy inline editing - kept for backwards compatibility) -->
-            <div class="mt-2" x-show="editingNote" x-cloak>
+            <div id="saved-conversion-legacy-note-edit-{{ $uniqueIdSuffix }}" class="mt-2" x-show="editingNote" x-cloak>
                 <!-- Note Display Mode -->
                 <div x-show="!editingNote && hasNote" class="flex items-start gap-2">
                     <p id="saved-conversion-note-{{ $uniqueIdSuffix }}" 
@@ -448,22 +438,37 @@
             </div>
         </div>
 
-        <div class="shrink-1 mx-2 text-white/80" aria-hidden="true">
-            <svg
-                id="saved-conversion-chevron-{{ $uniqueIdSuffix }}"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3.0"
-                class="w-5 h-5 transition-transform duration-200 ease-in-out color-white"
-                :class="{ 'rotate-180': !collapsed }"
+        <!-- Actions Container -->
+        <div
+            id="saved-conversion-actions-container-{{ $uniqueIdSuffix }}"
+            class="flex flex-col gap-2 items-end"
+        >
+            <!-- Note Badge Row -->
+            <div
+                id="saved-conversion-note-badge-row-{{ $uniqueIdSuffix }}"
+                x-show="hasNote"
+                x-cloak
+                class="flex items-center"
             >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-        </div>
+                <div
+                    id="saved-conversion-note-badge-{{ $uniqueIdSuffix }}"
+                    class="flex items-center gap-1.5 bg-yellow-500/20 rounded-full px-3 py-1.5 cursor-pointer hover:bg-yellow-500/30 transition-colors"
+                    x-on:click.stop="$dispatch('open-note-modal', { conversionId: {{ $isGuest ? 'itemData.id' : $item->id }}, currentNote: noteText, isGuest: {{ $isGuest ? 'true' : 'false' }} })"
+                    title="Click to view/edit note"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                    <span class="text-xs text-yellow-300 font-medium">Note</span>
+                </div>
+            </div>
 
-        <div class="flex items-center gap-2">
+            <!-- Action Buttons Row -->
+            <div
+                id="saved-conversion-actions-buttons-row-{{ $uniqueIdSuffix }}"
+                class="flex items-center gap-2"
+            >
+                <!-- Copy All Button -->
                 <button
                     id="saved-conversion-btn-copy-all-{{ $uniqueIdSuffix }}"
                     x-on:click.stop="copyAll()"
@@ -490,6 +495,7 @@
                     </svg>
                 </button>
 
+                <!-- Delete Button -->
                 @if($isGuest)
                     <button
                         id="saved-conversion-btn-delete-{{ $uniqueIdSuffix }}"
@@ -500,6 +506,7 @@
                         "
                         class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                         title="Delete conversion"
+                        aria-label="Delete saved conversion"
                     >
                         <span class="sr-only">Delete</span>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -513,6 +520,7 @@
                         wire:confirm="Are you sure you want to delete this saved conversion?"
                         class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                         title="Delete conversion"
+                        aria-label="Delete saved conversion"
                     >
                         <span class="sr-only">Delete</span>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -520,6 +528,35 @@
                         </svg>
                     </button>
                 @endif
+
+                <!-- Chevron Icon -->
+                <div
+                    id="saved-conversion-chevron-wrapper-{{ $uniqueIdSuffix }}"
+                    class="cursor-pointer p-2"
+                    x-on:click="toggleCollapsed()"
+                    role="button"
+                    tabindex="0"
+                    x-on:keydown.enter.prevent="toggleCollapsed()"
+                    x-on:keydown.space.prevent="toggleCollapsed()"
+                    :aria-expanded="(!collapsed).toString()"
+                    aria-controls="{{ $contentId }}"
+                    aria-label="Toggle conversion details"
+                >
+                    <svg
+                        id="saved-conversion-chevron-{{ $uniqueIdSuffix }}"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="3.0"
+                        class="w-5 h-5 transition-transform duration-200 ease-in-out text-white/80"
+                        :class="{ 'rotate-180': !collapsed }"
+                        aria-hidden="true"
+                    >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </div>
+            </div>
         </div>
     </div>
 
