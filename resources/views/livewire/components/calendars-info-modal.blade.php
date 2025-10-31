@@ -14,7 +14,7 @@ $closeModal = function () {
     $this->showModal = false;
 };
 
-$calendars = [
+$calendars = fn () => [
     // Modern Calendars
     [
         'id' => 'gregorian',
@@ -235,7 +235,7 @@ $calendars = [
             show: @entangle('showModal'),
             searchTerm: @entangle('searchTerm'),
             selectedCategory: @entangle('selectedCategory'),
-            calendars: <?php echo json_encode($calendars); ?>,
+            calendars: <?php echo json_encode($this->calendars()); ?>,
             
             get filteredCalendars() {
                 return this.calendars.filter(calendar => {
