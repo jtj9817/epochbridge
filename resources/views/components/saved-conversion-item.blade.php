@@ -92,7 +92,7 @@
             this.syncCollapsedAttr();
             
             @if($isGuest)
-            // Listen for note updates from modal
+            // Listen for note updates from modal (guest)
             window.addEventListener('update-guest-note', (event) => {
                 if (event.detail.conversionId === this.itemData.id) {
                     this.noteText = event.detail.note;
@@ -111,6 +111,16 @@
                     } catch (e) {
                         console.error('Failed to update note in localStorage:', e);
                     }
+                }
+            });
+            @else
+            // Listen for note updates from modal (authenticated)
+            // This is dispatched after Livewire updates the database
+            window.addEventListener('note-updated', (event) => {
+                if (event.detail.conversionId === {{ $item->id }}) {
+                    this.noteText = event.detail.note;
+                    this.originalNote = event.detail.note;
+                    this.hasNote = event.detail.note.length > 0;
                 }
             });
             @endif
@@ -355,8 +365,22 @@
                 </p>
             @endif
 
-            <!-- Note Display and Editing Section -->
-            <div class="mt-2" x-show="hasNote || editingNote" x-cloak>
+            <!-- Note Preview (Always visible when note exists) -->
+            <div class="mt-2" x-show="hasNote" x-cloak>
+                <div class="flex items-start gap-2 bg-white/10 rounded px-2 py-1.5 cursor-pointer hover:bg-white/15 transition-colors"
+                     x-on:click.stop="$dispatch('open-note-modal', { conversionId: {{ $isGuest ? 'itemData.id' : $item->id }}, currentNote: noteText, isGuest: {{ $isGuest ? 'true' : 'false' }} })"
+                     title="Click to view/edit note">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                    <p class="text-sm text-white/90 flex-1 line-clamp-2" x-text="noteText.length > 80 ? noteText.substring(0, 80) + '...' : noteText">
+                        {{ $note }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Note Display and Editing Section (Legacy inline editing - kept for backwards compatibility) -->
+            <div class="mt-2" x-show="editingNote" x-cloak>
                 <!-- Note Display Mode -->
                 <div x-show="!editingNote && hasNote" class="flex items-start gap-2">
                     <p id="saved-conversion-note-{{ $uniqueIdSuffix }}" 

@@ -198,10 +198,10 @@ on([
                 window.dispatchEvent(new CustomEvent('update-guest-note', {
                     detail: {
                         conversionId: {$data['conversionId']},
-                        note: " . json_encode($data['note']) . "
+                        note: ".json_encode($data['note']).'
                     }
                 }))
-            ");
+            ');
         } else {
             // Authenticated user - update via PHP
             $this->updateNote($data['conversionId'], $data['note']);
@@ -217,7 +217,7 @@ $deleteConversion = function (int $id) {
                 $conversion->delete();
                 // Refresh computed property
                 unset($this->savedConversions);
-                
+
                 // Dispatch success toast notification to browser
                 $this->js("
                     window.dispatchEvent(new CustomEvent('notify', {
@@ -248,18 +248,18 @@ $deleteConversion = function (int $id) {
                     }
                 }))
             ");
-            
+
             \Log::error('Failed to delete conversion', [
                 'user_id' => Auth::id(),
                 'conversion_id' => $id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
 };
 
 $updateNote = function (int $id, string $note) {
-    if (!Auth::check()) {
+    if (! Auth::check()) {
         $this->js("
             window.dispatchEvent(new CustomEvent('notify', {
                 detail: {
@@ -268,12 +268,13 @@ $updateNote = function (int $id, string $note) {
                 }
             }))
         ");
+
         return;
     }
-    
+
     try {
         $note = trim($note);
-        
+
         // Validate note length
         if (strlen($note) > 2048) {
             $this->js("
@@ -284,25 +285,33 @@ $updateNote = function (int $id, string $note) {
                     }
                 }))
             ");
+
             return;
         }
-        
+
         $conversion = SavedConversion::where('user_id', Auth::id())->find($id);
-        
+
         if ($conversion) {
             $conversion->update(['note' => $note]);
-            
+
             // Refresh computed property
             unset($this->savedConversions);
-            
+
             $this->js("
                 window.dispatchEvent(new CustomEvent('notify', {
                     detail: {
                         message: 'Note updated successfully!',
                         type: 'success'
                     }
-                }))
-            ");
+                }));
+                
+                window.dispatchEvent(new CustomEvent('note-updated', {
+                    detail: {
+                        conversionId: {$id},
+                        note: ".json_encode($note).'
+                    }
+                }));
+            ');
         } else {
             $this->js("
                 window.dispatchEvent(new CustomEvent('notify', {
@@ -322,11 +331,11 @@ $updateNote = function (int $id, string $note) {
                 }
             }))
         ");
-        
+
         \Log::error('Failed to update conversion note', [
             'user_id' => Auth::id(),
             'conversion_id' => $id,
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ]);
     }
 };
