@@ -261,29 +261,31 @@ $calendars = [
                 return names[category] || category;
             }
         }"
-        x-show="show"
         x-cloak
-        x-transition.opacity
-        class="fixed inset-0 z-50 overflow-y-auto"
-        @keydown.escape.window="$wire.closeModal()"
+        @keydown.escape="$wire.closeModal()"
     >
         <!-- Backdrop -->
         <div
-            class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            x-show="show"
+            x-transition.opacity
+            class="fixed inset-0 bg-black bg-opacity-50 z-50"
             @click="$wire.closeModal()"
         ></div>
 
-        <!-- Modal Content -->
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Modal Content Container -->
+        <div 
+            x-show="show"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+        >
             <div
-                x-show="show"
                 x-transition:enter="ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
                 x-transition:leave="ease-in duration-200"
-                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                class="inline-block align-bottom bg-white dark:bg-theme-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+                @click.stop
+                class="bg-white dark:bg-theme-800 rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] pointer-events-auto overflow-hidden flex flex-col"
             >
                 <!-- Modal Header -->
                 <div class="bg-theme-100 dark:bg-theme-700 px-6 py-4 border-b border-theme-200 dark:border-theme-600">
@@ -318,7 +320,7 @@ $calendars = [
                                     type="text"
                                     x-model="searchTerm"
                                     placeholder="Search calendars..."
-                                    class="w-full px-4 py-2 pl-10 border border-theme-300 dark:border-theme-600 rounded-lg focus:ring-2 focus:ring-theme-500 focus:border-transparent bg-white dark:bg-theme-800 text-theme-900 dark:text-theme-50 placeholder-theme-400"
+                                    class="w-full px-4 py-2 pl-10 border border-theme-300 dark:border-theme-600 rounded-lg focus:ring-2 focus:ring-theme-500 focus:border-transparent bg-white dark:bg-theme-800 text-black dark:text-white placeholder-theme-400"
                                 />
                                 <svg class="absolute left-3 top-2.5 w-5 h-5 text-theme-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -346,7 +348,7 @@ $calendars = [
                 </div>
 
                 <!-- Modal Body with Calendar Grid -->
-                <div class="bg-white dark:bg-theme-800 px-6 py-6 max-h-[60vh] overflow-y-auto">
+                <div class="bg-white dark:bg-theme-800 px-6 py-6 overflow-y-auto flex-1">
                     <div class="grid gap-6 md:grid-cols-2">
                         <template x-for="calendar in filteredCalendars" :key="calendar.id">
                             <div class="bg-theme-50 dark:bg-theme-700 rounded-lg p-5 border border-theme-200 dark:border-theme-600 hover:shadow-lg transition-shadow">
