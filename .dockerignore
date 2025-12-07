@@ -1,0 +1,71 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Development files
+.env
+.env.local
+.env.*.local
+.editorconfig
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Dependencies (will be installed in Docker)
+/node_modules
+/vendor
+
+# Build artifacts
+/public/build
+/public/hot
+
+# Testing
+/tests
+phpunit.xml
+.phpunit.result.cache
+.phpunit.cache
+/coverage
+
+# Documentation
+*.md
+/docs
+CLAUDE.md
+GEMINI.md
+AGENTS.md
+coding-prompts.md
+
+# Aider
+.aider*
+
+# Claude
+.claude
+
+# Docker
+docker-compose.yml
+docker-compose.yaml
+compose.yaml
+Dockerfile
+
+# Note: docker/ directory is needed for build configs
+
+# Browser testing
+.playwright
+
+# Logs
+*.log
+/storage/logs/*
+
+# Cache
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/bootstrap/cache/*
+
+# Other
+.DS_Store
+Thumbs.db
+*.json.bak
