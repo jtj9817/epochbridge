@@ -104,13 +104,13 @@ RUN sed -i 's/listen = 127.0.0.1:9000/listen = 9000/' /usr/local/etc/php-fpm.d/w
 #EOF
 
 # PHP configuration
-COPY <<EOF /usr/local/etc/php/conf.d/custom.ini
-memory_limit=256M
-upload_max_filesize=64M
-post_max_size=64M
-max_execution_time=60
-expose_php=Off
-EOF
+#COPY <<EOF /usr/local/etc/php/conf.d/custom.ini
+# memory_limit=256M
+#upload_max_filesize=64M
+#post_max_size=64M
+#max_execution_time=60
+#expose_php=Off
+#EOF
 
 # Set working directory
 WORKDIR /var/www/html
