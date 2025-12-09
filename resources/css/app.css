@@ -339,15 +339,21 @@ select:focus[data-flux-control] {
     border-color: var(--color-zinc-700);
 }
 
-/* Calendar card content - dense */
+/* Calendar card content - dense with uniform height */
 .calendar-card-content {
     padding: 1rem;
+    min-height: 140px;
 }
 
 /* Grid cell for exposed grid layout */
 .grid-cell {
     border-right: 1px solid var(--color-theme-300);
     border-bottom: 1px solid var(--color-theme-300);
+    display: flex;
+}
+
+.grid-cell > .calendar-card {
+    flex: 1;
 }
 
 .dark .grid-cell {

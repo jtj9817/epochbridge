@@ -4,7 +4,7 @@
     title="Mayan"
     copyType="mayan"
     :disclaimer="$data['disclaimer'] ?? null"
-    class="calendar-mayan md:col-span-2 lg:col-span-1"
+    class="calendar-mayan"
 >
     <x-slot:icon>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
