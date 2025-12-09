@@ -93,15 +93,15 @@ RUN sed -i 's/listen = 127.0.0.1:9000/listen = 9000/' /usr/local/etc/php-fpm.d/w
     && sed -i 's/;clear_env = no/clear_env = no/' /usr/local/etc/php-fpm.d/www.conf
 
 # OPcache configuration for production
-COPY <<EOF /usr/local/etc/php/conf.d/opcache.ini
-opcache.enable=1
-opcache.memory_consumption=256
-opcache.interned_strings_buffer=16
-opcache.max_accelerated_files=20000
-opcache.validate_timestamps=0
-opcache.save_comments=1
-opcache.fast_shutdown=1
-EOF
+#COPY <<EOF /usr/local/etc/php/conf.d/opcache.ini
+#opcache.enable=1
+#opcache.memory_consumption=256
+#opcache.interned_strings_buffer=16
+#opcache.max_accelerated_files=20000
+#opcache.validate_timestamps=0
+#opcache.save_comments=1
+#opcache.fast_shutdown=1
+#EOF
 
 # PHP configuration
 COPY <<EOF /usr/local/etc/php/conf.d/custom.ini
