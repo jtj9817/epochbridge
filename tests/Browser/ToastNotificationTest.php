@@ -6,7 +6,7 @@ use Laravel\Dusk\Browser;
 test('shows toast notification when authenticated user saves conversion', function () {
     $this->browse(function (Browser $browser) {
         $user = User::factory()->create();
-        
+
         $browser->loginAs($user)
             ->visit('/')
             ->waitForLivewireToLoad()
@@ -59,7 +59,7 @@ test('shows info toast when guest user reaches save limit', function () {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
             ->waitForLivewireToLoad();
-            
+
         // Save 3 conversions (the limit)
         for ($i = 1; $i <= 3; $i++) {
             $browser->type('input[name="dateInput"]', "2024-01-0{$i}")
@@ -68,7 +68,7 @@ test('shows info toast when guest user reaches save limit', function () {
                 ->click('button:contains("Save")')
                 ->pause(4000); // Wait for toast to dismiss
         }
-        
+
         // Try to save a 4th conversion
         $browser->type('input[name="dateInput"]', '2024-01-04')
             ->click('button:contains("Convert Date")')

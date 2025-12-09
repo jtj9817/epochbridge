@@ -85,7 +85,7 @@ class ConversionNoteManagementTest extends DuskTestCase
             'note' => '',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $conversion) {
+        $this->browse(function (Browser $browser) use ($user) {
             $browser->loginAs($user)
                 ->visit('/')
                 ->waitFor('[data-conversion-id]')
@@ -195,7 +195,7 @@ class ConversionNoteManagementTest extends DuskTestCase
                 ->click('[data-note-edit-button]')
                 ->waitFor('[id="edit-note-textarea"]')
                 ->script("document.querySelector('#edit-note-textarea').value = '{$longText}';");
-            
+
             // Textarea has maxlength="2048" so it won't accept more than 2048 chars
             $browser->assertAttribute('#edit-note-textarea', 'maxlength', '2048');
         });

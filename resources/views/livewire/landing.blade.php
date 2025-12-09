@@ -432,7 +432,7 @@ handleGuestSave(note = '') {
             </div>
 
             <!-- Search and Filter Section -->
-            <div x-show="Object.keys(showResults).length > 0" x-transition>
+            <div x-show="showResults && typeof showResults === 'object' && Object.keys(showResults).length > 0" x-transition>
                 <livewire:components.calendar-search-filter wire:key="search-filter" />
             </div>
 

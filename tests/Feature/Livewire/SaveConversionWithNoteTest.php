@@ -153,7 +153,7 @@ test('duplicate conversion check works regardless of note differences', function
         ->assertNotDispatched('conversion-saved');
 
     $this->assertDatabaseCount('saved_conversions', 1);
-    
+
     $this->assertDatabaseHas('saved_conversions', [
         'user_id' => $user->id,
         'note' => 'First note',
@@ -182,7 +182,7 @@ test('note is saved with conversion data structure', function () {
         ->dispatch('save-conversion-with-note', note: 'Project deadline');
 
     $conversion = $user->savedConversions()->first();
-    
+
     expect($conversion->note)->toBe('Project deadline')
         ->and($conversion->conversion_data)->toBeArray()
         ->and($conversion->conversion_data)->toHaveKey('gregorian')
@@ -212,7 +212,7 @@ test('special characters in notes are preserved', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $specialNote = "Meeting @ 2:00 PM - Discuss Q1 results & plan Q2 strategy!";
+    $specialNote = 'Meeting @ 2:00 PM - Discuss Q1 results & plan Q2 strategy!';
 
     Volt::test('landing')
         ->set('dateInput', '2024-01-15')

@@ -53,7 +53,7 @@ test('save-note-update event passes correct conversion ID and note text', functi
         'user_id' => $user->id,
         'note' => 'Conversion 1 note',
     ]);
-    
+
     $conversion2 = SavedConversion::factory()->create([
         'user_id' => $user->id,
         'note' => 'Conversion 2 note',
@@ -82,7 +82,7 @@ test('save-note-update event handler in saved-conversions-section processes corr
     $this->actingAs($user);
 
     $component = Volt::test('components.saved-conversions-section');
-    
+
     $component->dispatch('save-note-update', [
         'conversionId' => $conversion->id,
         'note' => 'Event handler processed',
@@ -91,7 +91,7 @@ test('save-note-update event handler in saved-conversions-section processes corr
 
     $conversions = $component->get('savedConversions');
     $updatedConversion = $conversions->firstWhere('id', $conversion->id);
-    
+
     expect($conversion->fresh()->note)->toBe('Event handler processed');
 });
 
@@ -114,7 +114,7 @@ test('save-note-update event with invalid conversion ID fails gracefully', funct
 test('save-note-update event respects user authorization', function () {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
-    
+
     $conversion = SavedConversion::factory()->create([
         'user_id' => $user1->id,
         'note' => 'User 1 note',

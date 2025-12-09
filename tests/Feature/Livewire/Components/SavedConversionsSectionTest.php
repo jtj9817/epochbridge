@@ -122,7 +122,7 @@ it('renders old format conversions with backward compatibility', function () {
     $user = User::factory()->create();
 
     // Create conversion without conversion_data (old format)
-    $conversion = new SavedConversion();
+    $conversion = new SavedConversion;
     $conversion->user_id = $user->id;
     $conversion->original_input = '2024-01-01';
     $conversion->conversion_data = null; // Explicitly set to null for legacy format

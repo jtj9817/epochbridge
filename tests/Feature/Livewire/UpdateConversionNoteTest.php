@@ -85,14 +85,14 @@ test('computed property refreshes after note update', function () {
     $this->actingAs($user);
 
     $component = Volt::test('components.saved-conversions-section');
-    
+
     $originalCount = $component->get('savedConversions')->count();
-    
+
     $component->call('updateNote', $conversion->id, 'Updated note');
-    
+
     $updatedConversions = $component->get('savedConversions');
     expect($updatedConversions->count())->toBe($originalCount);
-    
+
     $updatedConversion = $updatedConversions->firstWhere('id', $conversion->id);
     expect($updatedConversion)->not()->toBeNull();
 });
@@ -100,7 +100,7 @@ test('computed property refreshes after note update', function () {
 test('user cannot update another users conversion note', function () {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
-    
+
     $conversion = SavedConversion::factory()->create([
         'user_id' => $user1->id,
         'note' => 'Original note',
@@ -176,7 +176,7 @@ test('note update preserves other conversion fields', function () {
         ->call('updateNote', $conversion->id, 'Updated note');
 
     $fresh = $conversion->fresh();
-    
+
     expect($fresh->note)->toBe('Updated note')
         ->and($fresh->original_input)->toBe('2024-01-15')
         ->and($fresh->conversion_data)->toBe($conversionData)
