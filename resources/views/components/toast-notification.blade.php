@@ -33,7 +33,7 @@
             'bg-red-500': type === 'error',
             'bg-blue-500': type === 'info'
         }"
-        class="text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3"
+        class="text-white px-4 py-3 border-2 border-white/20 flex items-center gap-3 text-xs font-bold uppercase tracking-wider"
         dusk="toast-content"
     >
         <!-- Success Icon -->

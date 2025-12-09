@@ -108,7 +108,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <!-- OAuth Errors -->
     @if($errors->has('oauth'))
-        <div class="p-4 mb-4 text-sm text-red-800 bg-red-100 dark:bg-red-900 dark:text-red-200 border border-red-200 dark:border-red-800 rounded-md">
+        <div class="p-3 mb-2 text-xs text-red-800 bg-red-100 dark:bg-red-900/30 dark:text-red-200 border-2 border-red-300 dark:border-red-800 uppercase tracking-wider">
             <strong>{{ __('Authentication Error:') }}</strong>
             <span>{{ $errors->first('oauth') }}</span>
         </div>
@@ -157,16 +157,16 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <!-- Social Login Divider -->
     <div class="relative flex items-center justify-center">
-        <div class="flex-grow border-t border-zinc-300 dark:border-zinc-600"></div>
-        <span class="flex-shrink mx-4 text-sm text-zinc-600 dark:text-zinc-400">
+        <div class="flex-grow border-t border-theme-300 dark:border-zinc-700"></div>
+        <span class="flex-shrink mx-4 text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
             {{ __('Or continue with') }}
         </span>
-        <div class="flex-grow border-t border-zinc-300 dark:border-zinc-600"></div>
+        <div class="flex-grow border-t border-theme-300 dark:border-zinc-700"></div>
     </div>
 
     <!-- Google Sign-In Button -->
-    <a href="{{ route('social.redirect', 'google') }}" 
-       class="flex items-center justify-center px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-md font-semibold text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150">
+    <a href="{{ route('social.redirect', 'google') }}"
+       class="flex items-center justify-center px-4 py-2 bg-white dark:bg-zinc-800 border-2 border-theme-300 dark:border-zinc-600 font-bold text-xs text-theme-700 dark:text-zinc-300 hover:bg-theme-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-theme-500 uppercase tracking-wider">
         <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -177,7 +177,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
     </a>
 
     @if (Route::has('register'))
-        <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-zinc-600 dark:text-zinc-400">
+        <div class="space-x-1 text-xs text-center rtl:space-x-reverse text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
             <span>{{ __('Don\'t have an account?') }}</span>
             <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
         </div>

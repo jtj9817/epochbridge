@@ -86,9 +86,9 @@
                     </flux:button>
                 </div>
 
-                <div class="mt-5 space-x-0.5 text-sm leading-5 text-center">
-                    <span class="opacity-50">{{ __('or you can') }}</span>
-                    <div class="inline font-medium underline cursor-pointer opacity-80">
+                <div class="mt-5 space-x-0.5 text-xs leading-5 text-center uppercase tracking-wider">
+                    <span class="text-theme-500 dark:text-zinc-400">{{ __('or you can') }}</span>
+                    <div class="inline font-bold underline cursor-pointer text-theme-700 dark:text-zinc-300 hover:text-theme-900 dark:hover:text-white">
                         <span x-show="!showRecoveryInput" @click="toggleInput()">{{ __('login using a recovery code') }}</span>
                         <span x-show="showRecoveryInput" @click="toggleInput()">{{ __('login using an authentication code') }}</span>
                     </div>

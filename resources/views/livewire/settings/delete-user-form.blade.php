@@ -22,10 +22,10 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mt-10 space-y-6">
+<section class="mt-10 space-y-6 border-t-2 border-red-300 dark:border-red-800 pt-6">
     <div class="relative mb-5">
-        <flux:heading>{{ __('Delete account') }}</flux:heading>
-        <flux:subheading>{{ __('Delete your account and all of its resources') }}</flux:subheading>
+        <h3 class="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-widest">{{ __('Delete account') }}</h3>
+        <p class="text-xs text-red-600 dark:text-red-500 uppercase tracking-wider mt-1">{{ __('Delete your account and all of its resources') }}</p>
     </div>
 
     <flux:modal.trigger name="confirm-user-deletion">

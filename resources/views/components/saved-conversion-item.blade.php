@@ -338,12 +338,12 @@
     @if($conversionKeyValue !== null)
         data-conversion-id="{{ $conversionKeyValue }}"
     @endif
-    {{ $attributes->class('bg-white dark:bg-theme-800 rounded-xl shadow-lg border border-theme-200 dark:border-theme-700 overflow-hidden transition-colors') }}
+    {{ $attributes->class('bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-700 overflow-hidden') }}
 >
     <!-- Collapsible header -->
     <div
         id="saved-conversion-header-{{ $uniqueIdSuffix }}"
-        class="bg-[#50493E] p-4 border-b border-theme-200 dark:border-theme-700 flex items-start justify-between gap-4"
+        class="bg-[#50493E] px-4 py-3 border-b border-theme-300 dark:border-zinc-700 flex items-start justify-between gap-4"
     >
         <!-- Input Date Information Container -->
         <div
@@ -357,14 +357,14 @@
             :aria-expanded="(!collapsed).toString()"
             aria-controls="{{ $contentId }}"
         >
-            <p id="saved-conversion-label-input-{{ $uniqueIdSuffix }}" class="text-xs font-medium uppercase tracking-wide text-white/70">
+            <p id="saved-conversion-label-input-{{ $uniqueIdSuffix }}" class="text-xs font-bold uppercase tracking-widest text-white/70">
                 Input Date
             </p>
-            <p id="saved-conversion-value-input-{{ $uniqueIdSuffix }}" class="mt-1 font-semibold text-white truncate">
+            <p id="saved-conversion-value-input-{{ $uniqueIdSuffix }}" class="mt-1 font-semibold text-white truncate font-mono">
                 {{ $originalInput }}
             </p>
             @if($formattedTimestamp)
-                <p id="saved-conversion-timestamp-{{ $uniqueIdSuffix }}" class="mt-1 text-sm text-white/60">
+                <p id="saved-conversion-timestamp-{{ $uniqueIdSuffix }}" class="mt-1 text-xs text-white/60 uppercase tracking-wider">
                     Saved: {{ $formattedTimestamp }}
                 </p>
             @endif
@@ -452,7 +452,7 @@
             >
                 <div
                     id="saved-conversion-note-badge-{{ $uniqueIdSuffix }}"
-                    class="flex items-center gap-1.5 bg-yellow-500/20 rounded-full px-3 py-1.5 cursor-pointer hover:bg-yellow-500/30 transition-colors"
+                    class="flex items-center gap-1.5 bg-yellow-500/20 px-3 py-1 cursor-pointer hover:bg-yellow-500/30 border border-yellow-500/30"
                     x-on:click.stop="$dispatch('open-note-modal', { conversionId: {{ $isGuest ? 'itemData.id' : $item->id }}, currentNote: noteText, isGuest: {{ $isGuest ? 'true' : 'false' }} })"
                     title="Click to view/edit note"
                 >
@@ -472,7 +472,7 @@
                 <button
                     id="saved-conversion-btn-copy-all-{{ $uniqueIdSuffix }}"
                     x-on:click.stop="copyAll()"
-                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                    class="text-blue-400 hover:text-blue-300 p-2 hover:bg-blue-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     title="Copy all conversions"
                     aria-label="Copy all calendar conversions to clipboard"
                 >
@@ -485,8 +485,8 @@
                 <button
                     id="saved-conversion-btn-note-{{ $uniqueIdSuffix }}"
                     @click.stop="$dispatch('open-note-modal', { conversionId: {{ $isGuest ? 'itemData.id' : $item->id }}, currentNote: noteText, isGuest: {{ $isGuest ? 'true' : 'false' }} })"
-                    class="transition-colors p-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-                    :class="hasNote ? 'text-yellow-500 hover:text-yellow-700 dark:text-yellow-400 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/20'"
+                    class="p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500"
+                    :class="hasNote ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-900/20' : 'text-gray-400 hover:text-gray-300 hover:bg-gray-900/20'"
                     :title="hasNote ? 'Edit note' : 'Add note'"
                     :aria-label="hasNote ? 'Edit conversion note' : 'Add conversion note'"
                 >
@@ -504,7 +504,7 @@
                                 $dispatch('delete-guest-conversion', { id: itemData.id })
                             }
                         "
-                        class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        class="text-red-400 hover:text-red-300 p-2 hover:bg-red-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                         title="Delete conversion"
                         aria-label="Delete saved conversion"
                     >
@@ -518,7 +518,7 @@
                         id="saved-conversion-btn-delete-{{ $uniqueIdSuffix }}"
                         wire:click="deleteConversion({{ $item->id }})"
                         wire:confirm="Are you sure you want to delete this saved conversion?"
-                        class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        class="text-red-400 hover:text-red-300 p-2 hover:bg-red-900/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                         title="Delete conversion"
                         aria-label="Delete saved conversion"
                     >
@@ -570,7 +570,7 @@
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2"
         x-cloak
-        class="border-t border-theme-200 dark:border-theme-700"
+        class="border-t border-theme-300 dark:border-zinc-700"
     >
         @if($isGuest)
             <div x-show="itemData.conversion_data && Object.keys(itemData.conversion_data || {}).length > 0" class="overflow-x-auto bg-[#13100B]">

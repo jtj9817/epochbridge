@@ -518,10 +518,12 @@ $updateNote = function (int $id, string $note) {
         x-show="savedConversions.length > 0"
         x-cloak
     >
-        <h2 class="text-2xl font-bold text-theme-900 dark:text-theme-50 mb-6 text-center sm:text-left">
-            Your Saved Conversions
-        </h2>
-        <div class="space-y-6">
+        <div class="flex items-center justify-between mb-4 pb-4 border-b border-theme-300 dark:border-zinc-700">
+            <h2 class="text-sm font-bold text-theme-900 dark:text-theme-50 uppercase tracking-widest">
+                Your Saved Conversions
+            </h2>
+        </div>
+        <div class="space-y-4">
             <template x-for="(item, itemIndex) in savedConversions" :key="item && item.id ? item.id : itemIndex">
                 <x-saved-conversion-item
                     :item="null"
@@ -541,11 +543,13 @@ $updateNote = function (int $id, string $note) {
     @auth
     <div id="saved-conversions-auth">
         @if ($this->savedConversions && $this->savedConversions->isNotEmpty())
-            <h2 class="text-2xl font-bold text-theme-900 dark:text-theme-50 mb-6 text-center sm:text-left">
-                Your Saved Conversions
-            </h2>
-            
-            <div class="space-y-6">
+            <div class="flex items-center justify-between mb-4 pb-4 border-b border-theme-300 dark:border-zinc-700">
+                <h2 class="text-sm font-bold text-theme-900 dark:text-theme-50 uppercase tracking-widest">
+                    Your Saved Conversions
+                </h2>
+            </div>
+
+            <div class="space-y-4">
                 @foreach($this->savedConversions as $item)
                     <x-saved-conversion-item :item="$item" wire:key="auth-{{ $item->id }}" />
                 @endforeach

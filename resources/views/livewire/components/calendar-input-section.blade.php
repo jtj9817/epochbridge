@@ -27,18 +27,18 @@ updated([
 
 ?>
 
-<div id="date-input-section" class="mb-12">
+<div id="date-input-section" class="mb-8">
     <div class="max-w-2xl mx-auto">
 
         <!-- Input Type Selector -->
-        <div class="mb-4">
-            <label for="input-type-selector" class="block text-sm font-medium text-theme-500 dark:text-theme-100 mb-2 text-left">
+        <div class="mb-3">
+            <label for="input-type-selector" class="block text-xs font-medium text-theme-500 dark:text-theme-100 mb-2 text-left uppercase tracking-wider">
                 Input Format
             </label>
             <select
                 id="input-type-selector"
                 wire:model.live="inputType"
-                class="w-full px-4 py-2 text-base border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition">
+                class="w-full px-3 py-2 text-sm border-2 border-theme-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:border-theme-500 dark:focus:border-theme-100 transition-colors">
                 @foreach($inputTypes as $key => $label)
                     <option value="{{ $key }}">{{ $label }}</option>
                 @endforeach
@@ -46,17 +46,17 @@ updated([
         </div>
 
         <!-- Main Input Field -->
-        <div class="mb-8">
-            <label for="date-input" class="block text-sm font-medium text-theme-500 dark:text-theme-100 mb-3 text-left">
-                Enter your value
+        <div class="mb-6">
+            <label for="date-input" class="block text-xs font-medium text-theme-500 dark:text-theme-100 mb-2 text-left uppercase tracking-wider">
+                Enter Value
             </label>
-            <div class="relative">
+            <div class="relative datetime-input">
                 <input
                     x-show="$wire.inputType === 'gregorian'"
                     type="date"
                     id="date-input-gregorian"
                     wire:model.live="dateInput"
-                    class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                    class="w-full px-4 py-3 text-base font-medium text-center border-0 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none transition-colors"
                     placeholder="YYYY-MM-DD"
                 />
                 <input
@@ -64,7 +64,7 @@ updated([
                     type="text"
                     id="date-input-jalali"
                     wire:model.live.debounce.300ms="dateInput"
-                    class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                    class="w-full px-4 py-3 text-base font-medium text-center border-0 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none transition-colors"
                     placeholder="YYYY/MM/DD"
                 />
                 <input
@@ -72,7 +72,7 @@ updated([
                     type="number"
                     id="date-input-unix"
                     wire:model.live.debounce.300ms="dateInput"
-                    class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                    class="w-full px-4 py-3 text-base font-medium text-center border-0 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none transition-colors"
                     placeholder="e.g., 1672531200"
                 />
                 <input
@@ -80,7 +80,7 @@ updated([
                     type="text"
                     id="date-input-iso8601"
                     wire:model.live.debounce.300ms="dateInput"
-                    class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                    class="w-full px-4 py-3 text-base font-medium text-center border-0 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none transition-colors"
                     placeholder="e.g., 2023-01-01T00:00:00Z"
                 />
                 <input
@@ -89,7 +89,7 @@ updated([
                     step="any"
                     id="date-input-jd"
                     wire:model.live.debounce.300ms="dateInput"
-                    class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                    class="w-full px-4 py-3 text-base font-medium text-center border-0 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none transition-colors"
                     :placeholder="$wire.inputType === 'jd' ? 'e.g., 2460310.5' : 'e.g., 60309'"
                 />
                 <input
@@ -97,7 +97,7 @@ updated([
                     type="text"
                     id="date-input-calendars"
                     wire:model.live.debounce.300ms="dateInput"
-                    class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                    class="w-full px-4 py-3 text-base font-medium text-center border-0 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none transition-colors"
                     placeholder="YYYY/MM/DD"
                 />
                 <input
@@ -105,12 +105,12 @@ updated([
                     type="text"
                     id="date-input-japanese"
                     wire:model.live.debounce.300ms="dateInput"
-                    class="w-full px-6 py-4 text-lg font-medium text-center border-2 border-theme-100 dark:border-theme-500 rounded-lg bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+                    class="w-full px-4 py-3 text-base font-medium text-center border-0 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none transition-colors"
                     placeholder="Reiwa 5/05/01"
                 />
             </div>
             @error('dateInput')
-                <p class="mt-2 text-sm text-red-600 dark:text-red-400 text-left">{{ $message }}</p>
+                <p class="mt-2 text-xs text-red-600 dark:text-red-400 text-left uppercase tracking-wider">{{ $message }}</p>
             @enderror
         </div>
     </div>

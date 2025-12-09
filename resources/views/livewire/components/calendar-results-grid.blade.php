@@ -145,8 +145,8 @@ $copyLines = computed(function() {
      x-init="$watch('$wire.dateInput', value => currentDateInput = value)">
     <!-- Conversion Error Message -->
     @if ($conversionError)
-        <div id="conversion-error" class="my-8 p-4 max-w-2xl mx-auto bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <p class="text-red-800 dark:text-red-200 text-sm">
+        <div id="conversion-error" class="my-8 p-4 max-w-2xl mx-auto bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700">
+            <p class="text-red-800 dark:text-red-200 text-xs uppercase tracking-wider font-medium">
                 {{ $conversionError }}
             </p>
         </div>
@@ -163,38 +163,39 @@ $copyLines = computed(function() {
             $copyAllPayload = (string) $this->copyLines;
         @endphp
 
-        <div class="flex items-center justify-between mb-6">
-            <h2 id="conversion-results-heading" class="text-2xl font-bold text-theme-900 dark:text-theme-50">
+        <div class="flex items-center justify-between mb-4 pb-4 border-b border-theme-300 dark:border-zinc-700">
+            <h2 id="conversion-results-heading" class="text-sm font-bold text-theme-900 dark:text-theme-50 uppercase tracking-widest">
                 Conversion Results
             </h2>
             <div class="flex items-center gap-4">
                 <button
                     @click="copyToClipboard({{ Js::from($copyAllPayload) }}, 'all')"
-                    class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline"
-                    :class="{ 'text-green-500': copiedFeedback === 'all' }"
-                    x-text="copiedFeedback === 'all' ? 'Copied!' : 'Copy All'">
-                    Copy All
+                    class="text-xs font-medium text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white uppercase tracking-wider"
+                    :class="{ 'text-green-600 dark:text-green-400': copiedFeedback === 'all' }"
+                    x-text="copiedFeedback === 'all' ? 'COPIED' : 'COPY ALL'">
+                    COPY ALL
                 </button>
                 @auth
                     <button
                         wire:click="$dispatch('save-conversion')"
-                        class="text-sm font-medium text-theme-500 dark:text-theme-100 hover:underline">
-                        Save
+                        class="text-xs font-medium text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white uppercase tracking-wider">
+                        SAVE
                     </button>
                 @else
                     <button
                         @click="$dispatch('save-guest-conversion')"
                         :disabled="isConversionSaved()"
-                        class="text-sm font-medium hover:underline disabled:cursor-not-allowed"
-                        :class="isConversionSaved() ? 'text-green-600 dark:text-green-400' : 'text-theme-500 dark:text-theme-100'"
-                        x-text="isConversionSaved() ? 'Saved ✓' : 'Save'">
-                        Save
+                        class="text-xs font-medium uppercase tracking-wider disabled:cursor-not-allowed"
+                        :class="isConversionSaved() ? 'text-green-600 dark:text-green-400' : 'text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white'"
+                        x-text="isConversionSaved() ? 'SAVED' : 'SAVE'">
+                        SAVE
                     </button>
                 @endauth
             </div>
         </div>
 
-        <div id="results-grid" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div id="results-grid" class="grid-exposed border border-theme-300 dark:border-zinc-700">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3">
             @if (!empty($displayResults))
                 @foreach($displayResults as $key => $data)
                     @php
@@ -202,6 +203,7 @@ $copyLines = computed(function() {
                         $allowScalar = array_key_exists($key, $scalarResults) && is_scalar($data);
                     @endphp
                     @if($shouldRender || $allowScalar)
+                        <div class="grid-cell">
                         @switch($key)
                             @case('gregorian') <x-calendars.gregorian-card :data="$data" /> @break
                             @case('jalali') <x-calendars.jalali-card :data="$data" /> @break
@@ -213,15 +215,17 @@ $copyLines = computed(function() {
                             @default
                                 <x-dynamic-component :component="'calendars.' . str_replace('_', '-', $key) . '-card'" :data="$data" />
                         @endswitch
+                        </div>
                     @endif
                 @endforeach
             @endif
 
             @if(empty($displayResults))
-                <div class="md:col-span-2 lg:col-span-3 text-center py-8 text-theme-500 dark:text-theme-100">
+                <div class="md:col-span-2 lg:col-span-3 text-center py-8 text-theme-500 dark:text-theme-100 text-xs uppercase tracking-wider">
                     No calendars match your search criteria.
                 </div>
             @endif
+            </div>
         </div>
         </div>
     @endif

@@ -52,23 +52,23 @@ $setTomorrow = function () {
 
 ?>
 
-<div id="quick-action-buttons" class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+<div id="quick-action-buttons" class="flex flex-col sm:flex-row gap-2 justify-center mb-6">
     <button
         id="btn-today"
         wire:click="setToday"
-        class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-theme-300 text-theme-300 hover:bg-theme-300 hover:text-theme-50 dark:border-theme-100 dark:text-theme-100 dark:hover:bg-theme-100 dark:hover:text-theme-900">
+        class="quick-action-btn font-medium text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white">
         TODAY
     </button>
     <button
         id="btn-yesterday"
         wire:click="setYesterday"
-        class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-theme-300 text-theme-300 hover:bg-theme-300 hover:text-theme-50 dark:border-theme-100 dark:text-theme-100 dark:hover:bg-theme-100 dark:hover:text-theme-900">
+        class="quick-action-btn font-medium text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white">
         YESTERDAY
     </button>
     <button
         id="btn-tomorrow"
         wire:click="setTomorrow"
-        class="quick-action-btn px-8 py-3 font-semibold rounded-lg border border-theme-300 text-theme-300 hover:bg-theme-300 hover:text-theme-50 dark:border-theme-100 dark:text-theme-100 dark:hover:bg-theme-100 dark:hover:text-theme-900">
+        class="quick-action-btn font-medium text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white">
         TOMORROW
     </button>
 </div>

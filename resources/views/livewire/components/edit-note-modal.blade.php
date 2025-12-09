@@ -69,49 +69,49 @@ $saveNote = function () {
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 scale-95"
-            class="relative inline-block align-bottom bg-white dark:bg-theme-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full"
+            class="relative inline-block align-bottom bg-white dark:bg-zinc-900 text-left overflow-hidden border-2 border-theme-300 dark:border-zinc-700 sm:my-8 sm:align-middle sm:max-w-lg w-full"
             @click.stop
         >
             <!-- Modal Header -->
-            <div class="bg-theme-100 dark:bg-theme-700 px-6 py-4 border-b border-theme-200 dark:border-theme-600">
-                <h3 class="text-lg font-semibold text-theme-900 dark:text-theme-50">
+            <div class="bg-theme-100 dark:bg-zinc-800 px-4 py-3 border-b border-theme-300 dark:border-zinc-700">
+                <h3 class="text-sm font-bold text-theme-900 dark:text-theme-50 uppercase tracking-widest">
                     {{ $currentNote ? 'Edit Note' : 'Add Note' }}
                 </h3>
             </div>
 
             <!-- Modal Body -->
-            <div class="bg-white dark:bg-theme-800 px-6 py-4">
+            <div class="bg-white dark:bg-zinc-900 px-4 py-4">
                 <textarea
                     id="edit-note-textarea"
                     wire:model="currentNote"
                     rows="6"
                     maxlength="2048"
                     placeholder="e.g., Birthday, Anniversary, Project Deadline..."
-                    class="block w-full px-3 py-2 border border-theme-300 dark:border-theme-600 rounded-lg focus:ring-2 focus:ring-theme-500 focus:border-transparent bg-white dark:bg-theme-900 text-theme-900 dark:text-theme-50 placeholder-theme-400 dark:placeholder-theme-500 resize-none"
+                    class="block w-full px-3 py-2 border-2 border-theme-300 dark:border-zinc-600 focus:outline-none focus:border-theme-500 dark:focus:border-theme-100 bg-white dark:bg-zinc-800 text-theme-900 dark:text-theme-50 placeholder-theme-400 dark:placeholder-zinc-500 resize-none font-mono text-sm"
                 ></textarea>
                 <div class="mt-2 flex justify-end">
-                    <p class="text-xs text-theme-500 dark:text-theme-400">
+                    <p class="text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
                         <span x-text="$wire.currentNote.length"></span>/2048
                     </p>
                 </div>
                 @error('currentNote')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    <p class="mt-1 text-xs text-red-600 dark:text-red-400 uppercase tracking-wider">{{ $message }}</p>
                 @enderror
             </div>
 
             <!-- Modal Footer -->
-            <div class="bg-theme-50 dark:bg-theme-900 px-6 py-4 flex justify-end gap-3">
+            <div class="bg-theme-50 dark:bg-zinc-800 px-4 py-3 flex justify-end gap-3 border-t border-theme-300 dark:border-zinc-700">
                 <button
                     wire:click="closeModal"
                     type="button"
-                    class="px-4 py-2 border border-theme-300 dark:border-theme-600 rounded-lg text-theme-700 dark:text-theme-300 hover:bg-theme-100 dark:hover:bg-theme-800 transition-colors"
+                    class="px-4 py-2 border-2 border-theme-300 dark:border-zinc-600 text-theme-700 dark:text-zinc-300 hover:bg-theme-100 dark:hover:bg-zinc-700 text-xs font-bold uppercase tracking-wider"
                 >
                     Cancel
                 </button>
                 <button
                     wire:click="saveNote"
                     type="button"
-                    class="px-4 py-2 bg-theme-500 hover:bg-theme-600 text-white rounded-lg transition-colors"
+                    class="px-4 py-2 bg-theme-500 hover:bg-theme-300 border-2 border-theme-500 hover:border-theme-300 text-white text-xs font-bold uppercase tracking-wider"
                 >
                     Save
                 </button>
