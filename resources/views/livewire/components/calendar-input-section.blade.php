@@ -1,6 +1,6 @@
 <?php
 
-use function Livewire\Volt\{state, rules, updated};
+use function Livewire\Volt\{state, rules, updated, on};
 
 state(['dateInput', 'inputType', 'inputTypes']);
 
@@ -23,6 +23,13 @@ rules(fn () => match ($this->inputType) {
 updated([
     'dateInput' => fn () => $this->dispatch('input-updated', dateInput: $this->dateInput, inputType: $this->inputType),
     'inputType' => fn () => $this->dispatch('input-updated', dateInput: $this->dateInput, inputType: $this->inputType),
+]);
+
+// Listen for date updates from parent (triggered by quick action buttons)
+on([
+    'update-date-input' => function (string $date) {
+        $this->dateInput = $date;
+    },
 ]);
 
 ?>

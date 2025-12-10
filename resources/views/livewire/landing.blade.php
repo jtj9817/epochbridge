@@ -66,6 +66,8 @@ $isDuplicateEntry = static function (QueryException $exception): bool {
 on([
     'date-selected' => function (string $date, ?DateTimeConverterService $converter = null) use ($resolveConverter) {
         $this->dateInput = $date;
+        // Update the child input component's dateInput state
+        $this->dispatch('update-date-input', date: $date);
         $this->convertDate($resolveConverter($converter));
     },
     'input-updated' => function (string $dateInput, string $inputType) {
