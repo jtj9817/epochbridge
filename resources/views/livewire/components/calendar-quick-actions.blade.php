@@ -15,9 +15,16 @@ use App\Services\AncientMacedonianService;
 use App\Services\JulianCalendarService;
 use Illuminate\Support\Carbon;
 use Morilog\Jalali\Jalalian;
-use function Livewire\Volt\{state};
+use function Livewire\Volt\{state, on};
 
 state(['inputType']);
+
+// Keep this component's input type in sync with the user's selection
+on([
+    'input-updated' => function (string $dateInput, string $inputType) {
+        $this->inputType = $inputType;
+    },
+]);
 
 $setDate = function (string $dateValue) {
     $this->dispatch('date-selected', date: $dateValue);
