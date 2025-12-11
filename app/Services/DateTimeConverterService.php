@@ -171,7 +171,7 @@ class DateTimeConverterService
         try {
             return match ($inputType) {
                 'gregorian' => Carbon::parse($dateString)->startOfDay(),
-                'jalali' => Jalalian::fromFormat('Y/m/d', $dateString)->toCarbon()->startOfDay(),
+                'jalali' => Carbon::instance(Jalalian::fromFormat('Y/m/d', $dateString)->toCarbon())->startOfDay(),
                 'unix' => Carbon::createFromTimestamp((int) $dateString),
                 'iso8601' => Carbon::parse($dateString),
                 'jd' => Carbon::createFromJulianDay((float) $dateString),
