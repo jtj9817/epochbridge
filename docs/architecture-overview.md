@@ -57,7 +57,8 @@ EpochBridge is a comprehensive calendar conversion platform built using the TALL
 - **Testing Framework**: PestPHP 4.1+ with Laravel plugin
 - **Browser Testing**: Laravel Dusk 8.2+
 - **Code Quality**: Laravel Pint 1.18+ (PHP CS Fixer)
-- **Containerization**: Laravel Sail 1.41+ (Docker)
+- **Development Containerization**: Laravel Sail 1.41+ (Docker)
+- **Production Containerization**: Multi-stage Dockerfile with PHP 8.2-FPM, Nginx, Supervisord
 - **Logging**: Laravel Pail 1.2+
 
 ## System Architecture
@@ -1310,6 +1311,81 @@ php artisan view:cache    # Cache views
 - **Database**: MySQL 8.0+
 - **Web Server**: Nginx/Apache with PHP-FPM
 - **Process Manager**: Supervisor (for queues)
+
+### Production Docker Deployment
+
+EpochBridge includes a production-ready Docker setup for containerized deployment.
+
+#### Docker Architecture
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Docker Container                      │
+├─────────────────────────────────────────────────────────┤
+│                     Supervisord                          │
+│              (Process Manager - PID 1)                   │
+├─────────────────────┬───────────────────────────────────┤
+│        Nginx        │           PHP-FPM                  │
+│    (Port 80/443)    │      (FastCGI Socket)             │
+│   - Static assets   │   - Laravel application            │
+│   - Reverse proxy   │   - PHP 8.2                       │
+├─────────────────────┴───────────────────────────────────┤
+│              Laravel Application Code                    │
+│         /var/www/html (Optimized Production)            │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### Multi-Stage Build Process
+The Dockerfile uses three stages for optimized builds:
+
+1. **Composer Builder Stage**
+   - Installs PHP dependencies without dev packages
+   - Generates optimized autoloader
+   - Cached layer for faster rebuilds
+
+2. **Frontend Builder Stage**
+   - Node.js 22 Alpine environment
+   - Builds production-optimized Vite assets
+   - Separate layer prevents rebuilds when PHP changes
+
+3. **Production Image Stage**
+   - PHP 8.2-FPM on Alpine Linux (minimal footprint)
+   - Nginx for reverse proxy and static assets
+   - Supervisord for process management
+   - Copies optimized artifacts from builder stages
+
+#### Docker Files
+```
+.
+├── Dockerfile              # Multi-stage production build
+├── .dockerignore           # Build context exclusions
+└── docker/
+    ├── nginx.conf          # Nginx site configuration
+    ├── supervisord.conf    # Process supervisor config
+    └── entrypoint.sh       # Container startup script
+```
+
+#### Deployment Commands
+```bash
+# Build production image
+docker build -t epochbridge:latest .
+
+# Run container with environment variables
+docker run -d \
+  --name epochbridge \
+  -p 80:80 \
+  -e APP_KEY=base64:your-key \
+  -e DB_HOST=mysql-host \
+  -e DB_DATABASE=epochbridge \
+  -e DB_USERNAME=user \
+  -e DB_PASSWORD=password \
+  epochbridge:latest
+
+# View container logs
+docker logs -f epochbridge
+
+# Execute artisan commands
+docker exec epochbridge php artisan migrate --force
+```
 
 ## Security Architecture
 

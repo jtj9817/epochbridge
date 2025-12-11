@@ -55,7 +55,7 @@ A comprehensive calendar conversion platform built with Laravel 12 and the TALL 
 - **Build Tool**: Vite with HMR
 - **OAuth**: Laravel Socialite (Google provider)
 - **Testing**: PestPHP, Pest Browser Plugin, Laravel Dusk
-- **Containerization**: Laravel Sail (Docker)
+- **Containerization**: Laravel Sail (development), Docker (production)
 
 ## Quick Start
 
@@ -580,6 +580,43 @@ php artisan test tests/Unit/Models/SavedConversionNoteTest.php
 ```
 
 ## Production Deployment
+
+### Option 1: Docker Deployment (Recommended)
+
+EpochBridge includes a production-ready Docker setup with multi-stage builds for optimized image size.
+
+1. Build the Docker image
+```bash
+docker build -t epochbridge:latest .
+```
+
+2. Run the container
+```bash
+docker run -d \
+  --name epochbridge \
+  -p 80:80 \
+  -e APP_KEY=your-app-key \
+  -e DB_HOST=your-db-host \
+  -e DB_DATABASE=epochbridge \
+  -e DB_USERNAME=your-username \
+  -e DB_PASSWORD=your-password \
+  epochbridge:latest
+```
+
+**Docker Architecture:**
+- **Multi-stage build**: Composer dependencies, frontend assets, and production image
+- **PHP 8.2-FPM**: FastCGI Process Manager for handling PHP requests
+- **Nginx**: Reverse proxy and static asset serving
+- **Supervisord**: Process management for nginx and PHP-FPM
+
+**Docker Files:**
+- `Dockerfile` - Multi-stage production build
+- `docker/nginx.conf` - Nginx configuration
+- `docker/supervisord.conf` - Process supervisor configuration
+- `docker/entrypoint.sh` - Container startup script
+- `.dockerignore` - Build context exclusions
+
+### Option 2: Traditional Deployment
 
 1. Build assets for production
 ```bash

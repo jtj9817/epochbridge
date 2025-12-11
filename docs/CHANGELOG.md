@@ -5,6 +5,84 @@ All notable changes to EpochBridge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [December 10, 2025] - Docker Containerization & UI Refinements
+
+### Added
+- **Docker Containerization Support**: Production-ready Docker deployment infrastructure
+  - Multi-stage `Dockerfile` with optimized build layers (Composer, Node.js, PHP-FPM)
+  - `docker/nginx.conf` - Nginx reverse proxy configuration for Laravel
+  - `docker/supervisord.conf` - Process management for nginx and PHP-FPM
+  - `docker/entrypoint.sh` - Container startup and initialization script
+  - `.dockerignore` - Build context optimization (71 exclusion rules)
+  - PHP 8.2-FPM Alpine-based production image for minimal footprint
+
+- **Calendars Info Modal Component**: New modal for calendar system documentation
+  - `calendars-info-modal.blade.php` - Comprehensive calendar descriptions
+  - Static content approach for simplicity and maintainability
+  - Accessible modal with proper open/close lifecycle
+  - Zinc color scheme for visual consistency
+
+- **Calendar Quick Actions Enhancement**: Parent-child date synchronization
+  - Today/Yesterday/Tomorrow buttons now properly sync with date input
+  - Improved state management for quick action button selection
+  - Better UX with immediate visual feedback
+
+### Changed
+- **UI Theme Overhaul**: Semantic CSS system with Berkeley Mono typography
+  - Comprehensive CSS variable system in `resources/css/app.css` (589+ lines added)
+  - Zinc color scheme standardization across all components
+  - Berkeley Mono font integration for code and data displays
+  - Improved visual hierarchy and spacing consistency
+
+- **Calendar Card Components Standardization**: Unified styling across all 20 calendar cards
+  - Consolidated Julian card from `card/julian-card.blade.php` to `calendars/julian-card.blade.php`
+  - Consistent typography classes across all calendar display components
+  - Standardized icon and label styling patterns
+  - Improved accessibility with better color contrast
+
+- **Saved Conversion Item Layout**: Enhanced display and accessibility
+  - Clickable note preview in saved conversion headers
+  - Improved action button layout and visibility
+  - Better visual hierarchy for conversion data display
+  - Enhanced responsive behavior for mobile devices
+
+### Refactored
+- **Calendar Info Modal Architecture**: Simplified from dynamic to static content
+  - Removed complex computed properties in favor of inline static content
+  - Improved modal centering and backdrop handling
+  - Better separation of modal display logic from content
+  - Reduced JavaScript complexity for modal interactions
+
+- **Calendar Card Component Structure**: Streamlined component organization
+  - Removed duplicate Julian card component from legacy location
+  - Updated CSS source directives for proper Tailwind content scanning
+  - Consolidated styling patterns across modern, historical, and ancient calendars
+
+### Fixed
+- **Calendar Modal Display Issues**: Corrected centering and backdrop behavior
+  - Fixed modal positioning for consistent centered display
+  - Improved backdrop click handling for proper modal dismissal
+  - Enhanced transition animations for smooth open/close
+
+- **Test Suite Stability**: Updated tests for calendar system changes
+  - Fixed `CalendarQuickActionsTest.php` for new synchronization behavior
+  - Updated browser and feature tests for UI consistency changes
+  - Corrected test assertions for renamed/moved components
+
+### Technical Improvements
+- **Docker Production Architecture**
+  - Multi-stage builds reduce final image size significantly
+  - Composer dependencies cached separately for faster rebuilds
+  - Frontend assets built in isolated Node.js stage
+  - Nginx handles static assets directly without PHP overhead
+  - Supervisord manages process lifecycle in single container
+
+- **CSS Architecture Enhancement**
+  - Semantic CSS variables for consistent theming
+  - Better Tailwind CSS 4 integration with `@source` directives
+  - Improved dark mode support preparation
+  - Reduced CSS specificity conflicts
+
 ## [October 30, 2025] - Saved Conversion Notes Feature
 
 ### Added
