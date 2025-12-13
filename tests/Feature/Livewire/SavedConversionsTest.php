@@ -1,10 +1,8 @@
 <?php
 
-use App\Livewire\Landing;
 use App\Models\User;
-use App\Services\DateTimeConverterService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
+use Livewire\Volt\Volt;
 
 uses(RefreshDatabase::class);
 
@@ -12,17 +10,14 @@ test('authenticated user can save conversion with complete calendar data', funct
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $converter = app(DateTimeConverterService::class);
-    $conversionResults = $converter->convert('2024-01-15', 'gregorian');
-
-    Livewire::test(Landing::class)
+    Volt::test('landing')
         ->set('dateInput', '2024-01-15')
         ->set('inputType', 'gregorian')
         ->call('convertDate')
         ->assertSet('conversionResults', function ($results) {
             return isset($results['gregorian']) && isset($results['jalali']);
         })
-        ->call('saveConversion', $converter)
+        ->dispatch('save-conversion')
         ->assertDispatched('conversion-saved');
 
     $this->assertDatabaseHas('saved_conversions', [
@@ -42,24 +37,20 @@ test('authenticated user cannot save conversion without results', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $converter = app(DateTimeConverterService::class);
-
-    Livewire::test(Landing::class)
-        ->set('dateInput', '')
-        ->call('saveConversion', $converter)
+    Volt::test('landing')
+        ->set('dateInput', '2024-01-15')
+        ->dispatch('save-conversion')
         ->assertNotDispatched('conversion-saved');
 
     $this->assertDatabaseCount('saved_conversions', 0);
 });
 
 test('guest user cannot save conversion through livewire', function () {
-    $converter = app(DateTimeConverterService::class);
-
-    Livewire::test(Landing::class)
+    Volt::test('landing')
         ->set('dateInput', '2024-01-15')
         ->set('inputType', 'gregorian')
         ->call('convertDate')
-        ->call('saveConversion', $converter)
+        ->dispatch('save-conversion')
         ->assertNotDispatched('conversion-saved');
 
     $this->assertDatabaseCount('saved_conversions', 0);
@@ -69,14 +60,11 @@ test('saved conversion includes all calendar systems', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $converter = app(DateTimeConverterService::class);
-    $fullResults = $converter->getFullConversionResults('2024-01-15', 'gregorian');
-
-    Livewire::test(Landing::class)
+    Volt::test('landing')
         ->set('dateInput', '2024-01-15')
         ->set('inputType', 'gregorian')
         ->call('convertDate')
-        ->call('saveConversion', $converter);
+        ->dispatch('save-conversion');
 
     $savedConversion = $user->savedConversions()->first();
 
@@ -91,19 +79,17 @@ test('saved conversion maintains backward compatibility fields', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $converter = app(DateTimeConverterService::class);
-
-    Livewire::test(Landing::class)
+    Volt::test('landing')
         ->set('dateInput', '2024-01-15')
         ->set('inputType', 'gregorian')
         ->call('convertDate')
-        ->call('saveConversion', $converter);
+        ->dispatch('save-conversion');
 
     $savedConversion = $user->savedConversions()->first();
 
     $this->assertDatabaseHas('saved_conversions', [
         'id' => $savedConversion->id,
-        'gregorian_date' => '2024-01-15',
+        'gregorian_date' => '2024-01-15 00:00:00',
         'jalali_date' => $savedConversion->conversion_data['jalali']['full_date'],
         'unix_timestamp' => $savedConversion->conversion_data['unix'],
         'iso8601_string' => $savedConversion->conversion_data['iso8601'],
@@ -114,14 +100,12 @@ test('conversion with different input types saves correctly', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $converter = app(DateTimeConverterService::class);
-
     // Test with Jalali input
-    Livewire::test(Landing::class)
+    Volt::test('landing')
         ->set('dateInput', '1402/10/24')
         ->set('inputType', 'jalali')
         ->call('convertDate')
-        ->call('saveConversion', $converter);
+        ->dispatch('save-conversion');
 
     $this->assertDatabaseHas('saved_conversions', [
         'user_id' => $user->id,
@@ -138,15 +122,14 @@ test('multiple conversions are saved correctly', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $converter = app(DateTimeConverterService::class);
     $dates = ['2024-01-15', '2024-02-15', '2024-03-15'];
 
     foreach ($dates as $date) {
-        Livewire::test(Landing::class)
+        Volt::test('landing')
             ->set('dateInput', $date)
             ->set('inputType', 'gregorian')
             ->call('convertDate')
-            ->call('saveConversion', $converter);
+            ->dispatch('save-conversion');
     }
 
     expect($user->savedConversions()->count())->toBe(3);
@@ -161,16 +144,14 @@ test('conversion error does not save invalid data', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $converter = app(DateTimeConverterService::class);
-
-    Livewire::test(Landing::class)
+    Volt::test('landing')
         ->set('dateInput', 'invalid-date')
         ->set('inputType', 'gregorian')
         ->call('convertDate')
         ->assertSet('conversionError', function ($error) {
             return ! empty($error);
         })
-        ->call('saveConversion', $converter)
+        ->dispatch('save-conversion')
         ->assertNotDispatched('conversion-saved');
 
     $this->assertDatabaseCount('saved_conversions', 0);

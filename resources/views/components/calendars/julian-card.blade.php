@@ -24,5 +24,11 @@
     <div class="text-xs font-mono text-amber-500 dark:text-amber-500 mt-2">
         {{ $data['year'] ?? 'N/A' }}
     </div>
+
+    @if (! empty($data['difference_label']))
+        <div class="mt-3 text-[10px] text-amber-700 dark:text-amber-300 uppercase tracking-wider">
+            <span class="font-semibold">Difference:</span> {{ $data['difference_label'] }}
+        </div>
+    @endif
 </x-calendars.base-calendar-card>
 

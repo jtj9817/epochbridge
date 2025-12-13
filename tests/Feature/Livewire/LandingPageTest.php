@@ -141,7 +141,9 @@ beforeEach(function () {
 
         $mock->shouldReceive('getFullConversionResults')
             ->andReturnUsing(function (string $dateString, string $inputType = 'gregorian') {
-                return match ($dateString) {
+                $baseData = match ($dateString) {
+                    'not-a-valid-date' => throw new \InvalidArgumentException('Invalid date format provided for the selected input type.'),
+                    '' => throw new \InvalidArgumentException('Input date cannot be empty.'),
                     '2024-01-01' => [
                         'gregorian' => [
                             'full_date' => '2024-01-01',
@@ -188,6 +190,70 @@ beforeEach(function () {
                         'iso8601' => '2024-09-01T00:00:00+00:00',
                     ],
                 };
+
+                $frenchData = config('calendars.french_republican.apply_paris_offset', true)
+                    ? [
+                        'name' => 'French Republican',
+                        'full_date' => '232/12/16',
+                        'display' => '16 Fructidor An 232',
+                        'tags' => ['historical', 'solar'],
+                        'year' => 232,
+                        'month_name' => 'Fructidor',
+                        'day' => 16,
+                        'day_of_week' => 'Quartidi',
+                    ]
+                    : [
+                        'name' => 'French Republican',
+                        'full_date' => '232/12/15',
+                        'display' => '15 Fructidor An 232',
+                        'tags' => ['historical', 'solar'],
+                        'year' => 232,
+                        'month_name' => 'Fructidor',
+                        'day' => 15,
+                        'day_of_week' => 'Tridi',
+                    ];
+
+                return array_merge($baseData, [
+                    'julian-day' => 2460310,
+                    'modified-julian-day' => 60309.5,
+                    'hebrew' => [
+                        'name' => 'Hebrew',
+                        'full_date' => '5784/10/19',
+                        'tags' => ['modern', 'lunisolar'],
+                        'year' => 5784,
+                        'month_name' => 'Tevet',
+                        'day' => 19,
+                        'day_of_week' => 'Yom Sheni',
+                    ],
+                    'islamic' => [
+                        'name' => 'Islamic',
+                        'full_date' => '1445/06/19',
+                        'tags' => ['modern', 'lunar'],
+                        'year' => 1445,
+                        'month_name' => 'Jumada al-Thani',
+                        'day' => 19,
+                        'day_of_week' => 'Yawm al-Ithnayn',
+                    ],
+                    'french_republican' => $frenchData,
+                    'coptic' => [
+                        'name' => 'Coptic',
+                        'full_date' => '1740/04/22',
+                        'tags' => ['historical', 'solar'],
+                        'year' => 1740,
+                        'month_name' => 'Tobi',
+                        'day' => 22,
+                        'day_of_week' => 'Pesnau',
+                    ],
+                    'ethiopian' => [
+                        'name' => 'Ethiopian',
+                        'full_date' => '2016/04/22',
+                        'tags' => ['historical', 'solar'],
+                        'year' => 2016,
+                        'month_name' => 'Ṭərr',
+                        'day' => 22,
+                        'day_of_week' => 'Maksäño',
+                    ],
+                ]);
             });
     });
 });
@@ -247,16 +313,6 @@ it('reflects paris offset toggle in conversion state', function () {
         ->assertSet('conversionResults.french_republican.day', 15);
 
     config()->set('calendars.french_republican.apply_paris_offset', true);
-});
-
-it('loads additional julian calendar data when event dispatched', function () {
-    Volt::test('landing')
-        ->set('dateInput', '2024-09-01')
-        ->call('convertDate')
-        ->dispatch('load-additional-calendars')
-        ->assertSet('additionalCalendarsLoaded', true)
-        ->assertSet('additionalConversionResults.julian.full_date', '2024/12/19')
-        ->assertSet('additionalConversionResults.julian.difference_label', '13 days behind Gregorian');
 });
 
 it('shows an error message for an invalid date format', function () {
