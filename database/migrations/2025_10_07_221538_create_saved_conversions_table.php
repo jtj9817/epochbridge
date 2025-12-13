@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('original_input');
-            $table->string('gregorian_date');
-            $table->string('jalali_date');
-            $table->bigInteger('unix_timestamp');
-            $table->string('iso8601_string');
+            // Legacy fields (kept for backward compatibility).
+            $table->string('gregorian_date')->nullable();
+            $table->string('jalali_date')->nullable();
+            $table->bigInteger('unix_timestamp')->nullable();
+            $table->string('iso8601_string')->nullable();
             $table->timestamps();
         });
     }

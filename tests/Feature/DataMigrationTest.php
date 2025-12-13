@@ -3,6 +3,7 @@
 use App\Models\SavedConversion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -12,6 +13,7 @@ test('database migration correctly migrates old format to new conversion_data', 
     // Create old format conversion without conversion_data
     $oldConversion = SavedConversion::factory()->for($user)->create([
         'original_input' => '2024-01-15',
+        'conversion_data' => null,
         'gregorian_date' => '2024-01-15',
         'jalali_date' => '1402/10/24',
         'unix_timestamp' => 1705276800,
@@ -19,6 +21,7 @@ test('database migration correctly migrates old format to new conversion_data', 
     ]);
 
     // Run the migration
+    DB::table('migrations')->where('migration', '2025_10_14_222009_update_saved_conversions_table')->delete();
     $this->artisan('migrate', ['--path' => 'database/migrations/2025_10_14_222009_update_saved_conversions_table.php']);
 
     // Refresh the model from database
@@ -40,6 +43,7 @@ test('database migration preserves old fields for backward compatibility', funct
 
     $oldConversion = SavedConversion::factory()->for($user)->create([
         'original_input' => '2024-01-15',
+        'conversion_data' => null,
         'gregorian_date' => '2024-01-15',
         'jalali_date' => '1402/10/24',
         'unix_timestamp' => 1705276800,
@@ -47,6 +51,7 @@ test('database migration preserves old fields for backward compatibility', funct
     ]);
 
     // Run the migration
+    DB::table('migrations')->where('migration', '2025_10_14_222009_update_saved_conversions_table')->delete();
     $this->artisan('migrate', ['--path' => 'database/migrations/2025_10_14_222009_update_saved_conversions_table.php']);
 
     // Refresh the model from database
@@ -64,6 +69,7 @@ test('database migration handles multiple old format conversions', function () {
 
     // Create multiple old format conversions
     $conversions = SavedConversion::factory()->for($user)->count(5)->create([
+        'conversion_data' => null,
         'gregorian_date' => '2024-01-01',
         'jalali_date' => '1402/10/11',
         'unix_timestamp' => 1704067200,
@@ -71,6 +77,7 @@ test('database migration handles multiple old format conversions', function () {
     ]);
 
     // Run the migration
+    DB::table('migrations')->where('migration', '2025_10_14_222009_update_saved_conversions_table')->delete();
     $this->artisan('migrate', ['--path' => 'database/migrations/2025_10_14_222009_update_saved_conversions_table.php']);
 
     // Check all conversions were migrated
@@ -90,6 +97,7 @@ test('database migration handles empty conversions gracefully', function () {
     // Create conversion with minimal data
     $conversion = SavedConversion::factory()->for($user)->create([
         'original_input' => '2024-01-15',
+        'conversion_data' => null,
         'gregorian_date' => null,
         'jalali_date' => null,
         'unix_timestamp' => null,
@@ -97,6 +105,7 @@ test('database migration handles empty conversions gracefully', function () {
     ]);
 
     // Run the migration
+    DB::table('migrations')->where('migration', '2025_10_14_222009_update_saved_conversions_table')->delete();
     $this->artisan('migrate', ['--path' => 'database/migrations/2025_10_14_222009_update_saved_conversions_table.php']);
 
     // Refresh the model from database
@@ -137,6 +146,7 @@ test('new conversions work correctly after migration', function () {
     $user = User::factory()->create();
 
     // Run the migration first
+    DB::table('migrations')->where('migration', '2025_10_14_222009_update_saved_conversions_table')->delete();
     $this->artisan('migrate', ['--path' => 'database/migrations/2025_10_14_222009_update_saved_conversions_table.php']);
 
     // Create new conversion with full data
