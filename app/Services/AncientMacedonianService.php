@@ -55,11 +55,41 @@ class AncientMacedonianService extends CalendarConversionService
 
     public function toGregorian(array $dateData): Carbon
     {
-        $this->handleCalculationError('Conversion from Ancient Macedonian is not supported due to historical complexities.');
+        $year = $dateData['year'] ?? null;
+        $month = $dateData['month'] ?? null;
+        $day = $dateData['day'] ?? null;
 
-        // @codeCoverageIgnoreStart
-        return Carbon::now(); // Should not be reached
-        // @codeCoverageIgnoreEnd
+        if ($year === null || $month === null || $day === null) {
+            $this->handleValidationError('Invalid Ancient Macedonian date components');
+        }
+
+        $year = (int) $year;
+        $month = (int) $month;
+        $day = (int) $day;
+
+        if (! $this->validateDate($year, $month, $day)) {
+            $this->handleValidationError("Invalid Ancient Macedonian date: {$year}/{$month}/{$day}");
+        }
+
+        // Reverse the approximation used in fromGregorian().
+        $gregorianYear = $year - 311;
+
+        try {
+            $yearStartJd = gregoriantojd(9, 22, $gregorianYear);
+            $daysIntoYear = (int) round((($month - 1) * 29.5) + ($day - 1));
+            $jd = $yearStartJd + $daysIntoYear;
+
+            $gregorian = jdtogregorian($jd);
+            if ($gregorian === '0/0/0') {
+                $this->handleRangeError('Unable to convert Ancient Macedonian date to Gregorian');
+            }
+
+            [$gMonth, $gDay, $gYear] = array_map('intval', explode('/', $gregorian));
+
+            return Carbon::create($gYear, $gMonth, $gDay, 0, 0, 0, 'UTC');
+        } catch (\Throwable $e) {
+            $this->handleCalculationError('Unable to convert Ancient Macedonian date to Gregorian', $e);
+        }
     }
 
     public function getKey(): string

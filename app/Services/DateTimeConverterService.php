@@ -174,16 +174,20 @@ class DateTimeConverterService
                 'jalali' => Carbon::instance(Jalalian::fromFormat('Y/m/d', $dateString)->toCarbon())->startOfDay(),
                 'unix' => Carbon::createFromTimestamp((int) $dateString),
                 'iso8601' => Carbon::parse($dateString),
-                'jd' => Carbon::createFromJulianDay((float) $dateString),
-                'mjd' => Carbon::createFromJulianDay((float) $dateString + 2400000.5),
-                'hebrew', 'islamic', 'french_republican', 'chinese', 'japanese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian', 'mayan', 'julian' => $this->convertFromCalendar($inputType, $dateString),
+                // Accept both integer JDN and fractional JD (common midnight form uses .5).
+                'jd' => $this->carbonFromJulianDay((float) $dateString),
+                // Modified Julian Day is defined as JD - 2400000.5.
+                'mjd' => $this->carbonFromJulianDay(((float) $dateString) + 2400000.5),
+                // Mayan is entered as a Gregorian date using slashes.
+                'mayan' => Carbon::createFromFormat('Y/m/d', $dateString)->startOfDay(),
+                'hebrew', 'islamic', 'french_republican', 'chinese', 'japanese', 'babylonian', 'assyrian', 'macedonian', 'coptic', 'egyptian', 'ethiopian', 'julian' => $this->convertFromCalendar($inputType, $dateString),
                 default => throw new InvalidArgumentException('Invalid input type provided.'),
             };
         } catch (CalendarMalformedDateException $e) {
             throw $e;
         } catch (CalendarConversionException $e) {
             throw $e; // Re-throw calendar-specific exceptions
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new InvalidArgumentException('Invalid date format provided for the selected input type.');
         }
     }
@@ -198,6 +202,34 @@ class DateTimeConverterService
             return $this->convertFromJapaneseEra($dateString);
         }
 
+        $service = $this->calendarServices[$calendarType];
+
+        if ($calendarType === 'chinese') {
+            // Chinese leap months may be written as YYYY/闰M/DD (or YYYY/LM/DD).
+            if (! preg_match('/^(\d+)\/(闰|[Ll])?(\d+)\/(\d+)$/u', $dateString, $matches)) {
+                throw new CalendarMalformedDateException('Invalid date format for chinese. Use YYYY/MM/DD or YYYY/闰M/DD.', 'chinese');
+            }
+
+            $year = (int) $matches[1];
+            $isLeapMonth = ! empty($matches[2]);
+            $month = (int) $matches[3];
+            $day = (int) $matches[4];
+
+            // validateDate() cannot express leap-month specificity; let toGregorian() validate via conversion.
+            try {
+                return Carbon::instance($service->toGregorian([
+                    'year' => $year,
+                    'month' => $month,
+                    'day' => $day,
+                    'is_leap_month' => $isLeapMonth,
+                ]))->startOfDay();
+            } catch (CalendarConversionException $e) {
+                throw $e;
+            } catch (\Throwable $e) {
+                throw new CalendarValidationException("Invalid chinese date: {$dateString}", 'chinese');
+            }
+        }
+
         // Parse date string (expecting YYYY/MM/DD format)
         if (! preg_match('/^(\d+)\/(\d+)\/(\d+)$/', $dateString, $matches)) {
             throw new CalendarMalformedDateException("Invalid date format for {$calendarType}. Use YYYY/MM/DD.", $calendarType);
@@ -207,17 +239,30 @@ class DateTimeConverterService
         $month = (int) $matches[2];
         $day = (int) $matches[3];
 
-        $service = $this->calendarServices[$calendarType];
-
         if (! $service->validateDate($year, $month, $day)) {
             throw new CalendarValidationException("Invalid {$calendarType} date: {$dateString}", $calendarType);
         }
 
-        return $service->toGregorian([
+        return Carbon::instance($service->toGregorian([
             'year' => $year,
             'month' => $month,
             'day' => $day,
-        ]);
+        ]))->startOfDay();
+    }
+
+    private function carbonFromJulianDay(float $julianDay): Carbon
+    {
+        // Convert astronomical JD (day starts at noon) to civil Julian Day Number.
+        $jdn = (int) floor($julianDay + 0.5);
+        $gregorian = jdtogregorian($jdn);
+
+        if ($gregorian === '0/0/0') {
+            throw new InvalidArgumentException('Invalid Julian Day value provided.');
+        }
+
+        [$month, $day, $year] = array_map('intval', explode('/', $gregorian));
+
+        return Carbon::create($year, $month, $day, 0, 0, 0, 'UTC');
     }
 
     /**
