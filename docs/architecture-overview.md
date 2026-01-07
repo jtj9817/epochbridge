@@ -838,7 +838,8 @@ database/migrations/
 ├── 2025_10_07_221538_create_saved_conversions_table.php
 ├── 2025_10_24_204329_create_social_accounts_table.php
 ├── 2025_10_24_204408_modify_users_table_for_social_auth.php
-└── 2025_11_10_000000_create_mayan_calendar_data_table.php
+├── 2025_11_10_000000_create_mayan_calendar_data_table.php
+└── 2026_01_07_000000_create_on_this_day_entries_table.php
 ```
 
 ### Schema Design
@@ -911,6 +912,27 @@ saved_conversions
 - Automatic migration from localStorage to database on user authentication
 - Supports both authenticated and guest user workflows with notes
 - Notes persisted in guest localStorage and migrated on authentication
+
+#### On This Day Cache Table (Planned)
+```sql
+on_this_day_entries
+├── id (bigint, primary key)
+├── language (varchar)                        # Default 'en'
+├── type (varchar)                            # Default 'all'
+├── month (tinyint)                           # 1-12
+├── day (tinyint)                             # 1-31
+├── payload (json)                            # Raw Wikimedia response
+├── fetched_at (timestamp)                    # API fetch timestamp
+├── created_at (timestamp)
+└── updated_at (timestamp)
+
+Indexes:
+└── UNIQUE INDEX on (language, type, month, day)
+```
+
+**Features**:
+- Cache-first lookups for Wikimedia \"On this day\" responses
+- Prevents redundant API requests for previously fetched dates
 
 #### Japanese Eras Table
 ```sql
