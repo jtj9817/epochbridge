@@ -35,9 +35,9 @@ $closeModal = function () {
     class="fixed inset-0 z-50 overflow-y-auto"
     @keydown.escape.window="show = false; $wire.closeModal()"
 >
-    <div class="fixed inset-0 bg-black/60" wire:click="closeModal"></div>
+    <div class="fixed inset-0 bg-black/60 z-40" wire:click="closeModal"></div>
 
-    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0 relative z-50 pointer-events-none">
         <div
             x-show="show"
             x-transition:enter="ease-out duration-300"
@@ -46,7 +46,8 @@ $closeModal = function () {
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="inline-block align-bottom bg-white dark:bg-theme-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+            class="relative inline-block align-bottom bg-white dark:bg-theme-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full pointer-events-auto"
+            @click.stop
         >
             <div class="bg-theme-100 dark:bg-theme-700 px-6 py-4 border-b border-theme-200 dark:border-theme-600 flex items-center justify-between">
                 <div>
