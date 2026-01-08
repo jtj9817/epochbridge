@@ -571,8 +571,11 @@ handleGuestSave(note = '') {
     <header id="landing-header" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 border-b border-theme-300 dark:border-zinc-700">
         @if (Route::has('login'))
             <nav id="auth-navigation" class="flex items-center justify-between gap-4">
-                <!-- Left: Calendars Info Button -->
-                <livewire:components.calendars-info-modal wire:key="calendars-modal" />
+                <!-- Left: Calendars Info & On This Day Buttons -->
+                <div class="flex items-center gap-2">
+                    <livewire:components.calendars-info-modal wire:key="calendars-modal" />
+                    <livewire:components.on-this-day-modal :standalone="true" wire:key="on-this-day-nav" />
+                </div>
 
                 <!-- Right: Auth Links -->
                 <div class="flex items-center gap-2">

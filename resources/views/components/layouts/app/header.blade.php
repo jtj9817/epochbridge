@@ -43,6 +43,11 @@
                 </flux:tooltip>
             </flux:navbar>
 
+            {{-- On This Day Button --}}
+            <div class="ms-1">
+                <livewire:components.on-this-day-modal :standalone="true" wire:key="on-this-day-app-nav" />
+            </div>
+
             <!-- Desktop User Menu -->
             <flux:dropdown position="top" align="end">
                 <flux:profile

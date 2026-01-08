@@ -1,23 +1,100 @@
 <?php
 
-use function Livewire\Volt\state;
+use App\Services\Wikimedia\OnThisDayService;
+use Carbon\CarbonImmutable;
+use function Livewire\Volt\{state, mount, computed};
 
+// All state - standalone flag determines which values are used
 state([
+    // Mode flag
+    'standalone' => false,
+
+    // Props from parent (conversion mode)
     'onThisDayDayInfo' => [],
     'onThisDayLoading' => false,
     'onThisDayError' => '',
     'showOnThisDayModal' => false,
     'onThisDayDateLabel' => '',
-])->reactive();
+
+    // Internal state for standalone mode
+    'internalShowModal' => false,
+    'internalDate' => '',
+    'internalDateLabel' => '',
+    'internalDayInfo' => [],
+    'internalLoading' => false,
+    'internalError' => '',
+]);
+
+mount(function () {
+    if ($this->standalone) {
+        $this->internalDate = now()->format('Y-m-d');
+        $this->internalDateLabel = now()->format('F j');
+    }
+});
+
+$openStandaloneModal = function () {
+    $this->internalShowModal = true;
+    $this->internalDate = now()->format('Y-m-d');
+    $this->internalDateLabel = now()->format('F j');
+    $this->loadStandaloneData();
+};
 
 $closeModal = function () {
-    $this->dispatch('close-on-this-day');
+    if ($this->standalone) {
+        $this->internalShowModal = false;
+        $this->internalLoading = false;
+    } else {
+        $this->dispatch('close-on-this-day');
+    }
+};
+
+$changeDate = function (string $date) {
+    $parsed = CarbonImmutable::createFromFormat('Y-m-d', $date);
+    if (!$parsed) {
+        return;
+    }
+
+    $this->internalDate = $date;
+    $this->internalDateLabel = $parsed->format('F j');
+    $this->loadStandaloneData();
+};
+
+$loadStandaloneData = function (?OnThisDayService $service = null) {
+    $service = $service ?? app(OnThisDayService::class);
+    $this->internalLoading = true;
+    $this->internalError = '';
+    $this->internalDayInfo = [];
+
+    try {
+        $result = $service->getForDate($this->internalDate);
+        if (!empty($result['error'])) {
+            $this->internalError = $result['error'];
+        } else {
+            $this->internalDayInfo = $result['data'] ?? [];
+        }
+    } catch (\Throwable $e) {
+        $this->internalError = 'Unable to load On This Day content right now.';
+        \Log::error('On This Day standalone load failed', [
+            'date' => $this->internalDate,
+            'error' => $e->getMessage(),
+        ]);
+    }
+
+    $this->internalLoading = false;
 };
 
 ?>
 
 @php
-    $dayInfo = is_array($this->onThisDayDayInfo) ? $this->onThisDayDayInfo : [];
+    // Use internal state for standalone mode, reactive props for conversion mode
+    $isStandalone = $this->standalone;
+    $dayInfo = $isStandalone
+        ? (is_array($this->internalDayInfo) ? $this->internalDayInfo : [])
+        : (is_array($this->onThisDayDayInfo) ? $this->onThisDayDayInfo : []);
+    $isLoading = $isStandalone ? $this->internalLoading : $this->onThisDayLoading;
+    $errorMsg = $isStandalone ? $this->internalError : $this->onThisDayError;
+    $dateLabel = $isStandalone ? $this->internalDateLabel : $this->onThisDayDateLabel;
+    $showModal = $isStandalone ? $this->internalShowModal : $this->showOnThisDayModal;
 
     // Section configuration with semantic colors and icons
     $sections = [
@@ -69,14 +146,36 @@ $closeModal = function () {
     ];
 @endphp
 
-<div
-    x-data="{ show: @entangle('showOnThisDayModal') }"
-    x-show="show"
-    x-cloak
-    x-transition.opacity
-    class="fixed inset-0 z-50 overflow-y-auto"
-    @keydown.escape.window="show = false; $wire.closeModal()"
->
+@php
+    $showModalProp = $isStandalone ? 'internalShowModal' : 'showOnThisDayModal';
+@endphp
+
+{{-- Single root wrapper --}}
+<div>
+    {{-- Trigger Button (standalone mode only) --}}
+    @if ($isStandalone)
+        <button
+            wire:click="openStandaloneModal"
+            type="button"
+            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium uppercase tracking-wider text-theme-500 dark:text-theme-50 border border-theme-300 dark:border-zinc-600 hover:bg-theme-100 dark:hover:bg-zinc-700 hover:text-theme-900 dark:hover:text-white transition-colors"
+            title="On This Day"
+        >
+            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+            </svg>
+            <span class="hidden sm:inline">On This Day</span>
+        </button>
+    @endif
+
+    {{-- Modal --}}
+    <div
+        x-data="{ show: @entangle($showModalProp) }"
+        x-show="show"
+        x-cloak
+        x-transition.opacity
+        class="fixed inset-0 z-50 overflow-y-auto"
+        @keydown.escape.window="show = false; $wire.closeModal()"
+    >
     {{-- Backdrop --}}
     <div class="fixed inset-0 bg-black/70 z-40" wire:click="closeModal"></div>
 
@@ -94,11 +193,30 @@ $closeModal = function () {
             @click.stop
         >
             {{-- Header --}}
-            <div class="bg-theme-100 dark:bg-zinc-800 px-6 py-4 border-b-2 border-theme-300 dark:border-zinc-600 flex items-center justify-between">
-                <div>
-                    <h3 class="text-lg font-bold text-theme-900 dark:text-zinc-50 uppercase tracking-wider">
-                        On This Day @if($onThisDayDateLabel) — {{ $onThisDayDateLabel }} @endif
-                    </h3>
+            <div class="bg-theme-100 dark:bg-zinc-800 px-6 py-4 border-b-2 border-theme-300 dark:border-zinc-600 flex items-center justify-between gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <h3 class="text-lg font-bold text-theme-900 dark:text-zinc-50 uppercase tracking-wider">
+                            On This Day @if($dateLabel && !$isStandalone) — {{ $dateLabel }} @endif
+                        </h3>
+                        @if ($isStandalone)
+                            {{-- Date Picker for standalone mode --}}
+                            <div class="flex items-center gap-2">
+                                <span class="text-theme-500 dark:text-zinc-400">—</span>
+                                <input
+                                    type="date"
+                                    wire:model.live="internalDate"
+                                    wire:change="changeDate($event.target.value)"
+                                    class="bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-600 px-3 py-1.5 text-sm font-medium text-theme-900 dark:text-zinc-100 uppercase tracking-wider focus:outline-none focus:border-theme-500 dark:focus:border-zinc-400 transition"
+                                />
+                                @if ($dateLabel)
+                                    <span class="text-sm font-bold text-theme-700 dark:text-zinc-200 uppercase tracking-wider">
+                                        {{ $dateLabel }}
+                                    </span>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
                     <p class="text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-widest mt-1">
                         English Wikipedia Highlights
                     </p>
@@ -106,7 +224,7 @@ $closeModal = function () {
                 <button
                     wire:click="closeModal"
                     type="button"
-                    class="p-2 text-theme-500 hover:text-theme-900 dark:text-zinc-400 dark:hover:text-white hover:bg-theme-200/70 dark:hover:bg-zinc-700 transition border border-transparent hover:border-theme-300 dark:hover:border-zinc-600"
+                    class="flex-shrink-0 p-2 text-theme-500 hover:text-theme-900 dark:text-zinc-400 dark:hover:text-white hover:bg-theme-200/70 dark:hover:bg-zinc-700 transition border border-transparent hover:border-theme-300 dark:hover:border-zinc-600"
                     aria-label="Close"
                 >
                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -117,7 +235,7 @@ $closeModal = function () {
 
             {{-- Content --}}
             <div class="bg-zinc-50 dark:bg-zinc-900 px-6 py-6 max-h-[70vh] overflow-y-auto">
-                @if ($onThisDayLoading)
+                @if ($isLoading)
                     {{-- Loading State --}}
                     <div class="flex items-center gap-3 text-theme-500 dark:text-zinc-400 py-8 justify-center">
                         <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -126,10 +244,10 @@ $closeModal = function () {
                         </svg>
                         <span class="text-sm uppercase tracking-wider font-medium">Loading historical highlights...</span>
                     </div>
-                @elseif ($onThisDayError)
+                @elseif ($errorMsg)
                     {{-- Error State --}}
                     <div class="border-2 border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/30 px-4 py-3 text-sm text-red-700 dark:text-red-200">
-                        {{ $onThisDayError }}
+                        {{ $errorMsg }}
                     </div>
                 @else
                     @php
@@ -257,5 +375,6 @@ $closeModal = function () {
                 </button>
             </div>
         </div>
+    </div>
     </div>
 </div>
