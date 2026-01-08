@@ -23,7 +23,7 @@ state([
     'internalDayInfo' => [],
     'internalLoading' => false,
     'internalError' => '',
-]);
+])->reactive();
 
 mount(function () {
     if ($this->standalone) {
