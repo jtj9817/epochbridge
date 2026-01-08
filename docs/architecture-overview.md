@@ -839,7 +839,7 @@ database/migrations/
 ├── 2025_10_24_204329_create_social_accounts_table.php
 ├── 2025_10_24_204408_modify_users_table_for_social_auth.php
 ├── 2025_11_10_000000_create_mayan_calendar_data_table.php
-└── 2026_01_07_000000_create_on_this_day_entries_table.php
+└── 2026_01_07_000000_create_file_table.php
 ```
 
 ### Schema Design
@@ -915,13 +915,13 @@ saved_conversions
 
 #### On This Day Cache Table (Planned)
 ```sql
-on_this_day_entries
+file
 ├── id (bigint, primary key)
 ├── language (varchar)                        # Default 'en'
 ├── type (varchar)                            # Default 'all'
 ├── month (tinyint)                           # 1-12
 ├── day (tinyint)                             # 1-31
-├── payload (json)                            # Raw Wikimedia response
+├── day_info (varchar)                        # Raw Wikimedia response (stored as a JSON string)
 ├── fetched_at (timestamp)                    # API fetch timestamp
 ├── created_at (timestamp)
 └── updated_at (timestamp)

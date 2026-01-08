@@ -23,7 +23,7 @@ Integrate the Wikimedia Feed API "On this day" endpoint to display English Wikip
 - Required headers: `Authorization: Bearer <token>` and `User-Agent`/`Api-User-Agent`
 
 ## Data Model & Storage
-### New Table: `on_this_day_entries`
+### New Table: `file`
 Cache the API response per month/day, language, and type.
 
 **Proposed columns**:
@@ -32,7 +32,7 @@ Cache the API response per month/day, language, and type.
 - `type` (varchar, default `all`)
 - `month` (tinyint) — 1 to 12
 - `day` (tinyint) — 1 to 31
-- `payload` (json) — raw API response
+- `day_info` (varchar) — raw API response (stored as a JSON string)
 - `fetched_at` (timestamp) — when the API response was stored
 - `created_at`, `updated_at`
 
@@ -41,9 +41,9 @@ Cache the API response per month/day, language, and type.
 
 ## Backend Plan
 ### 1) Migration + Model
-- Add migration: `create_on_this_day_entries_table` with the schema above.
+- Add migration: `create_file_table` with the schema above.
 - Add Eloquent model: `app/Models/OnThisDayEntry.php`.
-- Add casts for `payload` as array and `fetched_at` as datetime.
+- Add casts for `fetched_at` as datetime; decode `day_info` to an array when returning from the service.
 
 ### 2) Service Layer
 Create `app/Services/Wikimedia/OnThisDayService.php` with cache-first logic.
@@ -53,11 +53,11 @@ Create `app/Services/Wikimedia/OnThisDayService.php` with cache-first logic.
 - Normalize month/day to zero-padded values.
 - Look up cache:
   - `OnThisDayEntry::where('language', 'en')->where('type', 'all')->where('month', $month)->where('day', $day)->first()`
-- If cached and payload is non-empty, return payload immediately.
+- If cached and `day_info` is non-empty, decode and return it immediately.
 - If not cached:
   - Call Wikimedia API using `Http::withHeaders()`.
-  - Store payload in `on_this_day_entries`.
-  - Return payload.
+  - Store `day_info` in `file`.
+  - Return decoded `day_info`.
 
 **Notes**:
 - Log and surface API failures without blocking the conversion flow.
@@ -74,12 +74,12 @@ Create `app/Services/Wikimedia/OnThisDayService.php` with cache-first logic.
 - In `resources/views/livewire/landing.blade.php`, after a successful conversion:
   - Use the Gregorian result (`conversionResults['gregorian']['full_date']`).
   - Parse month/day and call `OnThisDayService`.
-  - Update Livewire state (`onThisDayPayload`, `showOnThisDayModal`, `onThisDayError`).
+  - Update Livewire state (`onThisDayDayInfo`, `showOnThisDayModal`, `onThisDayError`).
 
 ## Frontend Plan
 ### 1) Livewire State
 Add new state to the landing component:
-- `onThisDayPayload` (array)
+- `onThisDayDayInfo` (array)
 - `onThisDayLoading` (bool)
 - `onThisDayError` (string)
 - `showOnThisDayModal` (bool)
@@ -88,7 +88,7 @@ Add new state to the landing component:
 Create `resources/views/livewire/components/on-this-day-modal.blade.php` (Volt).
 
 **Behavior**:
-- Opens automatically when conversion succeeds and payload is ready.
+- Opens automatically when conversion succeeds and day_info is ready.
 - Shows a loading state while the service runs.
 - Shows an error callout if the API call fails.
 - Renders sections for `selected`, `events`, `births`, `deaths`, `holidays`.
@@ -105,16 +105,16 @@ Create `resources/views/livewire/components/on-this-day-modal.blade.php` (Volt).
 - When `convertDate` completes successfully:
   - Set `onThisDayLoading = true`.
   - Call `OnThisDayService` via Livewire.
-  - Set payload + open modal.
+  - Set `onThisDayDayInfo` + open modal.
   - Set `onThisDayLoading = false`.
 - Avoid re-opening if the user re-filters results without changing date.
 
 ## Data Flow (Cache-First)
 1. User converts a date.
 2. Conversion results include Gregorian date.
-3. Service checks `on_this_day_entries` for `{month, day, language, type}`.
-4. If found: return cached payload.
-5. If missing: call Wikimedia API, store payload, return it.
+3. Service checks `file` for `{month, day, language, type}`.
+4. If found: decode and return cached `day_info`.
+5. If missing: call Wikimedia API, store `day_info`, return it.
 6. UI shows modal with results.
 
 ## Error Handling
@@ -126,8 +126,8 @@ Create `resources/views/livewire/components/on-this-day-modal.blade.php` (Volt).
 ## Testing Plan
 ### Backend
 - Unit tests for `OnThisDayService`:
-  - Returns cached payload without calling HTTP.
-  - Calls HTTP and stores payload when cache is empty.
+  - Returns cached `day_info` without calling HTTP.
+  - Calls HTTP and stores `day_info` when cache is empty.
   - Handles non-200 responses gracefully.
 
 ### Feature
@@ -137,7 +137,7 @@ Create `resources/views/livewire/components/on-this-day-modal.blade.php` (Volt).
   - Error state displays fallback message.
 
 ## Implementation Checklist
-- [ ] Add migration + model for `on_this_day_entries`.
+- [ ] Add migration + model for `file`.
 - [ ] Add Wikimedia service and config.
 - [ ] Update Livewire landing conversion flow.
 - [ ] Add modal component + UI wiring.
