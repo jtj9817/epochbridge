@@ -9,13 +9,6 @@ state([
     // Mode flag
     'standalone' => false,
 
-    // Props from parent (conversion mode)
-    'onThisDayDayInfo' => [],
-    'onThisDayLoading' => false,
-    'onThisDayError' => '',
-    'showOnThisDayModal' => false,
-    'onThisDayDateLabel' => '',
-
     // Internal state for standalone mode
     'internalShowModal' => false,
     'internalDate' => '',
@@ -23,6 +16,15 @@ state([
     'internalDayInfo' => [],
     'internalLoading' => false,
     'internalError' => '',
+]);
+
+state([
+    // Props from parent (conversion mode)
+    'onThisDayDayInfo' => [],
+    'onThisDayLoading' => false,
+    'onThisDayError' => '',
+    'showOnThisDayModal' => false,
+    'onThisDayDateLabel' => '',
 ])->reactive();
 
 mount(function () {
@@ -174,7 +176,7 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
         x-cloak
         x-transition.opacity
         class="fixed inset-0 z-50 overflow-y-auto"
-        @keydown.escape.window="show = false; $wire.closeModal()"
+        @keydown.escape.window="$wire.closeModal()"
     >
     {{-- Backdrop --}}
     <div class="fixed inset-0 bg-black/70 z-40" wire:click="closeModal"></div>
