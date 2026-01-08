@@ -2,7 +2,9 @@
 
 use App\Exceptions\CalendarConversionException;
 use App\Services\DateTimeConverterService;
+use App\Services\Wikimedia\OnThisDayService;
 use App\Models\SavedConversion;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,6 +19,12 @@ state('dateInput', '');
 state('inputType', 'gregorian');
 state('conversionResults', []);
 state('conversionError', '');
+state('onThisDayDayInfo', []);
+state('onThisDayLoading', false);
+state('onThisDayError', '');
+state('showOnThisDayModal', false);
+state('onThisDayDateLabel', '');
+state('onThisDayDateKey', '');
 state('inputTypes', [
     'gregorian' => 'Gregorian (YYYY-MM-DD)',
     'jalali' => 'Jalali (YYYY/MM/DD)',
@@ -48,6 +56,20 @@ mount(function () {
 });
 
 $resolveConverter = static fn (?DateTimeConverterService $service = null) => $service ?? app(DateTimeConverterService::class);
+$resolveOnThisDayService = static fn (?OnThisDayService $service = null) => $service ?? app(OnThisDayService::class);
+
+$deriveOnThisDayMeta = static function (string $gregorianDate): array {
+    $parsed = CarbonImmutable::createFromFormat('Y-m-d', $gregorianDate);
+
+    if (! $parsed) {
+        throw new InvalidArgumentException('Invalid Gregorian date provided.');
+    }
+
+    return [
+        'label' => $parsed->format('F j'),
+        'key' => $parsed->format('m-d'),
+    ];
+};
 
 $isDuplicateEntry = static function (QueryException $exception): bool {
     $errorInfo = $exception->errorInfo ?? [];
@@ -95,6 +117,10 @@ on([
         $this->searchTerm = $searchTerm;
         $this->selectedTypes = $normalizedTypes;
         // Do NOT re-dispatch - causes infinite loop with reactive props
+    },
+    'close-on-this-day' => function () {
+        $this->showOnThisDayModal = false;
+        $this->onThisDayLoading = false;
     },
     // Legacy event (no note) - keep for backwards compatibility
     'save-conversion' => function () {
@@ -175,13 +201,82 @@ $saveConversion = function (string $note = '') use ($isDuplicateEntry) {
     }
 };
 
-$convertDate = function (?DateTimeConverterService $converter = null) use ($resolveConverter) {
+$loadOnThisDay = function (?string $gregorianDate = null, ?OnThisDayService $service = null) use ($resolveOnThisDayService) {
+    $service = $resolveOnThisDayService($service);
+    $this->onThisDayError = '';
+    $this->onThisDayDayInfo = [];
+    $this->onThisDayLoading = true;
+
+    $gregorianDate = $gregorianDate ?: ($this->conversionResults['gregorian']['full_date'] ?? null);
+
+    if (! $gregorianDate) {
+        $this->onThisDayError = 'Unable to determine a Gregorian date for this conversion.';
+        $this->onThisDayLoading = false;
+        $this->showOnThisDayModal = true;
+        return;
+    }
+
+    try {
+        $result = $service->getForDate($gregorianDate);
+    } catch (\Throwable $exception) {
+        \Log::error('Failed to load On This Day content.', [
+            'gregorian_date' => $gregorianDate,
+            'error' => $exception->getMessage(),
+        ]);
+
+        $this->onThisDayError = 'Unable to load On This Day content right now.';
+        $this->onThisDayLoading = false;
+        $this->showOnThisDayModal = true;
+        return;
+    }
+
+    if (! empty($result['error'])) {
+        $this->onThisDayError = $result['error'];
+    } else {
+        $this->onThisDayDayInfo = $result['data'] ?? [];
+    }
+
+    $this->onThisDayLoading = false;
+    $this->showOnThisDayModal = true;
+};
+
+$convertDate = function (?DateTimeConverterService $converter = null) use ($resolveConverter, $deriveOnThisDayMeta) {
     $converter = $resolveConverter($converter);
-    $this->reset('conversionResults', 'conversionError');
+    $this->reset(
+        'conversionResults',
+        'conversionError',
+        'onThisDayDayInfo',
+        'onThisDayLoading',
+        'onThisDayError',
+        'showOnThisDayModal',
+        'onThisDayDateLabel',
+        'onThisDayDateKey'
+    );
 
     try {
         $this->conversionResults = $converter->getFullConversionResults($this->dateInput, $this->inputType);
         // Reactive props will automatically update child components - no dispatch needed
+
+        $gregorianDate = $this->conversionResults['gregorian']['full_date'] ?? null;
+
+        if ($gregorianDate) {
+            try {
+                $meta = $deriveOnThisDayMeta($gregorianDate);
+                $this->onThisDayDateLabel = $meta['label'];
+                $this->onThisDayDateKey = $meta['key'];
+                $this->onThisDayLoading = true;
+                $this->showOnThisDayModal = true;
+            } catch (\Throwable $exception) {
+                \Log::warning('Unable to derive On This Day date metadata.', [
+                    'gregorian_date' => $gregorianDate,
+                    'error' => $exception->getMessage(),
+                ]);
+
+                $this->onThisDayError = 'Unable to load On This Day content for this date.';
+                $this->showOnThisDayModal = true;
+                $this->onThisDayLoading = false;
+            }
+        }
     } catch (CalendarConversionException|\InvalidArgumentException $e) {
         $this->conversionError = $e->getMessage();
     } catch (\Illuminate\Validation\ValidationException $e) {
@@ -205,6 +300,23 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
              this.$watch('dateInput', () => {
                  // dateInput changed, button will automatically re-evaluate isConversionSaved()
              });
+
+            this.$watch('showResults', (value) => {
+                if (!value || typeof value !== 'object') {
+                    return;
+                }
+
+                const gregorianDate = value.gregorian?.full_date;
+                if (!gregorianDate) {
+                    return;
+                }
+
+                this.$nextTick(() => {
+                    if (typeof this.$wire?.loadOnThisDay === 'function') {
+                        this.$wire.loadOnThisDay(gregorianDate);
+                    }
+                });
+            });
          },
          
 migrateGuestData() {
@@ -449,6 +561,15 @@ handleGuestSave(note = '') {
                 :selectedTypes="$selectedTypes"
                 :dateInput="$dateInput"
                 wire:key="results-grid"
+            />
+
+            <livewire:components.on-this-day-modal
+                :onThisDayDayInfo="$onThisDayDayInfo"
+                :onThisDayLoading="$onThisDayLoading"
+                :onThisDayError="$onThisDayError"
+                :showOnThisDayModal="$showOnThisDayModal"
+                :onThisDayDateLabel="$onThisDayDateLabel"
+                wire:key="on-this-day-modal"
             />
             
 
