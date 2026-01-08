@@ -4,6 +4,7 @@ namespace Tests\Feature\Livewire;
 
 use App\Models\User;
 use App\Services\DateTimeConverterService;
+use App\Services\Wikimedia\OnThisDayService;
 use Livewire\Volt\Volt;
 use Mockery;
 use Mockery\MockInterface;
@@ -256,6 +257,35 @@ beforeEach(function () {
                 ]);
             });
     });
+
+    $onThisDayPayload = [
+        'selected' => [
+            [
+                'year' => 1990,
+                'text' => 'Test historical highlight.',
+                'pages' => [
+                    [
+                        'content_urls' => [
+                            'desktop' => ['page' => 'https://example.test/wiki/Test'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'events' => [],
+        'births' => [],
+        'deaths' => [],
+        'holidays' => [],
+    ];
+
+    $this->mock(OnThisDayService::class, function (MockInterface $mock) use ($onThisDayPayload) {
+        $mock->shouldReceive('getForDate')
+            ->andReturn([
+                'data' => $onThisDayPayload,
+                'cached' => true,
+                'error' => null,
+            ]);
+    });
 });
 
 afterEach(function () {
@@ -290,6 +320,46 @@ it('sets conversion results state after converting a date', function () {
         ->assertSet('conversionResults.unix', 1725148800)
         ->assertSet('conversionResults.iso8601', '2024-09-01T00:00:00+00:00')
         ->assertSet('conversionError', '');
+});
+
+it('opens the On This Day modal state after conversion', function () {
+    Volt::test('landing')
+        ->set('dateInput', '2024-09-01')
+        ->call('convertDate')
+        ->assertSet('showOnThisDayModal', true)
+        ->assertSet('onThisDayLoading', true)
+        ->assertSet('onThisDayDateLabel', 'September 1')
+        ->assertSet('onThisDayDateKey', '09-01');
+});
+
+it('loads On This Day content and clears loading state', function () {
+    Volt::test('landing')
+        ->set('dateInput', '2024-09-01')
+        ->call('convertDate')
+        ->call('loadOnThisDay', '2024-09-01')
+        ->assertSet('onThisDayLoading', false)
+        ->assertSet('onThisDayError', '')
+        ->assertSet('showOnThisDayModal', true)
+        ->assertSet('onThisDayDayInfo.selected.0.year', 1990);
+});
+
+it('sets On This Day error when service returns an error', function () {
+    $mock = Mockery::mock(OnThisDayService::class);
+    $mock->shouldReceive('getForDate')
+        ->andReturn([
+            'data' => null,
+            'cached' => false,
+            'error' => 'Wikimedia API request failed.',
+        ]);
+
+    app()->instance(OnThisDayService::class, $mock);
+
+    Volt::test('landing')
+        ->set('dateInput', '2024-09-01')
+        ->call('convertDate')
+        ->call('loadOnThisDay', '2024-09-01')
+        ->assertSet('onThisDayLoading', false)
+        ->assertSet('onThisDayError', 'Wikimedia API request failed.');
 });
 
 it('sets french republican calendar data in state', function () {
