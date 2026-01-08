@@ -171,20 +171,24 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
 
     {{-- Modal --}}
     <div
-        x-data="{ show: @entangle($showModalProp) }"
-        x-show="show"
+        x-data="{ open: false }"
+        x-init="
+            open = $wire.{{ $showModalProp }};
+            $watch(() => $wire.{{ $showModalProp }}, value => { open = value })
+        "
+        x-show="open"
         x-cloak
         x-transition.opacity
         class="fixed inset-0 z-50 overflow-y-auto"
-        @keydown.escape.window="$wire.closeModal()"
+        @keydown.escape.window="open = false; $wire.closeModal()"
     >
     {{-- Backdrop --}}
-    <div class="fixed inset-0 bg-black/70 z-40" wire:click="closeModal"></div>
+    <div class="fixed inset-0 bg-black/70 z-40" @click="open = false; $wire.closeModal()"></div>
 
     {{-- Modal Container --}}
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0 relative z-50 pointer-events-none">
         <div
-            x-show="show"
+            x-show="open"
             x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
@@ -225,6 +229,7 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
                 </div>
                 <button
                     wire:click="closeModal"
+                    @click="open = false"
                     type="button"
                     class="flex-shrink-0 p-2 text-theme-500 hover:text-theme-900 dark:text-zinc-400 dark:hover:text-white hover:bg-theme-200/70 dark:hover:bg-zinc-700 transition border border-transparent hover:border-theme-300 dark:hover:border-zinc-600"
                     aria-label="Close"
@@ -370,6 +375,7 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
             <div class="bg-theme-100 dark:bg-zinc-800 px-6 py-4 border-t-2 border-theme-300 dark:border-zinc-600 flex justify-end">
                 <button
                     wire:click="closeModal"
+                    @click="open = false"
                     type="button"
                     class="px-5 py-2 border-2 border-theme-300 dark:border-zinc-600 text-theme-700 dark:text-zinc-300 hover:bg-theme-200 dark:hover:bg-zinc-700 transition-colors text-sm font-medium uppercase tracking-wider"
                 >
