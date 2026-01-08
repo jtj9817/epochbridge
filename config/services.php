@@ -41,4 +41,10 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'wikimedia' => [
+        'base_url' => env('WIKIMEDIA_BASE_URL', 'https://api.wikimedia.org'),
+        'token' => env('WIKIMEDIA_API_TOKEN'),
+        'user_agent' => env('WIKIMEDIA_USER_AGENT'),
+    ],
+
 ];
