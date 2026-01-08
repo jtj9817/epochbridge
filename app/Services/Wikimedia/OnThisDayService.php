@@ -24,6 +24,21 @@ class OnThisDayService
         $date = $this->normalizeDate($gregorianDate);
         $month = (int) $date->format('n');
         $day = (int) $date->format('j');
+        $verbose = $this->verboseEnabled();
+
+        $this->logVerbose('on_this_day.request.start', [
+            'language' => $language,
+            'type' => $type,
+            'month' => $month,
+            'day' => $day,
+        ], $verbose);
+
+        $this->logVerbose('on_this_day.cache.lookup', [
+            'language' => $language,
+            'type' => $type,
+            'month' => $month,
+            'day' => $day,
+        ], $verbose);
 
         $cached = OnThisDayEntry::query()
             ->where('language', $language)
@@ -32,10 +47,38 @@ class OnThisDayService
             ->where('day', $day)
             ->first();
 
+        if ($cached) {
+            $this->logVerbose('on_this_day.cache.hit', [
+                'entry_id' => $cached->id,
+                'day_info_bytes' => is_string($cached->day_info) ? strlen($cached->day_info) : 0,
+                'fetched_at' => $cached->fetched_at?->toISOString(),
+                'cache_age_seconds' => $cached->fetched_at ? now()->diffInSeconds($cached->fetched_at) : null,
+            ], $verbose);
+        } else {
+            $this->logVerbose('on_this_day.cache.miss', [
+                'language' => $language,
+                'type' => $type,
+                'month' => $month,
+                'day' => $day,
+            ], $verbose);
+        }
+
         if ($cached && is_string($cached->day_info) && $cached->day_info !== '') {
             $decoded = json_decode($cached->day_info, true);
 
             if (is_array($decoded)) {
+                if ($verbose) {
+                    $sectionCounts = $this->sectionCounts($decoded);
+
+                    $this->logVerbose('on_this_day.cache.return', [
+                        'section_counts' => $sectionCounts,
+                    ], $verbose);
+                    $this->logVerbose('on_this_day.request.finish', [
+                        'cached' => true,
+                        'section_counts' => $sectionCounts,
+                    ], $verbose);
+                }
+
                 return [
                     'data' => $decoded,
                     'cached' => true,
@@ -58,6 +101,13 @@ class OnThisDayService
         $baseUrl = rtrim((string) config('services.wikimedia.base_url', 'https://api.wikimedia.org'), '/');
 
         if (! $token) {
+            $this->logVerbose('on_this_day.config.missing_token', [
+                'language' => $language,
+                'type' => $type,
+                'month' => $month,
+                'day' => $day,
+            ], $verbose);
+
             return [
                 'data' => null,
                 'cached' => false,
@@ -73,6 +123,14 @@ class OnThisDayService
             $day
         );
 
+        $this->logVerbose('on_this_day.api.request', [
+            'base_url' => $baseUrl,
+            'path' => $path,
+            'timeout_seconds' => 10,
+        ], $verbose);
+
+        $startedAt = microtime(true);
+
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$token,
@@ -84,6 +142,11 @@ class OnThisDayService
                 ->timeout(10)
                 ->get($path);
         } catch (\Throwable $exception) {
+            $this->logVerbose('on_this_day.api.exception', [
+                'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
+                'message' => $exception->getMessage(),
+            ], $verbose);
+
             Log::error('On This Day API request failed.', [
                 'language' => $language,
                 'type' => $type,
@@ -98,6 +161,14 @@ class OnThisDayService
                 'error' => 'Unable to reach Wikimedia API right now.',
             ];
         }
+
+        $responseDurationMs = (int) round((microtime(true) - $startedAt) * 1000);
+
+        $this->logVerbose('on_this_day.api.response', [
+            'status' => $response->status(),
+            'duration_ms' => $responseDurationMs,
+            'response_bytes' => strlen((string) $response->body()),
+        ], $verbose);
 
         if (! $response->successful()) {
             Log::warning('On This Day API responded with an error.', [
@@ -119,6 +190,17 @@ class OnThisDayService
         $payload = $response->json();
 
         if (! is_array($payload) || ! $this->hasExpectedKeys($payload)) {
+            if ($verbose) {
+                $missingKeys = is_array($payload)
+                    ? array_values(array_diff(self::EXPECTED_KEYS, array_keys($payload)))
+                    : self::EXPECTED_KEYS;
+
+                $this->logVerbose('on_this_day.api.payload.invalid', [
+                    'payload_type' => gettype($payload),
+                    'missing_keys' => $missingKeys,
+                ], $verbose);
+            }
+
             Log::warning('On This Day API returned unexpected payload.', [
                 'language' => $language,
                 'type' => $type,
@@ -144,7 +226,7 @@ class OnThisDayService
                 'day' => $day,
             ]);
         } else {
-            OnThisDayEntry::updateOrCreate(
+            $entry = OnThisDayEntry::updateOrCreate(
                 [
                     'language' => $language,
                     'type' => $type,
@@ -156,6 +238,20 @@ class OnThisDayService
                     'fetched_at' => now(),
                 ]
             );
+
+            $this->logVerbose('on_this_day.cache.write', [
+                'entry_id' => $entry->id,
+                'action' => $entry->wasRecentlyCreated ? 'created' : 'updated',
+                'payload_bytes' => strlen($encoded),
+                'fetched_at' => $entry->fetched_at?->toISOString(),
+            ], $verbose);
+        }
+
+        if ($verbose) {
+            $this->logVerbose('on_this_day.request.finish', [
+                'cached' => false,
+                'section_counts' => $this->sectionCounts($payload),
+            ], $verbose);
         }
 
         return [
@@ -178,6 +274,40 @@ class OnThisDayService
         }
 
         return $parsed->startOfDay();
+    }
+
+    private function logVerbose(string $message, array $context = [], ?bool $enabled = null): void
+    {
+        $enabled = $enabled ?? $this->verboseEnabled();
+
+        if (! $enabled) {
+            return;
+        }
+
+        Log::debug($message, $context);
+    }
+
+    private function verboseEnabled(): bool
+    {
+        static $enabled;
+
+        if ($enabled === null) {
+            $enabled = (bool) config('services.wikimedia.verbose_logs', false);
+        }
+
+        return $enabled;
+    }
+
+    private function sectionCounts(array $payload): array
+    {
+        $counts = [];
+
+        foreach (self::EXPECTED_KEYS as $key) {
+            $value = $payload[$key] ?? null;
+            $counts[$key] = is_array($value) ? count($value) : 0;
+        }
+
+        return $counts;
     }
 
     private function hasExpectedKeys(array $payload): bool

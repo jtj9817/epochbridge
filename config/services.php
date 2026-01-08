@@ -45,6 +45,7 @@ return [
         'base_url' => env('WIKIMEDIA_BASE_URL', 'https://api.wikimedia.org'),
         'token' => env('WIKIMEDIA_API_TOKEN'),
         'user_agent' => env('WIKIMEDIA_USER_AGENT'),
+        'verbose_logs' => env('WIKIMEDIA_VERBOSE_LOGS', false),
     ],
 
 ];

@@ -7,6 +7,8 @@ use App\Models\SavedConversion;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 use function Livewire\Volt\layout;
 use function Livewire\Volt\mount;
@@ -57,6 +59,25 @@ mount(function () {
 
 $resolveConverter = static fn (?DateTimeConverterService $service = null) => $service ?? app(DateTimeConverterService::class);
 $resolveOnThisDayService = static fn (?OnThisDayService $service = null) => $service ?? app(OnThisDayService::class);
+$shouldLogOnThisDay = static fn (): bool => (bool) config('services.wikimedia.verbose_logs', false);
+$logOnThisDay = static function (string $message, array $context = []) use ($shouldLogOnThisDay): void {
+    if (! $shouldLogOnThisDay()) {
+        return;
+    }
+
+    Log::debug($message, $context);
+};
+$onThisDaySectionCounts = static function (array $payload): array {
+    $sections = ['selected', 'events', 'births', 'deaths', 'holidays'];
+    $counts = [];
+
+    foreach ($sections as $section) {
+        $value = $payload[$section] ?? null;
+        $counts[$section] = is_array($value) ? count($value) : 0;
+    }
+
+    return $counts;
+};
 
 $deriveOnThisDayMeta = static function (string $gregorianDate): array {
     $parsed = CarbonImmutable::createFromFormat('Y-m-d', $gregorianDate);
@@ -118,7 +139,20 @@ on([
         $this->selectedTypes = $normalizedTypes;
         // Do NOT re-dispatch - causes infinite loop with reactive props
     },
-    'close-on-this-day' => function () {
+    'close-on-this-day' => function () use ($logOnThisDay) {
+        $requestId = (string) Str::uuid();
+
+        Log::withContext([
+            'on_this_day_request_id' => $requestId,
+            'user_id' => Auth::id() ?? 'guest',
+            'on_this_day_date_label' => $this->onThisDayDateLabel,
+            'on_this_day_date_key' => $this->onThisDayDateKey,
+        ]);
+
+        $logOnThisDay('on_this_day.modal.close', [
+            'closed' => true,
+        ]);
+
         $this->showOnThisDayModal = false;
         $this->onThisDayLoading = false;
     },
@@ -201,7 +235,7 @@ $saveConversion = function (string $note = '') use ($isDuplicateEntry) {
     }
 };
 
-$loadOnThisDay = function (?string $gregorianDate = null, ?OnThisDayService $service = null) use ($resolveOnThisDayService) {
+$loadOnThisDay = function (?string $gregorianDate = null, ?OnThisDayService $service = null) use ($resolveOnThisDayService, $logOnThisDay, $onThisDaySectionCounts) {
     $service = $resolveOnThisDayService($service);
     $this->onThisDayError = '';
     $this->onThisDayDayInfo = [];
@@ -209,10 +243,51 @@ $loadOnThisDay = function (?string $gregorianDate = null, ?OnThisDayService $ser
 
     $gregorianDate = $gregorianDate ?: ($this->conversionResults['gregorian']['full_date'] ?? null);
 
+    $requestId = (string) Str::uuid();
+    $parsed = $gregorianDate ? CarbonImmutable::createFromFormat('Y-m-d', $gregorianDate) : null;
+    $context = [
+        'on_this_day_request_id' => $requestId,
+        'gregorian_date' => $gregorianDate,
+        'user_id' => Auth::id() ?? 'guest',
+        'input_type' => $this->inputType,
+        'date_input' => $this->dateInput,
+        'on_this_day_date_label' => $this->onThisDayDateLabel,
+        'on_this_day_date_key' => $this->onThisDayDateKey,
+    ];
+
+    if ($parsed) {
+        $context['month'] = (int) $parsed->format('n');
+        $context['day'] = (int) $parsed->format('j');
+
+        if ($context['on_this_day_date_label'] === '') {
+            $context['on_this_day_date_label'] = $parsed->format('F j');
+        }
+
+        if ($context['on_this_day_date_key'] === '') {
+            $context['on_this_day_date_key'] = $parsed->format('m-d');
+        }
+    }
+
+    Log::withContext($context);
+
+    $logOnThisDay('on_this_day.load.start', [
+        'loading' => true,
+        'has_gregorian_date' => (bool) $gregorianDate,
+    ]);
+
     if (! $gregorianDate) {
         $this->onThisDayError = 'Unable to determine a Gregorian date for this conversion.';
         $this->onThisDayLoading = false;
         $this->showOnThisDayModal = true;
+
+        $logOnThisDay('on_this_day.load.missing_date', [
+            'error' => $this->onThisDayError,
+        ]);
+        $logOnThisDay('on_this_day.modal.show', [
+            'loading' => $this->onThisDayLoading,
+            'error' => $this->onThisDayError,
+            'has_data' => false,
+        ]);
         return;
     }
 
@@ -227,6 +302,15 @@ $loadOnThisDay = function (?string $gregorianDate = null, ?OnThisDayService $ser
         $this->onThisDayError = 'Unable to load On This Day content right now.';
         $this->onThisDayLoading = false;
         $this->showOnThisDayModal = true;
+
+        $logOnThisDay('on_this_day.load.exception', [
+            'exception' => $exception::class,
+        ]);
+        $logOnThisDay('on_this_day.modal.show', [
+            'loading' => $this->onThisDayLoading,
+            'error' => $this->onThisDayError,
+            'has_data' => false,
+        ]);
         return;
     }
 
@@ -236,11 +320,23 @@ $loadOnThisDay = function (?string $gregorianDate = null, ?OnThisDayService $ser
         $this->onThisDayDayInfo = $result['data'] ?? [];
     }
 
+    $logOnThisDay('on_this_day.load.finish', [
+        'cached' => $result['cached'] ?? null,
+        'error' => $result['error'] ?? null,
+        'section_counts' => empty($result['error']) ? $onThisDaySectionCounts($result['data'] ?? []) : [],
+    ]);
+
     $this->onThisDayLoading = false;
     $this->showOnThisDayModal = true;
+
+    $logOnThisDay('on_this_day.modal.show', [
+        'loading' => $this->onThisDayLoading,
+        'error' => $this->onThisDayError,
+        'has_data' => ! empty($this->onThisDayDayInfo),
+    ]);
 };
 
-$convertDate = function (?DateTimeConverterService $converter = null) use ($resolveConverter, $deriveOnThisDayMeta) {
+$convertDate = function (?DateTimeConverterService $converter = null) use ($resolveConverter, $deriveOnThisDayMeta, $logOnThisDay) {
     $converter = $resolveConverter($converter);
     $this->reset(
         'conversionResults',
@@ -266,6 +362,12 @@ $convertDate = function (?DateTimeConverterService $converter = null) use ($reso
                 $this->onThisDayDateKey = $meta['key'];
                 $this->onThisDayLoading = true;
                 $this->showOnThisDayModal = true;
+
+                $logOnThisDay('on_this_day.modal.prepare', [
+                    'user_id' => Auth::id() ?? 'guest',
+                    'on_this_day_date_label' => $this->onThisDayDateLabel,
+                    'on_this_day_date_key' => $this->onThisDayDateKey,
+                ]);
             } catch (\Throwable $exception) {
                 \Log::warning('Unable to derive On This Day date metadata.', [
                     'gregorian_date' => $gregorianDate,
