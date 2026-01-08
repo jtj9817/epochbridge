@@ -101,7 +101,14 @@ To obtain Google OAuth credentials:
 4. Create OAuth 2.0 credentials
 5. Add authorized redirect URI: `http://localhost:8080/auth/google/callback`
 
-5. Start the development environment
+5. Configure Wikimedia On This Day (optional)
+```bash
+# Add to .env file:
+WIKIMEDIA_API_TOKEN=your-wikimedia-token
+WIKIMEDIA_USER_AGENT="EpochBridge/1.0 (https://example.com; mailto:hello@example.com)"
+```
+
+6. Start the development environment
 ```bash
 # Using Laravel Sail (recommended)
 ./vendor/bin/sail up
@@ -110,12 +117,12 @@ To obtain Google OAuth credentials:
 composer run dev
 ```
 
-6. Run migrations
+7. Run migrations
 ```bash
 ./vendor/bin/sail artisan migrate
 ```
 
-7. Start the frontend development server
+8. Start the frontend development server
 ```bash
 npm run dev
 ```
