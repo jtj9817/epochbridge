@@ -574,7 +574,7 @@ handleGuestSave(note = '') {
                 <!-- Left: Calendars Info & On This Day Buttons -->
                 <div class="flex items-center gap-2">
                     <livewire:components.calendars-info-modal wire:key="calendars-modal" />
-                    <livewire:components.on-this-day-modal :standalone="true" wire:key="on-this-day-nav" />
+                    <livewire:components.on-this-day-modal-standalone wire:key="on-this-day-nav" />
                 </div>
 
                 <!-- Right: Auth Links -->

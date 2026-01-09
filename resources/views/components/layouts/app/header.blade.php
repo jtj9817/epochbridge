@@ -45,7 +45,7 @@
 
             {{-- On This Day Button --}}
             <div class="ms-1">
-                <livewire:components.on-this-day-modal :standalone="true" wire:key="on-this-day-app-nav" />
+                <livewire:components.on-this-day-modal-standalone wire:key="on-this-day-app-nav" />
             </div>
 
             <!-- Desktop User Menu -->
