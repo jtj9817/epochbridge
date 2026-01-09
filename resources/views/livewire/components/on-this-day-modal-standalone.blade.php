@@ -2,7 +2,10 @@
 
 use App\Services\Wikimedia\OnThisDayService;
 use Carbon\CarbonImmutable;
-use function Livewire\Volt\{mount, state};
+
+use function Livewire\Volt\mount;
+use function Livewire\Volt\on;
+use function Livewire\Volt\state;
 
 state([
     'internalShowModal' => false,
@@ -30,22 +33,31 @@ $closeModal = function () {
     $this->internalLoading = false;
 };
 
-$changeDate = function (string $date) {
-    $parsed = CarbonImmutable::createFromFormat('Y-m-d', $date);
+// Property update hook - fires when internalDate changes via wire:model.live
+$updatedInternalDate = function (string $value) {
+    $parsed = CarbonImmutable::createFromFormat('Y-m-d', $value);
     if (! $parsed) {
         return;
     }
 
-    $this->internalDate = $date;
     $this->internalDateLabel = $parsed->format('F j');
-    $this->loadStandaloneData();
+    $this->internalLoading = true;
+
+    // Dispatch event to self - will be handled in a SEPARATE Livewire request
+    // This allows the loading state to render before the blocking API call
+    $this->dispatch('standalone-load-data')->self();
 };
+
+// Event listener - handles the data loading in a separate request
+on(['standalone-load-data' => function () {
+    $this->loadStandaloneData();
+}]);
 
 $loadStandaloneData = function (?OnThisDayService $service = null) {
     $service = $service ?? app(OnThisDayService::class);
     $this->internalLoading = true;
     $this->internalError = '';
-    $this->internalDayInfo = [];
+    // Keep old content visible - don't clear internalDayInfo
 
     try {
         $result = $service->getForDate($this->internalDate);
@@ -174,11 +186,19 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
                                 <input
                                     type="date"
                                     wire:model.live="internalDate"
-                                    wire:change="changeDate($event.target.value)"
-                                    class="bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-600 px-3 py-1.5 text-sm font-medium text-theme-900 dark:text-zinc-100 uppercase tracking-wider focus:outline-none focus:border-theme-500 dark:focus:border-zinc-400 transition"
+                                    wire:loading.attr="disabled"
+                                    wire:target="internalDate, standalone-load-data"
+                                    class="bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-600 px-3 py-1.5 text-sm font-medium text-theme-900 dark:text-zinc-100 uppercase tracking-wider focus:outline-none focus:border-theme-500 dark:focus:border-zinc-400 transition disabled:opacity-50 disabled:cursor-wait"
                                 />
+                                {{-- Inline loading spinner --}}
+                                <div wire:loading wire:target="internalDate, standalone-load-data" class="flex items-center">
+                                    <svg class="animate-spin h-4 w-4 text-theme-500 dark:text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
                                 @if ($dateLabel)
-                                    <span class="text-sm font-bold text-theme-700 dark:text-zinc-200 uppercase tracking-wider">
+                                    <span wire:loading.remove wire:target="internalDate" class="text-sm font-bold text-theme-700 dark:text-zinc-200 uppercase tracking-wider">
                                         {{ $dateLabel }}
                                     </span>
                                 @endif
