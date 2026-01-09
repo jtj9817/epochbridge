@@ -22,6 +22,11 @@ mount(function () {
 });
 
 $openModal = function () {
+    \Log::info('[OnThisDay] Opening modal', [
+        'timestamp' => now()->toISOString(),
+        'date' => $this->internalDate,
+        'date_label' => $this->internalDateLabel,
+    ]);
     $this->internalShowModal = true;
     $this->internalDate = now()->format('Y-m-d');
     $this->internalDateLabel = now()->format('F j');
@@ -59,22 +64,70 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
     $this->internalError = '';
     // Keep old content visible - don't clear internalDayInfo
 
+    \Log::info('[OnThisDay] Starting data load', [
+        'timestamp' => now()->toISOString(),
+        'date' => $this->internalDate,
+        'date_label' => $this->internalDateLabel,
+        'previous_data_count' => count($this->internalDayInfo),
+        'sections_with_data' => array_keys(array_filter($this->internalDayInfo ?? [])),
+    ]);
+
     try {
         $result = $service->getForDate($this->internalDate);
+        
+        \Log::info('[OnThisDay] Service response received', [
+            'timestamp' => now()->toISOString(),
+            'date' => $this->internalDate,
+            'has_error' => !empty($result['error']),
+            'has_data' => !empty($result['data']),
+            'data_keys' => array_keys($result['data'] ?? []),
+            'result_structure' => array_keys($result),
+        ]);
+
         if (! empty($result['error'])) {
+            \Log::warning('[OnThisDay] Service returned error', [
+                'date' => $this->internalDate,
+                'error_message' => $result['error'],
+            ]);
             $this->internalError = $result['error'];
         } else {
-            $this->internalDayInfo = $result['data'] ?? [];
+            $data = $result['data'] ?? [];
+            $this->internalDayInfo = $data;
+            
+            \Log::info('[OnThisDay] Data processed successfully', [
+                'timestamp' => now()->toISOString(),
+                'date' => $this->internalDate,
+                'sections_count' => count($data),
+                'section_breakdown' => array_map(function($key, $items) {
+                    return [$key => count($items ?? [])];
+                }, array_keys($data), $data),
+                'total_items' => array_sum(array_map(function($items) {
+                    return count($items ?? []);
+                }, $data)),
+            ]);
         }
     } catch (\Throwable $e) {
-        $this->internalError = 'Unable to load On This Day content right now.';
-        \Log::error('On This Day standalone load failed', [
+        \Log::error('[OnThisDay] Service call failed', [
+            'timestamp' => now()->toISOString(),
             'date' => $this->internalDate,
-            'error' => $e->getMessage(),
+            'exception_class' => get_class($e),
+            'error_message' => $e->getMessage(),
+            'error_trace' => $e->getTraceAsString(),
         ]);
+        $this->internalError = 'Unable to load On This Day content right now.';
     }
 
     $this->internalLoading = false;
+    
+    \Log::info('[OnThisDay] Data load completed', [
+        'timestamp' => now()->toISOString(),
+        'date' => $this->internalDate,
+        'loading_state' => $this->internalLoading,
+        'has_error' => !empty($this->internalError),
+        'error_message' => $this->internalError,
+        'final_data_count' => count($this->internalDayInfo),
+        'final_sections' => array_keys(array_filter($this->internalDayInfo ?? [])),
+    ]);
 };
 
 ?>
@@ -151,7 +204,55 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
 
     {{-- Modal --}}
     <div
-        x-data="{ open: @entangle('internalShowModal') }"
+        x-data="{
+            open: @entangle('internalShowModal'),
+            debug: {
+                init() {
+                    console.log('[OnThisDay-Frontend] Component initialized', {
+                        timestamp: new Date().toISOString(),
+                        open: this.open,
+                        date: @this.internalDate,
+                        loading: @this.internalLoading,
+                        error: @this.internalError,
+                    });
+                },
+                dataChanged(changeType, newValue, oldValue) {
+                    console.log(`[OnThisDay-Frontend] ${changeType} changed`, {
+                        timestamp: new Date().toISOString(),
+                        changeType,
+                        newValue,
+                        oldValue,
+                        currentState: {
+                            open: this.open,
+                            date: @this.internalDate,
+                            loading: @this.internalLoading,
+                            error: @this.internalError,
+                        }
+                    });
+                }
+            }
+        }"
+        x-init="debug.init()"
+        x-effect="
+            if (open) {
+                console.log('[OnThisDay-Frontend] Modal opened', {
+                    timestamp: new Date().toISOString(),
+                    date: @this.internalDate,
+                    loading: @this.internalLoading,
+                    error: @this.internalError,
+                    sections: Object.keys(@this.internalDayInfo || {})
+                });
+            } else {
+                console.log('[OnThisDay-Frontend] Modal closed', {
+                    timestamp: new Date().toISOString(),
+                    finalState: {
+                        date: @this.internalDate,
+                        loading: @this.internalLoading,
+                        error: @this.internalError,
+                    }
+                });
+            }
+        "
         x-show="open"
         x-cloak
         x-transition.opacity
@@ -188,6 +289,19 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
                                     wire:model.live="internalDate"
                                     wire:loading.attr="disabled"
                                     wire:target="internalDate, standalone-load-data"
+                                    x-data="{
+                                        previousValue: '',
+                                        onChange(event) {
+                                            console.log('[OnThisDay-Frontend] Date input changed', {
+                                                timestamp: new Date().toISOString(),
+                                                newValue: event.target.value,
+                                                previousValue: this.previousValue,
+                                                willTriggerReload: event.target.value !== this.previousValue
+                                            });
+                                            this.previousValue = event.target.value;
+                                        }
+                                    }"
+                                    x-on:change="onChange($event)"
                                     class="bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-600 px-3 py-1.5 text-sm font-medium text-theme-900 dark:text-zinc-100 uppercase tracking-wider focus:outline-none focus:border-theme-500 dark:focus:border-zinc-400 transition disabled:opacity-50 disabled:cursor-wait"
                                 />
                                 {{-- Inline loading spinner --}}
@@ -255,14 +369,50 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
                             </div>
                         @else
                             {{-- Sections --}}
-                            <div class="space-y-6">
+                            <div 
+                                class="space-y-6"
+                                x-data="{
+                                    sectionsData: @this.internalDayInfo,
+                                    debugSections() {
+                                        console.log('[OnThisDay-Frontend] Processing sections for display', {
+                                            timestamp: new Date().toISOString(),
+                                            sections: Object.keys(this.sectionsData || {}),
+                                            totalSections: Object.keys(this.sectionsData || {}).length,
+                                            sectionItems: Object.fromEntries(
+                                                Object.entries(this.sectionsData || {}).map(([key, items]) => [key, (items || []).length])
+                                            )
+                                        });
+                                    }
+                                }"
+                                x-init="debugSections()"
+                                wire:ignore
+                            >
                                 @foreach ($sections as $key => $section)
                                     @php
                                         $items = is_array($section['items']) ? $section['items'] : [];
                                         $totalItems = count($items);
                                     @endphp
                                     @if (!empty($items))
-                                        <div x-data="{ expanded: false }">
+                                        <div 
+                                            x-data="{ 
+                                                expanded: false,
+                                                sectionKey: '{{ $key }}',
+                                                sectionItems: @js($items),
+                                                debugSection() {
+                                                    console.log(`[OnThisDay-Frontend] Rendering section: ${this.sectionKey}`, {
+                                                        timestamp: new Date().toISOString(),
+                                                        sectionKey: this.sectionKey,
+                                                        itemsCount: this.sectionItems.length,
+                                                        hasItems: this.sectionItems.length > 0,
+                                                        itemsPreview: this.sectionItems.slice(0, 2).map(item => ({
+                                                            year: item.year || null,
+                                                            text: (item.text || '').substring(0, 100) + '...'
+                                                        }))
+                                                    });
+                                                }
+                                            }"
+                                            x-init="debugSection()"
+                                        >
                                             {{-- Section Header --}}
                                             <div class="flex items-center justify-between mb-3 pb-2 border-b border-theme-200 dark:border-zinc-700">
                                                 <div class="flex items-center gap-2">
@@ -304,6 +454,11 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
                                                         $text = $entry['text'] ?? '';
                                                         $page = $entry['pages'][0] ?? null;
                                                         $url = is_array($page) ? ($page['content_urls']['desktop']['page'] ?? null) : null;
+                                                        
+                                                        // Debug: Log entry data for first few entries
+                                                        if ($index < 2) {
+                                                            echo "<script>console.log('[OnThisDay-Frontend] Rendering entry', { timestamp: new Date().toISOString(), section: '{$key}', index: {$index}, year: " . ($year ? "'{$year}'" : 'null') . ", textLength: " . strlen($text) . ", hasUrl: " . ($url ? 'true' : 'false') . " });</script>";
+                                                        }
                                                     @endphp
                                                     <div
                                                         x-show="expanded || {{ $index }} < 3"
