@@ -13,8 +13,8 @@ Unlike traditional loops that risk time-outs, this scraper uses a recursive job 
 ### The Workflow
 
 1. **Dispatch**: The User triggers the Artisan command.
-2. **Analyze**: The Job calculates `Missing Days = All Days in Month - Existing DB Entries`.
-3. **Terminate**: If `Missing Days == 0`, the job logs `"Complete"` and stops.
+2. **Analyze**: The Job calculates `Missing Days = All Days in Month (using a leap-year baseline so Feb 29 is included) - Existing DB Entries for language=en/type=all`.
+3. **Terminate**: If `Missing Days == 0`, the job logs `[WikimediaScraper|Month:X] Complete` and stops.
 4. **Process**: The Job selects the next **5 missing days** (Batch Size).
 5. **Scrape**: It fetches data for these days, sleeping **1 second** between requests.
 6. **Recurse**: The Job dispatches a _new instance_ of itself to the queue to handle the next batch.
@@ -42,7 +42,7 @@ Unlike traditional loops that risk time-outs, this scraper uses a recursive job 
 
 * **Responsibility**: The brain of the operation.
 * **Key Logic**:
-    * Calculates set difference between *Expected Days* (1-31) and *Stored Days*.
+    * Calculates set difference between *Expected Days* (days in month from a leap-year baseline, so Feb 29 is included) and *Stored Days* (language=en/type=all).
     * Implements **Exponential Backoff** (see Section 4).
     * Self-dispatches upon completion of a batch.
 
@@ -91,6 +91,7 @@ Monitor the process via laravel.log or Pail. Search for the tag [WikimediaScrape
 > [WikimediaScraper|Month:10] Starting batch. Remaining days to scrape: 31
 > [WikimediaScraper|Month:10] Successfully scraped and saved Day 1
 > [WikimediaScraper|Month:10] Batch complete. Dispatching next batch in 5s.
+> [WikimediaScraper|Month:10] Complete
 
 ## 6. Database Schema
 
@@ -100,3 +101,38 @@ Data is stored in the `file` table.
 * **Model**: `App\Models\OnThisDayEntry`
 
 This constraint ensures idempotency. If a job accidentally runs for a day that was just saved by another process, the database rejects the duplicate, and the scraper moves on.
+
+## 7. Implementation Verification & Remediation Plan
+
+### Context: Plan Alignment
+
+* The command signature and month validation match the documented interface, dispatching the initial batch job as described.
+* The job is state-aware, processes 5-day batches, sleeps 1s between requests, and self-dispatches to continue work.
+* Exponential backoff for fully failed batches and `Http::retry(3, 1000)` for API calls are in place.
+* The `file` table and unique constraint (`language`, `type`, `month`, `day`) align with the idempotency model.
+
+### Context: Current Gaps & Deviations
+
+* The per-day existence check is not scoped to language/type, which can skip required `en/all` fetches if other rows exist.
+* Termination logs do not currently emit the exact `Complete` text expected by tooling.
+* Invalid cached JSON rows are treated as complete by the batch job and are never repaired.
+
+### Plan (No Test Coverage)
+
+1. **Scope Enforcement (en/all only)**: Align the per-day existence check with the `language=en` and `type=all` scope so it cannot skip required work for the intended dataset.
+2. **Termination Log Consistency**: Update the termination log to emit the exact `Complete` text with the standard prefix (`[WikimediaScraper|Month:X] Complete`) for tooling consistency.
+3. **Leap-Day Inclusion**: Keep the leap-year baseline for day calculations and document it explicitly (Feb 29 is always included when scraping February).
+4. **Invalid JSON Repair Path**: Treat invalid cached JSON rows as missing and re-fetch them during batch processing (or add a dedicated repair mode that re-scrapes invalid entries).
+5. **Manual Verification**: Use a short manual run (single month) to confirm log output, Feb 29 handling, and that invalid JSON rows are repaired; no automated test additions are planned.
+
+### Concrete Repair Path (Invalid Cached JSON)
+
+* **Strategy**: Move JSON validity checks out of the batch job and into a scheduled repair command that uses database-side validation, avoiding in-memory decoding.
+* **Scheduled Repair Command**:
+    * Command signature: `scrape:on-this-day:repair {month?} {--all}` that scopes to `language=en` and `type=all`.
+    * Identify invalid rows using SQL-level checks (no PHP decoding):  
+      `whereNull('day_info')->orWhere('day_info', '')->orWhereRaw('JSON_VALID(day_info) = 0')`
+    * For each affected month, delete the invalid rows (or mark them) and dispatch `ScrapeWikimediaBatch` so the normal missing-day logic re-fetches them.
+* **Scheduling**: Run nightly or weekly via the scheduler, e.g. `Schedule::command('scrape:on-this-day:repair --all')->dailyAt('02:00')`.
+    * Laravel 12 placement: add the schedule entry in `routes/console.php`, or use `->withSchedule(...)` in `bootstrap/app.php`.
+* **DB Compatibility**: If `JSON_VALID` is unavailable, add a `day_info_valid` boolean column updated on write and have the repair command query that flag instead.
