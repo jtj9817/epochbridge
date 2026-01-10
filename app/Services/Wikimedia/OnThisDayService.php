@@ -140,6 +140,7 @@ class OnThisDayService
                 ->baseUrl($baseUrl)
                 ->acceptJson()
                 ->timeout(10)
+                ->retry(3, 1000)
                 ->get($path);
         } catch (\Throwable $exception) {
             $this->logVerbose('on_this_day.api.exception', [
