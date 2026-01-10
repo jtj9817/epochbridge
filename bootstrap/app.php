@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -15,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/auth.php'));
         },
     )
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('scrape:on-this-day:repair --all')->dailyAt('02:00');
+    })
     ->withMiddleware(function (Middleware $middleware) {
         //
     })

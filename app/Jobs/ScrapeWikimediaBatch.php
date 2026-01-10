@@ -40,7 +40,7 @@ class ScrapeWikimediaBatch implements ShouldQueue
         $logPrefix = "[WikimediaScraper|Month:{$this->month}]";
         
         // 1. Identify Missing Days
-        // We use a leap year (2024) to ensure Feb 29 is included if we scrape Feb
+        // Use a leap year (2024) so February always includes Feb 29.
         $daysInMonth = Carbon::createFromDate(2024, $this->month, 1)->daysInMonth;
         $allDays = range(1, $daysInMonth);
         
@@ -58,7 +58,7 @@ class ScrapeWikimediaBatch implements ShouldQueue
 
         // 2. Terminate if Complete
         if ($remainingCount === 0) {
-            Log::info("{$logPrefix} All days covered for this month. Scraper job chain terminating successfully.");
+            Log::info("{$logPrefix} Complete");
             return;
         }
 
@@ -69,7 +69,11 @@ class ScrapeWikimediaBatch implements ShouldQueue
 
         foreach ($batch as $day) {
             // Check termination condition again in case of parallel execution artifacts (unlikely but safe)
-            if (OnThisDayEntry::where('month', $this->month)->where('day', $day)->exists()) {
+            if (OnThisDayEntry::where('month', $this->month)
+                ->where('day', $day)
+                ->where('type', 'all')
+                ->where('language', 'en')
+                ->exists()) {
                 continue;
             }
 
