@@ -21,14 +21,25 @@ class OnThisDayCacheService
         $month = (int) $date->format('n');
         $day = (int) $date->format('j');
 
+        $queryStartedAt = microtime(true);
         $entry = OnThisDayEntry::query()
             ->where('language', $language)
             ->where('type', $type)
             ->where('month', $month)
             ->where('day', $day)
             ->first();
+        $queryDurationMs = (int) round((microtime(true) - $queryStartedAt) * 1000);
 
         if (! $entry) {
+            Log::info('On This Day cache timing.', [
+                'date' => $date->toDateString(),
+                'language' => $language,
+                'type' => $type,
+                'query_ms' => $queryDurationMs,
+                'decode_ms' => null,
+                'cache_hit' => false,
+            ]);
+
             return [
                 'data' => [],
                 'cached' => false,
@@ -52,7 +63,9 @@ class OnThisDayCacheService
             ];
         }
 
+        $decodeStartedAt = microtime(true);
         $decoded = json_decode($entry->day_info, true);
+        $decodeDurationMs = (int) round((microtime(true) - $decodeStartedAt) * 1000);
 
         if (! is_array($decoded)) {
             Log::warning('On This Day cache entry has invalid JSON.', [
@@ -63,12 +76,32 @@ class OnThisDayCacheService
                 'day' => $day,
             ]);
 
+            Log::info('On This Day cache timing.', [
+                'date' => $date->toDateString(),
+                'language' => $language,
+                'type' => $type,
+                'entry_id' => $entry->id,
+                'query_ms' => $queryDurationMs,
+                'decode_ms' => $decodeDurationMs,
+                'cache_hit' => true,
+            ]);
+
             return [
                 'data' => null,
                 'cached' => true,
                 'error' => 'On This Day data is unavailable right now.',
             ];
         }
+
+        Log::info('On This Day cache timing.', [
+            'date' => $date->toDateString(),
+            'language' => $language,
+            'type' => $type,
+            'entry_id' => $entry->id,
+            'query_ms' => $queryDurationMs,
+            'decode_ms' => $decodeDurationMs,
+            'cache_hit' => true,
+        ]);
 
         return [
             'data' => $decoded,
