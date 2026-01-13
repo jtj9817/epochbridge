@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\Wikimedia\OnThisDayService;
+use App\Models\OnThisDayEntry;
 use Carbon\CarbonImmutable;
 
 use function Livewire\Volt\mount;
@@ -58,8 +58,7 @@ on(['standalone-load-data' => function () {
     $this->loadStandaloneData();
 }]);
 
-$loadStandaloneData = function (?OnThisDayService $service = null) {
-    $service = $service ?? app(OnThisDayService::class);
+$loadStandaloneData = function () {
     $this->internalLoading = true;
     $this->internalError = '';
     // Keep old content visible - don't clear internalDayInfo
@@ -73,41 +72,75 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
     ]);
 
     try {
-        $result = $service->getForDate($this->internalDate);
-        
-        \Log::info('[OnThisDay] Service response received', [
+        $parsed = CarbonImmutable::createFromFormat('Y-m-d', $this->internalDate);
+
+        if (! $parsed) {
+            \Log::warning('[OnThisDay] Invalid date supplied', [
+                'date' => $this->internalDate,
+            ]);
+            $this->internalError = 'Invalid date selected.';
+
+            return;
+        }
+
+        $month = (int) $parsed->format('n');
+        $day = (int) $parsed->format('j');
+
+        $entry = OnThisDayEntry::query()
+            ->where('language', 'en')
+            ->where('type', 'all')
+            ->where('month', $month)
+            ->where('day', $day)
+            ->first();
+
+        if (! $entry) {
+            \Log::info('[OnThisDay] No cached entry found', [
+                'date' => $this->internalDate,
+                'month' => $month,
+                'day' => $day,
+            ]);
+            $this->internalDayInfo = [];
+
+            return;
+        }
+
+        if (! is_string($entry->day_info) || $entry->day_info === '') {
+            \Log::warning('[OnThisDay] Cached entry missing day_info', [
+                'entry_id' => $entry->id,
+                'date' => $this->internalDate,
+            ]);
+            $this->internalDayInfo = [];
+
+            return;
+        }
+
+        $data = json_decode($entry->day_info, true);
+
+        if (! is_array($data)) {
+            \Log::warning('[OnThisDay] Cached entry contains invalid JSON', [
+                'entry_id' => $entry->id,
+                'date' => $this->internalDate,
+            ]);
+            $this->internalError = 'On This Day data is unavailable right now.';
+
+            return;
+        }
+
+        $this->internalDayInfo = $data;
+
+        \Log::info('[OnThisDay] Data loaded from cache', [
             'timestamp' => now()->toISOString(),
             'date' => $this->internalDate,
-            'has_error' => !empty($result['error']),
-            'has_data' => !empty($result['data']),
-            'data_keys' => array_keys($result['data'] ?? []),
-            'result_structure' => array_keys($result),
+            'sections_count' => count($data),
+            'section_breakdown' => array_map(function ($key, $items) {
+                return [$key => count($items ?? [])];
+            }, array_keys($data), $data),
+            'total_items' => array_sum(array_map(function ($items) {
+                return count($items ?? []);
+            }, $data)),
         ]);
-
-        if (! empty($result['error'])) {
-            \Log::warning('[OnThisDay] Service returned error', [
-                'date' => $this->internalDate,
-                'error_message' => $result['error'],
-            ]);
-            $this->internalError = $result['error'];
-        } else {
-            $data = $result['data'] ?? [];
-            $this->internalDayInfo = $data;
-            
-            \Log::info('[OnThisDay] Data processed successfully', [
-                'timestamp' => now()->toISOString(),
-                'date' => $this->internalDate,
-                'sections_count' => count($data),
-                'section_breakdown' => array_map(function($key, $items) {
-                    return [$key => count($items ?? [])];
-                }, array_keys($data), $data),
-                'total_items' => array_sum(array_map(function($items) {
-                    return count($items ?? []);
-                }, $data)),
-            ]);
-        }
     } catch (\Throwable $e) {
-        \Log::error('[OnThisDay] Service call failed', [
+        \Log::error('[OnThisDay] Cache load failed', [
             'timestamp' => now()->toISOString(),
             'date' => $this->internalDate,
             'exception_class' => get_class($e),
@@ -115,19 +148,19 @@ $loadStandaloneData = function (?OnThisDayService $service = null) {
             'error_trace' => $e->getTraceAsString(),
         ]);
         $this->internalError = 'Unable to load On This Day content right now.';
-    }
+    } finally {
+        $this->internalLoading = false;
 
-    $this->internalLoading = false;
-    
-    \Log::info('[OnThisDay] Data load completed', [
-        'timestamp' => now()->toISOString(),
-        'date' => $this->internalDate,
-        'loading_state' => $this->internalLoading,
-        'has_error' => !empty($this->internalError),
-        'error_message' => $this->internalError,
-        'final_data_count' => count($this->internalDayInfo),
-        'final_sections' => array_keys(array_filter($this->internalDayInfo ?? [])),
-    ]);
+        \Log::info('[OnThisDay] Data load completed', [
+            'timestamp' => now()->toISOString(),
+            'date' => $this->internalDate,
+            'loading_state' => $this->internalLoading,
+            'has_error' => !empty($this->internalError),
+            'error_message' => $this->internalError,
+            'final_data_count' => count($this->internalDayInfo),
+            'final_sections' => array_keys(array_filter($this->internalDayInfo ?? [])),
+        ]);
+    }
 };
 
 ?>
