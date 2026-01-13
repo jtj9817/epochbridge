@@ -66,6 +66,7 @@ class OnThisDayCacheService
         $decodeStartedAt = microtime(true);
         $decoded = json_decode($entry->day_info, true);
         $decodeDurationMs = (int) round((microtime(true) - $decodeStartedAt) * 1000);
+        $dayInfoBytes = strlen($entry->day_info);
 
         if (! is_array($decoded)) {
             Log::warning('On This Day cache entry has invalid JSON.', [
@@ -81,6 +82,7 @@ class OnThisDayCacheService
                 'language' => $language,
                 'type' => $type,
                 'entry_id' => $entry->id,
+                'day_info_bytes' => $dayInfoBytes,
                 'query_ms' => $queryDurationMs,
                 'decode_ms' => $decodeDurationMs,
                 'cache_hit' => true,
@@ -98,6 +100,7 @@ class OnThisDayCacheService
             'language' => $language,
             'type' => $type,
             'entry_id' => $entry->id,
+            'day_info_bytes' => $dayInfoBytes,
             'query_ms' => $queryDurationMs,
             'decode_ms' => $decodeDurationMs,
             'cache_hit' => true,

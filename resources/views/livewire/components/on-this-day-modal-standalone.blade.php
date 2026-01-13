@@ -63,6 +63,9 @@ $loadStandaloneData = function (?OnThisDayCacheService $service = null) {
     $this->internalLoading = true;
     $this->internalError = '';
     // Keep old content visible - don't clear internalDayInfo
+    $loadStartedAt = microtime(true);
+    $requestBytes = request()?->getContent();
+    $requestPayloadBytes = is_string($requestBytes) ? strlen($requestBytes) : null;
 
     \Log::info('[OnThisDay] Starting data load', [
         'timestamp' => now()->toISOString(),
@@ -84,6 +87,8 @@ $loadStandaloneData = function (?OnThisDayCacheService $service = null) {
         } else {
             $data = $result['data'] ?? [];
             $this->internalDayInfo = $data;
+            $encodedPayload = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $payloadBytes = is_string($encodedPayload) ? strlen($encodedPayload) : null;
 
             \Log::info('[OnThisDay] Data loaded from cache', [
                 'timestamp' => now()->toISOString(),
@@ -95,6 +100,7 @@ $loadStandaloneData = function (?OnThisDayCacheService $service = null) {
                 'total_items' => array_sum(array_map(function ($items) {
                     return count($items ?? []);
                 }, $data)),
+                'payload_bytes' => $payloadBytes,
             ]);
         }
     } catch (\Throwable $e) {
@@ -108,6 +114,7 @@ $loadStandaloneData = function (?OnThisDayCacheService $service = null) {
         $this->internalError = 'Unable to load On This Day content right now.';
     } finally {
         $this->internalLoading = false;
+        $loadDurationMs = (int) round((microtime(true) - $loadStartedAt) * 1000);
 
         \Log::info('[OnThisDay] Data load completed', [
             'timestamp' => now()->toISOString(),
@@ -117,6 +124,8 @@ $loadStandaloneData = function (?OnThisDayCacheService $service = null) {
             'error_message' => $this->internalError,
             'final_data_count' => count($this->internalDayInfo),
             'final_sections' => array_keys(array_filter($this->internalDayInfo ?? [])),
+            'load_duration_ms' => $loadDurationMs,
+            'request_payload_bytes' => $requestPayloadBytes,
         ]);
     }
 };
