@@ -2,7 +2,7 @@
 
 use App\Exceptions\CalendarConversionException;
 use App\Services\DateTimeConverterService;
-use App\Services\Wikimedia\OnThisDayService;
+use App\Services\Wikimedia\OnThisDayCacheService;
 use App\Models\SavedConversion;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
@@ -58,7 +58,7 @@ mount(function () {
 });
 
 $resolveConverter = static fn (?DateTimeConverterService $service = null) => $service ?? app(DateTimeConverterService::class);
-$resolveOnThisDayService = static fn (?OnThisDayService $service = null) => $service ?? app(OnThisDayService::class);
+$resolveOnThisDayService = static fn (?OnThisDayCacheService $service = null) => $service ?? app(OnThisDayCacheService::class);
 $shouldLogOnThisDay = static fn (): bool => (bool) config('services.wikimedia.verbose_logs', false);
 $logOnThisDay = static function (string $message, array $context = []) use ($shouldLogOnThisDay): void {
     if (! $shouldLogOnThisDay()) {
@@ -235,7 +235,7 @@ $saveConversion = function (string $note = '') use ($isDuplicateEntry) {
     }
 };
 
-$loadOnThisDay = function (?string $gregorianDate = null, ?OnThisDayService $service = null) use ($resolveOnThisDayService, $logOnThisDay, $onThisDaySectionCounts) {
+$loadOnThisDay = function (?string $gregorianDate = null, ?OnThisDayCacheService $service = null) use ($resolveOnThisDayService, $logOnThisDay, $onThisDaySectionCounts) {
     $service = $resolveOnThisDayService($service);
     $this->onThisDayError = '';
     $this->onThisDayDayInfo = [];
