@@ -138,7 +138,7 @@ $refreshDate = function () {
                         :date="$this->internalDate"
                         :active="$this->internalShowModal"
                         :load-token="$this->internalLoadToken"
-                        wire:key="'on-this-day-list'"
+                        wire:key="on-this-day-list-{{ $this->internalLoadToken }}"
                     />
                 </div>
 
