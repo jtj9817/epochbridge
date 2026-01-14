@@ -279,21 +279,30 @@ $updatedLoadToken = function () {
                                     wire:target="toggleSection('{{ $key }}')"
                                     class="flex items-center gap-1.5 px-3 py-1 text-xs uppercase tracking-wider font-medium text-theme-500 dark:text-zinc-400 border border-theme-300 dark:border-zinc-600 hover:bg-theme-100 dark:hover:bg-zinc-800 hover:text-theme-700 dark:hover:text-zinc-200 transition"
                                 >
-                                    <svg
-                                        class="w-3 h-3 transition-transform {{ $isExpanded ? 'rotate-180' : '' }}"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                    >
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                    </svg>
-                                    <span>
-                                        @if ($isExpanded)
-                                            Show less
-                                        @elseif ($remainingItems > 0)
-                                            Show {{ $remainingItems }} more
-                                        @else
-                                            Show more
-                                        @endif
+                                    <span wire:loading.remove wire:target="toggleSection('{{ $key }}')" class="flex items-center gap-1.5">
+                                        <svg
+                                            class="w-3 h-3 transition-transform {{ $isExpanded ? 'rotate-180' : '' }}"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                        >
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span>
+                                            @if ($isExpanded)
+                                                Show less
+                                            @elseif ($remainingItems > 0)
+                                                Show {{ $remainingItems }} more
+                                            @else
+                                                Show more
+                                            @endif
+                                        </span>
+                                    </span>
+                                    <span wire:loading wire:target="toggleSection('{{ $key }}')" class="flex items-center gap-1.5">
+                                        <svg class="animate-spin h-3 w-3 text-theme-500 dark:text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span>Loading</span>
                                     </span>
                                 </button>
                             @endif
