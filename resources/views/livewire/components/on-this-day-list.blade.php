@@ -2,6 +2,7 @@
 
 use App\Services\Wikimedia\OnThisDayCacheService;
 
+use function Livewire\Volt\mount;
 use function Livewire\Volt\state;
 
 state(['date', 'active', 'loadToken'])->reactive();
@@ -13,6 +14,12 @@ state([
     'loading' => false,
     'error' => '',
 ]);
+
+mount(function () {
+    if ($this->active) {
+        $this->loadDayInfo();
+    }
+});
 
 $sectionKeys = ['selected', 'events', 'births', 'deaths', 'holidays'];
 
