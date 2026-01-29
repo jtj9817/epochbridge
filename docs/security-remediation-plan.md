@@ -1,6 +1,7 @@
 # Security Remediation Plan (Pre‑Launch)
 
 Date: 2026-01-29
+Status: COMPLETED
 
 ## Goals
 - Eliminate high‑risk authentication and transport issues before launch.
@@ -125,6 +126,20 @@ Date: 2026-01-29
 - Confirm `.env` does **not** include hardcoded secrets committed to git.
 - Verify `APP_DEBUG=false`, `APP_ENV=production`, `APP_KEY` set.
 - Ensure `.env` is not web‑accessible (web server rules).
+
+## Progress Update (2026-01-29)
+- OAuth flow is now stateful with PKCE; tests cover invalid state handling.
+- HTTPS is enforced in production via middleware and HTTPS URL generation; secure cookies default to true in production.
+- Server‑side note validation (max 2048 + trim) added for save flow; tests updated.
+- Wikimedia links are allow‑listed to http/https and outbound links now include `rel="noopener noreferrer"`.
+- Raw SVG rendering remains but is explicitly limited to trusted sources with inline notes.
+- 2FA setup data requires recent password confirmation and is cleared on modal close.
+- `email_verified_at` removed from mass assignment; set explicitly in trusted flow.
+
+## Remaining Verification Items
+- Manually confirm production `APP_URL=https://...`, `SESSION_SECURE_COOKIE=true`, `APP_DEBUG=false`, `APP_ENV=production`, `APP_KEY` set.
+- Verify load balancer/proxy headers are configured correctly when HTTPS is terminated upstream.
+- Run manual smoke checks for OAuth invalid state, HTTPS redirect behavior, and external link rendering.
 
 ## Validation & Testing
 - Add/extend tests for OAuth state handling and note validation.
