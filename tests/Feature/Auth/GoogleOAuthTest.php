@@ -65,8 +65,21 @@ test('existing user can link google account', function () {
 
 test('oauth error is handled gracefully', function () {
     $provider = \Mockery::mock(\Laravel\Socialite\Contracts\Provider::class);
-    $provider->shouldReceive('stateless')->andReturn($provider);
+    $provider->shouldReceive('enablePKCE')->andReturn($provider);
     $provider->shouldReceive('user')->andThrow(new \Exception('OAuth error'));
+
+    Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+    $response = $this->get(route('social.callback', 'google'));
+
+    $response->assertRedirect('/login');
+    $response->assertSessionHasErrors(['oauth']);
+});
+
+test('oauth callback rejects invalid state', function () {
+    $provider = \Mockery::mock(\Laravel\Socialite\Contracts\Provider::class);
+    $provider->shouldReceive('enablePKCE')->andReturn($provider);
+    $provider->shouldReceive('user')->andThrow(new \Laravel\Socialite\Two\InvalidStateException());
 
     Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
 
@@ -155,7 +168,7 @@ function mockSocialite($email = '[email protected]', $id = '123', $name = 'Test 
 
     $provider = \Mockery::mock(\Laravel\Socialite\Contracts\Provider::class);
     $provider->shouldReceive('user')->andReturn($socialiteUser);
-    $provider->shouldReceive('stateless')->andReturn($provider);
+    $provider->shouldReceive('enablePKCE')->andReturn($provider);
     $provider->shouldReceive('with')->andReturn($provider);
     $provider->shouldReceive('redirect')->andReturn(redirect('https://accounts.google.com/o/oauth2/auth?client_id=test&redirect_uri=http://localhost/auth/google/callback&response_type=code&state=test&access_type=offline&prompt=consent'));
 

@@ -118,6 +118,22 @@ test('note with only whitespace is saved as empty string', function () {
     ]);
 });
 
+test('note longer than 2048 characters is rejected', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $longNote = str_repeat('a', 2049);
+
+    Volt::test('landing')
+        ->set('dateInput', '2024-01-15')
+        ->set('inputType', 'gregorian')
+        ->call('convertDate')
+        ->dispatch('save-conversion-with-note', note: $longNote)
+        ->assertNotDispatched('conversion-saved');
+
+    $this->assertDatabaseCount('saved_conversions', 0);
+});
+
 test('legacy save-conversion event still works without note parameter', function () {
     $user = User::factory()->create();
     $this->actingAs($user);

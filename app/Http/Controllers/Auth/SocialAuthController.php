@@ -21,6 +21,7 @@ class SocialAuthController extends Controller
         $this->validateProvider($provider);
 
         return Socialite::driver($provider)
+            ->enablePKCE()
             ->with([
                 'access_type' => 'offline',
                 'prompt' => 'consent',
@@ -37,7 +38,9 @@ class SocialAuthController extends Controller
         }
 
         try {
-            $socialUser = Socialite::driver($provider)->stateless()->user();
+            $socialUser = Socialite::driver($provider)
+                ->enablePKCE()
+                ->user();
         } catch (Exception $e) {
             Log::error('OAuth callback error', [
                 'provider' => $provider,
@@ -104,13 +107,18 @@ class SocialAuthController extends Controller
 
     protected function createUser($socialUser)
     {
-        return User::create([
+        $user = User::create([
             'name' => $socialUser->getName() ?? $socialUser->getEmail(),
             'email' => $socialUser->getEmail(),
             'avatar' => $socialUser->getAvatar(),
-            'email_verified_at' => now(),
             'password' => null,
         ]);
+
+        $user->forceFill([
+            'email_verified_at' => now(),
+        ])->save();
+
+        return $user;
     }
 
     protected function createSocialAccount(User $user, string $provider, $socialUser)

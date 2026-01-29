@@ -186,6 +186,13 @@ $saveConversion = function (string $note = '') use ($isDuplicateEntry) {
         ");
     };
 
+    $note = trim($note);
+
+    if (strlen($note) > 2048) {
+        $dispatchToast('Note must not exceed 2048 characters.', 'error');
+        return;
+    }
+
     $alreadySaved = SavedConversion::where('user_id', Auth::id())
         ->where('original_input', $this->dateInput)
         ->exists();
@@ -202,7 +209,7 @@ $saveConversion = function (string $note = '') use ($isDuplicateEntry) {
         Auth::user()->savedConversions()->create([
             'original_input' => $this->dateInput,
             'conversion_data' => $allResults,
-            'note' => trim($note),  // Add note field
+            'note' => $note,  // Add note field
             'gregorian_date' => $this->conversionResults['gregorian']['full_date'],
             'jalali_date' => $this->conversionResults['jalali']['full_date'],
             'unix_timestamp' => $this->conversionResults['unix'],

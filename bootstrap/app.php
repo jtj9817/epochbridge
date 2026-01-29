@@ -20,7 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('scrape:on-this-day:repair --all')->dailyAt('02:00');
     })
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\ForceHttps::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

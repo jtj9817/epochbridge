@@ -22,6 +22,26 @@ $closeModal = function () {
     $errorMsg = $this->onThisDayError;
     $dateLabel = $this->onThisDayDateLabel;
 
+    $sanitizeUrl = static function (?string $url): ?string {
+        if (! is_string($url) || $url === '') {
+            return null;
+        }
+
+        $parts = parse_url($url);
+
+        if (! is_array($parts) || empty($parts['scheme'])) {
+            return null;
+        }
+
+        $scheme = strtolower($parts['scheme']);
+
+        if (! in_array($scheme, ['http', 'https'], true)) {
+            return null;
+        }
+
+        return $url;
+    };
+
     // Section configuration with semantic colors and icons
     $sections = [
         'selected' => [
@@ -171,6 +191,7 @@ $closeModal = function () {
                                         <div class="flex items-center justify-between mb-3 pb-2 border-b border-theme-200 dark:border-zinc-700">
                                             <div class="flex items-center gap-2">
                                                 <span class="text-theme-500 dark:text-zinc-400">
+                                                    {{-- Trusted static SVGs defined in this component. --}}
                                                     {!! $section['icon'] !!}
                                                 </span>
                                                 <h4 class="text-sm font-bold text-theme-800 dark:text-zinc-100 uppercase tracking-widest">
@@ -208,6 +229,7 @@ $closeModal = function () {
                                                     $text = $entry['text'] ?? '';
                                                     $page = $entry['pages'][0] ?? null;
                                                     $url = is_array($page) ? ($page['content_urls']['desktop']['page'] ?? null) : null;
+                                                    $url = $sanitizeUrl($url);
                                                 @endphp
                                                 <div
                                                     x-show="expanded || {{ $index }} < 3"
@@ -231,12 +253,12 @@ $closeModal = function () {
                                                             {{ $text }}
                                                         </p>
                                                         @if ($url)
-                                                            <a
-                                                                href="{{ $url }}"
-                                                                target="_blank"
-                                                                rel="noopener"
-                                                                class="flex-shrink-0 flex items-center gap-1 px-2 py-1 text-xs uppercase tracking-wider font-medium text-theme-500 dark:text-zinc-400 border border-theme-300 dark:border-zinc-600 hover:bg-theme-100 dark:hover:bg-zinc-700 hover:text-theme-700 dark:hover:text-zinc-200 transition"
-                                                            >
+                                                                <a
+                                                                    href="{{ $url }}"
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    class="flex-shrink-0 flex items-center gap-1 px-2 py-1 text-xs uppercase tracking-wider font-medium text-theme-500 dark:text-zinc-400 border border-theme-300 dark:border-zinc-600 hover:bg-theme-100 dark:hover:bg-zinc-700 hover:text-theme-700 dark:hover:text-zinc-200 transition"
+                                                                >
                                                                 Read
                                                                 <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
                                                                     <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
