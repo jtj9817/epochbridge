@@ -1,76 +1,89 @@
-# GEMINI.md
+# EpochBridge Project Context
+
+EpochBridge is a comprehensive calendar conversion platform built with Laravel 12 and the TALL Stack (Tailwind CSS 4, Alpine.js, Livewire 3, Laravel 12). It supports 19 calendar systems across modern, historical, ancient, and technical formats.
 
 ## Project Overview
 
-This is a comprehensive calendar conversion platform named **EpochBridge**. It's built with **Laravel 12** and the **TALL Stack** (Tailwind CSS, Alpine.js, Livewire, Laravel). The application supports over 15 historical and modern calendar systems, providing real-time conversions between them. It also includes a full authentication system with user management features.
+- **Core Purpose**: Provide high-accuracy conversions between 19 different calendar systems, including astronomical calculations for lunar and lunisolar calendars.
+- **Key Features**:
+  - **Universal Conversion**: Supports Gregorian, Jalali, Islamic, Hebrew, Julian, French Republican, Coptic, Ethiopian, Egyptian, Babylonian, Assyrian, Ancient Macedonian, Mayan, Chinese Lunisolar, Japanese Era, ISO 8601, Unix, and Julian Day Numbers.
+  - **User Management**: Built with Laravel Fortify and Socialite (Google OAuth), supporting 2FA and account linking.
+  - **Saved Conversions**: Allows users (and guests via localStorage) to save conversions with notes.
+  - **Interactive Test Runner**: A custom Artisan command (`test:runner`) with parallel execution, real-time progress, and Markdown reporting.
+- **Architecture**: Layered Monolithic (Presentation -> Service -> Repository -> Data). Uses the Adapter Pattern for complex calendar systems.
 
-The core of the application is the `DateTimeConverterService`, which orchestrates the conversion between different calendar systems. Each calendar system has its own dedicated service class that handles the specific conversion logic. The frontend is built using Livewire and Livewire Volt, with a modular component-based architecture.
+## Tech Stack
+
+- **Backend**: Laravel 12 (PHP 8.2+), Fortify, Socialite.
+- **Frontend**: Livewire 3 (Volt), Alpine.js, Tailwind CSS 4, Flux UI.
+- **Database**: MySQL 8.0.
+- **Testing**: PestPHP, Laravel Dusk, Pest Browser Plugin.
+- **Containerization**: Laravel Sail (Dev), Docker (Prod).
 
 ## Building and Running
 
-The project uses Laravel Sail (Docker) for its development environment.
-
-**Key Commands:**
-
-*   **Start the development environment:**
-    ```bash
-    ./vendor/bin/sail up
-    ```
-*   **Run database migrations:**
-    ```bash
-    ./vendor/bin/sail artisan migrate
-    ```
-*   **Install frontend dependencies:**
-    ```bash
-    npm install
-    ```
-*   **Start the frontend development server:**
-    ```bash
-    npm run dev
-    ```
-*   **Run tests:**
-    ```bash
-    composer run test
-    ```
-    or
-    ```bash
-    php artisan test
-    ```
-*   **Run browser tests:**
-    ```bash
-    php artisan dusk
-    ```
-
-## Database Seeding
-
-The database can be seeded with initial data using the following command:
-
+### Development
 ```bash
-./vendor/bin/sail artisan db:seed
+# Install dependencies
+composer install
+npm install
+
+# Setup environment
+cp .env.example .env
+php artisan key:generate
+
+# Start full development environment (server, queue, logs, vite)
+composer run dev
+
+# Or use Laravel Sail
+./vendor/bin/sail up
 ```
 
-This will run the `JapaneseEraSeeder` and `MayanCalendarDataSeeder`.
+### Production
+```bash
+# Build assets
+npm run build
 
-## API
+# Optimize Laravel
+php artisan optimize
+```
 
-Currently, the application does not have any public API endpoints. However, a future API is planned to allow for third-party integrations. The API is designed to be RESTful and will use Laravel Sanctum for authentication. The API implementation plan can be found in `docs/api-endpoint-evaluation.md`.
+## Testing
+
+The project uses Pest for testing. Always run tests before committing.
+
+- **Run all tests**: `php artisan test`
+- **Interactive Test Runner**: `php artisan test:runner`
+- **Browser Tests**: `php artisan dusk`
+- **Coverage**: `php artisan test --coverage` (or via sail as per project memories)
 
 ## Development Conventions
 
-*   **Coding Style:** The project follows the standard Laravel coding style. Use Laravel Pint to format code:
-    ```bash
-    ./vendor/bin/pint
-    ```
-*   **Testing:** The project uses PestPHP for testing. Tests are organized into `Feature`, `Unit`, and `Browser` suites. All new features should be accompanied by tests.
-*   **Branching:** Create a new feature branch for each new feature.
-*   **Commits:** Write clear and concise commit messages.
-*   **Frontend:** The project uses Livewire Volt for single-file components. Components are located in `resources/views/livewire`.
-*   **CSS:** The project uses Tailwind CSS. Custom CSS should be added to `resources/css/app.css`.
+### Coding Style
+- **Formatting**: Adhere to Laravel conventions. Use `./vendor/bin/pint` to format code.
+- **Type Hinting**: Use strict typing for PHP classes and methods.
+- **Exceptions**: Use custom exceptions from `app/Exceptions/` (e.g., `CalendarConversionException`, `CalendarValidationException`).
 
-## Error Handling
+### Architecture & Design
+- **Services**: Business logic belongs in `app/Services/`. `DateTimeConverterService` is the primary orchestrator.
+- **Calendar Adapters**: New complex calendar systems should implement `CalendarConversionService` and use the Adapter Pattern if they wrap external libraries.
+- **Livewire Volt**: Use Volt for frontend components. Components are located in `resources/views/livewire/`.
+- **Cultural Accuracy**:
+  - Use native/authentic names for months/days.
+  - Provide English transliterations.
+  - Use `ensureTimezone()` in calendar services for geographical accuracy.
+  - Add disclaimers for scholarly uncertainty in `disclaimer` slots of calendar cards.
 
-The application uses a custom exception hierarchy for handling calendar-related errors. The base exception is `App\Exceptions\CalendarConversionException`. Other more specific exceptions inherit from this base exception.
+### Security
+- **ABSOLUTE RULE**: DO NOT READ the user's `.env` file. If you need to verify a configuration, ask for permission or look at `.env.example`.
+- **Secrets**: Never commit secrets or API keys. Use environment variables.
+- **Data Protection**: Sensitive data (like OAuth tokens) should be encrypted at rest using Laravel's encrypted casting.
 
-## Frontend Components
+## Key Files
 
-The frontend is built with Livewire Volt components, which are located in `resources/views/livewire`. The main landing page is `landing.blade.php`. This component is composed of several smaller components, which can be found in `resources/views/livewire/components`.
+- `app/Services/DateTimeConverterService.php`: Main conversion logic.
+- `app/Services/CalendarConversionService.php`: Base class for calendar implementations.
+- `config/calendars.php`: Configuration for specific calendar systems.
+- `app/Console/Commands/InteractiveTestRunnerCommand.php`: The custom test runner.
+- `resources/views/livewire/landing.blade.php`: Main application entry point.
+- `docs/`: Extensive documentation on architecture, cultural accuracy, and more.
