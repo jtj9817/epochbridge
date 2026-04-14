@@ -10,7 +10,10 @@ import { CalendarQuickActions } from '@/components/forms/CalendarQuickActions'
 import { CalendarSearchFilter } from '@/components/forms/CalendarSearchFilter'
 import { CalendarResultsGrid } from '@/components/calendars/CalendarResultsGrid'
 import { SavedConversionsSection } from '@/components/saved-conversions/SavedConversionsSection'
+import { OnThisDayModal } from '@/components/modals/OnThisDayModal'
+import { CalendarsInfoModal } from '@/components/modals/CalendarsInfoModal'
 import { useSavedConversions } from '@/hooks/useSavedConversions'
+import { useOnThisDay } from '@/hooks/useOnThisDay'
 
 interface LandingPageProps {
   todayDate: string
@@ -36,6 +39,12 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
   const isAuthenticated = !!auth.user
   const savedConversions = useSavedConversions(isAuthenticated)
 
+  // On This Day modal
+  const onThisDay = useOnThisDay()
+
+  // Calendars Info modal
+  const [calendarsInfoOpen, setCalendarsInfoOpen] = useState(false)
+
   const currentConversionForSave = useMemo(
     () =>
       results && Object.keys(results).length > 0
@@ -43,6 +52,15 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
         : null,
     [results, dateInput]
   )
+
+  const gregorianDateFromResults = useMemo(() => {
+    if (!results) return null
+    const greg = results['gregorian']
+    if (greg && 'full_date' in greg && typeof greg.full_date === 'string') {
+      return greg.full_date
+    }
+    return null
+  }, [results])
   const handleConvert = useCallback(async () => {
     if (!dateInput.trim()) {
       setError('Please enter a date value.')
@@ -113,9 +131,30 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
             id="auth-navigation"
             className="flex items-center justify-between gap-4"
           >
-            {/* Left: Info buttons placeholder */}
+            {/* Left: Info buttons */}
             <div className="flex items-center gap-2">
-              {/* Calendars Info and On This Day buttons will be added later */}
+              <button
+                id="btn-calendars-info"
+                onClick={() => setCalendarsInfoOpen(true)}
+                className="inline-flex items-center gap-2 px-5 py-2 bg-theme-100 dark:bg-theme-700 border border-theme-300 dark:border-theme-600 rounded-lg text-sm font-medium text-theme-700 dark:text-theme-200 hover:bg-theme-200 dark:hover:bg-theme-600 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Calendars</span>
+              </button>
+              {gregorianDateFromResults && (
+                <button
+                  id="btn-on-this-day"
+                  onClick={() => onThisDay.open(gregorianDateFromResults)}
+                  className="inline-flex items-center gap-2 px-5 py-2 bg-theme-100 dark:bg-theme-700 border border-theme-300 dark:border-theme-600 rounded-lg text-sm font-medium text-theme-700 dark:text-theme-200 hover:bg-theme-200 dark:hover:bg-theme-600 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>On This Day</span>
+                </button>
+              )}
             </div>
 
             {/* Right: Auth Links */}
@@ -282,6 +321,20 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
           </div>
         </footer>
       </div>
+
+      {/* Modals */}
+      <OnThisDayModal
+        open={onThisDay.isOpen}
+        onClose={onThisDay.close}
+        data={onThisDay.data}
+        isLoading={onThisDay.isLoading}
+        error={onThisDay.error}
+        dateLabel={onThisDay.dateLabel}
+      />
+      <CalendarsInfoModal
+        open={calendarsInfoOpen}
+        onClose={() => setCalendarsInfoOpen(false)}
+      />
     </>
   )
 }

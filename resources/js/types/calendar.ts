@@ -151,14 +151,20 @@ export interface QuickActionResponse {
 /**
  * On This Day content types.
  */
+export interface OnThisDayEventPage {
+  title: string
+  extract?: string
+  thumbnail?: { source: string }
+  content_urls?: {
+    desktop?: { page: string }
+    mobile?: { page: string }
+  }
+}
+
 export interface OnThisDayEvent {
   text: string
   year?: number
-  pages?: Array<{
-    title: string
-    extract?: string
-    thumbnail?: { source: string }
-  }>
+  pages?: OnThisDayEventPage[]
 }
 
 export interface OnThisDayData {

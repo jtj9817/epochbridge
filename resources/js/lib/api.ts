@@ -3,6 +3,7 @@ import type {
   SavedConversionListResponse,
   SavedConversionResponse,
   GuestSavedConversion,
+  OnThisDayResponse,
 } from '@/types'
 
 function getCsrfToken(): string {
@@ -113,4 +114,20 @@ export async function migrateGuestConversions(
   if (!response.ok) {
     throw new Error('Failed to migrate guest conversions.')
   }
+}
+
+/**
+ * Fetch "On This Day" historical events for a given date.
+ */
+export async function fetchOnThisDay(date: string): Promise<OnThisDayResponse> {
+  const params = new URLSearchParams({ date })
+  const response = await fetch(`/frontend/on-this-day?${params}`, {
+    headers: apiHeaders(),
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch On This Day data.')
+  }
+
+  return response.json()
 }

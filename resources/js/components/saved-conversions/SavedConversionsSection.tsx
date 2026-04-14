@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import type { SavedConversion } from '@/types'
 import { useGuestSavedConversions } from '@/hooks/useGuestSavedConversions'
+import { useToast } from '@/providers/ToastProvider'
 import { migrateGuestConversions } from '@/lib/api'
 import { SavedConversionItem } from './SavedConversionItem'
 import { SaveConversionModal } from '../modals/SaveConversionModal'
@@ -32,6 +33,7 @@ export function SavedConversionsSection({
   currentConversion,
 }: SavedConversionsSectionProps) {
   const guest = useGuestSavedConversions(!isAuthenticated)
+  const { addToast } = useToast()
   const [saveModalOpen, setSaveModalOpen] = useState(false)
   const [migrationStatus, setMigrationStatus] = useState<
     'idle' | 'migrating' | 'done' | 'error'
@@ -44,44 +46,66 @@ export function SavedConversionsSection({
       if (!currentConversion) return
 
       if (isAuthenticated) {
-        await onAuthSave(
+        const result = await onAuthSave(
           currentConversion.originalInput,
           currentConversion.conversionData,
           note
         )
+        if (result) {
+          addToast('success', 'Conversion saved successfully!')
+        } else {
+          addToast('error', 'Failed to save conversion.')
+        }
       } else {
-        guest.save(
+        const saved = guest.save(
           currentConversion.originalInput,
           currentConversion.conversionData,
           note
         )
+        if (saved) {
+          addToast('success', 'Conversion saved! (Guest mode: 3 max)')
+        } else {
+          addToast('info', 'Conversion already saved or limit reached.')
+        }
       }
 
       setSaveModalOpen(false)
     },
-    [isAuthenticated, currentConversion, onAuthSave, guest]
+    [isAuthenticated, currentConversion, onAuthSave, guest, addToast]
   )
 
   const handleDelete = useCallback(
     async (id: number) => {
       if (isAuthenticated) {
-        await onAuthDelete(id)
+        try {
+          await onAuthDelete(id)
+          addToast('success', 'Conversion deleted successfully!')
+        } catch {
+          addToast('error', 'Failed to delete conversion.')
+        }
       } else {
         guest.remove(id)
+        addToast('success', 'Conversion deleted successfully!')
       }
     },
-    [isAuthenticated, onAuthDelete, guest]
+    [isAuthenticated, onAuthDelete, guest, addToast]
   )
 
   const handleUpdateNote = useCallback(
     async (id: number, note: string) => {
       if (isAuthenticated) {
-        await onAuthUpdateNote(id, note)
+        try {
+          await onAuthUpdateNote(id, note)
+          addToast('success', 'Note updated!')
+        } catch {
+          addToast('error', 'Failed to update note.')
+        }
       } else {
         guest.updateNote(id, note)
+        addToast('success', 'Note updated!')
       }
     },
-    [isAuthenticated, onAuthUpdateNote, guest]
+    [isAuthenticated, onAuthUpdateNote, guest, addToast]
   )
 
   const handleMigration = useCallback(async () => {
@@ -94,10 +118,12 @@ export function SavedConversionsSection({
       await migrateGuestConversions(guestItems)
       guest.clearAll()
       setMigrationStatus('done')
+      addToast('success', 'Guest conversions migrated successfully!')
     } catch {
       setMigrationStatus('error')
+      addToast('error', 'Failed to migrate guest conversions.')
     }
-  }, [guest])
+  }, [guest, addToast])
 
   const showMigrationPrompt =
     isAuthenticated && migrationStatus === 'idle' && guest.items.length > 0
