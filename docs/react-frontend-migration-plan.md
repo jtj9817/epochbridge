@@ -2,7 +2,7 @@
 
 **Created**: 2026-04-01
 **Completed**: In Progress
-**Status**: 🔴 Not Started
+**Status**: 🟡 In Progress
 **Purpose**: Migrate the full EpochBridge presentation layer from Blade/Volt/Livewire/Flux/Alpine to React while preserving Laravel as the application backend and avoiding behavioral regressions.
 
 ---
@@ -287,9 +287,9 @@ app/Http/
 
 ## Implementation Tasks
 
-### Phase 0: Baseline, ADR, and Coexistence Setup 🔴
+### Phase 0: Baseline, ADR, and Coexistence Setup 🟢
 
-#### Task 0.1: Record the target architecture and route cutover policy 🔴
+#### Task 0.1: Record the target architecture and route cutover policy 🟢
 **File**: `docs/react-frontend-migration-plan.md`
 
 ```md
@@ -302,7 +302,7 @@ Rollback: route flag returns traffic to Volt immediately.
 - Lock the migration direction before package and route changes begin.
 - Prevent a partial rewrite from drifting into a half-SPA, half-Livewire architecture.
 
-#### Task 0.2: Add a frontend migration feature flag 🔴
+#### Task 0.2: Add a frontend migration feature flag 🟢
 **File**: `config/frontend.php`
 
 ```php
@@ -317,9 +317,9 @@ return [
 
 ---
 
-### Phase 1: Install React + Inertia Foundation 🔴
+### Phase 1: Install React + Inertia Foundation 🟢
 
-#### Task 1.1: Add the React runtime and Laravel integration packages 🔴
+#### Task 1.1: Add the React runtime and Laravel integration packages 🟢
 **File**: `package.json`, `composer.json`
 
 ```bash
@@ -338,7 +338,7 @@ npm install -D typescript @types/react @types/react-dom
 - Add `inertiajs/inertia-laravel` on the PHP side.
 - TypeScript toolchain without disrupting existing Tailwind/Vite usage.
 
-#### Task 1.2: Create the Inertia bootstrap entrypoint 🔴
+#### Task 1.2: Create the Inertia bootstrap entrypoint 🟢
 **File**: `resources/js/app.tsx`
 
 ```tsx
@@ -377,7 +377,7 @@ createInertiaApp({
 - Use `@inertiajs/vite` plugin for automatic page resolution (preferred).
 - Establish shared providers via `withApp` callback.
 
-#### Task 1.3: Add Inertia middleware and root Blade shell 🔴
+#### Task 1.3: Add Inertia middleware and root Blade shell 🟢
 
 **Step 1**: Publish the middleware:
 ```bash
@@ -438,7 +438,7 @@ class HandleInertiaRequests extends Middleware
 - Share Ziggy routes for `route()` helper in React.
 - Use Inertia v3 flash system (`Inertia::flash()`) instead of manual session flash sharing.
 
-#### Task 1.4: Upgrade Vite configuration for React/TSX while retaining Tailwind v4 🔴
+#### Task 1.4: Upgrade Vite configuration for React/TSX while retaining Tailwind v4 🟢
 **File**: `vite.config.js`
 
 ```js

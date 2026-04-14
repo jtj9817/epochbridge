@@ -6,12 +6,15 @@
         "dev": "vite"
     },
     "dependencies": {
+        "@inertiajs/react": "^3.0.3",
         "@tailwindcss/vite": "^4.1.18",
         "autoprefixer": "^10.4.23",
         "axios": "^1.13.2",
         "concurrently": "^9.2.1",
         "laravel-vite-plugin": "^2.0.1",
         "playwright": "^1.57.0",
+        "react": "^19.2.5",
+        "react-dom": "^19.2.5",
         "tailwindcss": "^4.1.18",
         "vite": "^7.3.1"
     },
@@ -19,5 +22,11 @@
         "@rollup/rollup-linux-x64-gnu": "4.9.5",
         "@tailwindcss/oxide-linux-x64-gnu": "^4.1.18",
         "lightningcss-linux-x64-gnu": "^1.30.2"
+    },
+    "devDependencies": {
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^4.7.0",
+        "typescript": "^6.0.2"
     }
 }

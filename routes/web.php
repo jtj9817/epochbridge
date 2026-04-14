@@ -1,8 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
+
+// React/Inertia test route (only when feature flag enabled)
+if (config('frontend.react_enabled')) {
+    Route::get('/react-test', fn () => Inertia::render('Test'))->name('react.test');
+}
 
 Volt::route('/', 'landing')->name('home');
 
