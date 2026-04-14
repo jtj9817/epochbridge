@@ -6,7 +6,7 @@ use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia;
 
 it('renders the react landing page', function () {
-    $response = $this->get('/react');
+    $response = $this->get('/');
 
     $response->assertSuccessful();
 });
@@ -14,7 +14,7 @@ it('renders the react landing page', function () {
 it('passes today date to the landing page', function () {
     Carbon::setTestNow(Carbon::create(2024, 7, 4, 10, 0, 0));
 
-    $response = $this->get('/react');
+    $response = $this->get('/');
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->component('LandingPage')

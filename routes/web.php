@@ -13,13 +13,13 @@ use Livewire\Volt\Volt;
 
 $reactEnabled = config('frontend.react_enabled');
 
-// React/Inertia routes (only when feature flag enabled)
+// Landing page route - React when enabled, Volt fallback
 if ($reactEnabled) {
+    Route::get('/', LandingController::class)->name('home');
     Route::get('/react-test', fn () => Inertia::render('Test'))->name('react.test');
-    Route::get('/react', LandingController::class)->name('react.landing');
+} else {
+    Volt::route('/', 'landing')->name('home');
 }
-
-Volt::route('/', 'landing')->name('home');
 
 if ($reactEnabled) {
     Route::get('dashboard', DashboardPageController::class)

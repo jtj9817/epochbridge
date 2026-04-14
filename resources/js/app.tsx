@@ -5,7 +5,10 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { createRoot } from 'react-dom/client'
 import { ToastProvider } from '@/providers/ToastProvider'
 
-const pages = import.meta.glob<ResolvedComponent>('./pages/**/*.tsx')
+const pages = import.meta.glob<ResolvedComponent>([
+  './pages/**/*.tsx',
+  '!./pages/**/*.test.tsx',
+])
 
 createInertiaApp({
   resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, pages),
