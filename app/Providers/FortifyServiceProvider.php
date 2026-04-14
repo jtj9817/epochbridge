@@ -47,6 +47,12 @@ class FortifyServiceProvider extends ServiceProvider
 
     protected function registerConfirmPasswordView(): void
     {
-        Fortify::confirmPasswordView(fn () => view('livewire.auth.confirm-password'));
+        Fortify::confirmPasswordView(function () {
+            if (config('frontend.react_enabled')) {
+                return Inertia::render('Auth/ConfirmPasswordPage');
+            }
+
+            return view('livewire.auth.confirm-password');
+        });
     }
 }
