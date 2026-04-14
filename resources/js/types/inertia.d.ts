@@ -17,3 +17,16 @@ declare module '@inertiajs/core' {
     }
   }
 }
+
+// Vite import.meta extensions
+interface ImportMetaEnv {
+  readonly VITE_APP_NAME: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+  glob<T = unknown>(
+    pattern: string,
+    options?: { eager?: boolean }
+  ): Record<string, () => Promise<T>>
+}

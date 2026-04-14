@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FrontendApi\ConversionController;
 use App\Http\Controllers\FrontendApi\OnThisDayController;
+use App\Http\Controllers\FrontendApi\QuickActionController;
 use App\Http\Controllers\FrontendApi\SavedConversionController;
 use App\Http\Controllers\FrontendApi\SavedConversionNoteController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,7 @@ Route::prefix('frontend')->group(function () {
     // Public endpoints
     Route::post('conversions', [ConversionController::class, 'store'])->name('frontend.conversions.store');
     Route::get('on-this-day', [OnThisDayController::class, 'show'])->name('frontend.on-this-day.show');
+    Route::get('quick-action', [QuickActionController::class, 'show'])->name('frontend.quick-action.show');
 
     // Authenticated endpoints
     Route::middleware('auth')->group(function () {
