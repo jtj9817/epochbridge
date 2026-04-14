@@ -495,9 +495,9 @@ export default defineConfig({
 
 ---
 
-### Phase 2: Extract a Stable Browser Contract From Livewire Logic 🔴
+### Phase 2: Extract a Stable Browser Contract From Livewire Logic 🟢
 
-#### Task 2.1: Replace the narrow conversion request object 🔴
+#### Task 2.1: Replace the narrow conversion request object 🟢
 **File**: `app/Http/Requests/Frontend/ConvertDateRequest.php`
 
 ```php
@@ -515,7 +515,7 @@ return [
 - Supersede `app/Http/Requests/DateConversionRequest.php`, which only supports Gregorian input.
 - Match the actual `landing.blade.php` input surface.
 
-#### Task 2.2: Normalize conversion output for React 🔴
+#### Task 2.2: Normalize conversion output for React 🟢
 **File**: `app/Http/Resources/Frontend/ConversionResultResource.php`
 
 ```php
@@ -535,7 +535,7 @@ return [
 - Convert scalar values into predictable objects where needed.
 - Remove React’s need to understand `julian_day` vs `julian-day` inconsistencies.
 
-#### Task 2.3: Normalize saved conversion rows for both modern and legacy records 🔴
+#### Task 2.3: Normalize saved conversion rows for both modern and legacy records 🟢
 **File**: `app/Http/Resources/Frontend/SavedConversionResource.php`
 
 ```php
@@ -553,7 +553,7 @@ return [
 - Reuse the normalization intent already present in `saved-conversions-section.blade.php`.
 - Keep legacy DB rows working after the frontend changes.
 
-#### Task 2.4: Create JSON endpoints for interactive flows 🔴
+#### Task 2.4: Create JSON endpoints for interactive flows 🟢
 **File**: `routes/web.php` or new `routes/frontend.php`
 
 ```php
