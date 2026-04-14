@@ -17,8 +17,7 @@ interface CalendarResultsGridProps {
   error: string
   searchTerm: string
   selectedTypes: CalendarFilterType[]
-  dateInput: string
-  isAuthenticated: boolean
+  onSave?: () => void
 }
 
 export function CalendarResultsGrid({
@@ -26,8 +25,7 @@ export function CalendarResultsGrid({
   error,
   searchTerm,
   selectedTypes,
-  dateInput,
-  isAuthenticated,
+  onSave,
 }: CalendarResultsGridProps) {
   const [copiedFeedback, setCopiedFeedback] = useState<string | null>(null)
 
@@ -87,60 +85,9 @@ export function CalendarResultsGrid({
     return lines.join('\n')
   }, [filteredResults])
 
-  const handleSave = useCallback(async () => {
-    if (isAuthenticated) {
-      // For authenticated users, call the save endpoint
-      try {
-        const response = await fetch('/frontend/saved-conversions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'X-CSRF-TOKEN':
-              document
-                .querySelector('meta[name="csrf-token"]')
-                ?.getAttribute('content') || '',
-          },
-          body: JSON.stringify({
-            original_input: dateInput,
-            conversion_data: results,
-          }),
-        })
-
-        if (response.ok) {
-          // Show success toast (implement toast system later)
-          console.log('Conversion saved!')
-        }
-      } catch (err) {
-        console.error('Failed to save:', err)
-      }
-    } else {
-      // Guest save - store in localStorage
-      const savedConversions = JSON.parse(
-        localStorage.getItem('savedConversions') || '[]'
-      )
-
-      if (savedConversions.length >= 3) {
-        alert('Guest limit reached (3 max). Register for unlimited saves!')
-        return
-      }
-
-      const newConversion = {
-        id: Date.now(),
-        original_input: dateInput,
-        conversion_data: results,
-        note: '',
-        created_at: new Date().toISOString(),
-      }
-
-      savedConversions.unshift(newConversion)
-      localStorage.setItem(
-        'savedConversions',
-        JSON.stringify(savedConversions.slice(0, 3))
-      )
-      console.log('Guest conversion saved!')
-    }
-  }, [isAuthenticated, dateInput, results])
+  const handleSave = useCallback(() => {
+    onSave?.()
+  }, [onSave])
 
   const renderCard = (key: string, data: CalendarResult) => {
     if (isErrorResult(data)) {

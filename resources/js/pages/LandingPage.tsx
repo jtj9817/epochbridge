@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import {
   type InputType,
   type ConversionResultMap,
@@ -9,6 +9,8 @@ import { CalendarInputSection } from '@/components/forms/CalendarInputSection'
 import { CalendarQuickActions } from '@/components/forms/CalendarQuickActions'
 import { CalendarSearchFilter } from '@/components/forms/CalendarSearchFilter'
 import { CalendarResultsGrid } from '@/components/calendars/CalendarResultsGrid'
+import { SavedConversionsSection } from '@/components/saved-conversions/SavedConversionsSection'
+import { useSavedConversions } from '@/hooks/useSavedConversions'
 
 interface LandingPageProps {
   todayDate: string
@@ -30,6 +32,17 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTypes, setSelectedTypes] = useState<CalendarFilterType[]>([])
 
+  // Saved conversions (authenticated)
+  const isAuthenticated = !!auth.user
+  const savedConversions = useSavedConversions(isAuthenticated)
+
+  const currentConversionForSave = useMemo(
+    () =>
+      results && Object.keys(results).length > 0
+        ? { originalInput: dateInput, conversionData: results }
+        : null,
+    [results, dateInput]
+  )
   const handleConvert = useCallback(async () => {
     if (!dateInput.trim()) {
       setError('Please enter a date value.')
@@ -238,8 +251,20 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
               error={error}
               searchTerm={searchTerm}
               selectedTypes={selectedTypes}
-              dateInput={dateInput}
-              isAuthenticated={!!auth.user}
+              onSave={() => {
+                // Save is now handled by SavedConversionsSection's "Save Current" button
+              }}
+            />
+
+            {/* Saved Conversions Section */}
+            <SavedConversionsSection
+              isAuthenticated={isAuthenticated}
+              authItems={savedConversions.items}
+              authLoading={savedConversions.isLoading}
+              onAuthSave={savedConversions.save}
+              onAuthDelete={savedConversions.remove}
+              onAuthUpdateNote={savedConversions.updateNote}
+              currentConversion={currentConversionForSave}
             />
           </div>
         </main>

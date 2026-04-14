@@ -151,3 +151,179 @@ it('normalizes legacy fallback correctly', function () {
     expect($item['conversion_data'])->toHaveKey('gregorian');
     expect($item['conversion_data'])->toHaveKey('unix');
 });
+
+// Migrate endpoint tests
+
+it('requires authentication to migrate guest conversions', function () {
+    $response = $this->postJson(route('frontend.saved-conversions.migrate'), [
+        'items' => [],
+    ]);
+
+    $response->assertUnauthorized();
+});
+
+it('migrates guest conversions to authenticated user', function () {
+    $guestItems = [
+        [
+            'original_input' => '2024-01-15',
+            'conversion_data' => [
+                'gregorian' => ['full_date' => '2024-01-15', 'name' => 'Gregorian'],
+                'jalali' => ['full_date' => '1402/10/25', 'name' => 'Jalali'],
+            ],
+            'note' => 'Guest note',
+            'created_at' => '2024-01-15T10:00:00Z',
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.migrate'), [
+            'items' => $guestItems,
+        ]);
+
+    $response->assertSuccessful()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('migrated_count', 1);
+
+    $this->assertDatabaseHas('saved_conversions', [
+        'user_id' => $this->user->id,
+        'original_input' => '2024-01-15',
+        'note' => 'Guest note',
+    ]);
+});
+
+it('skips duplicates during migration', function () {
+    SavedConversion::factory()->create([
+        'user_id' => $this->user->id,
+        'original_input' => '2024-01-15',
+    ]);
+
+    $guestItems = [
+        [
+            'original_input' => '2024-01-15',
+            'conversion_data' => [
+                'gregorian' => ['full_date' => '2024-01-15'],
+            ],
+        ],
+        [
+            'original_input' => '2024-02-20',
+            'conversion_data' => [
+                'gregorian' => ['full_date' => '2024-02-20'],
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.migrate'), [
+            'items' => $guestItems,
+        ]);
+
+    $response->assertSuccessful()
+        ->assertJsonPath('migrated_count', 1);
+
+    $this->assertDatabaseHas('saved_conversions', [
+        'user_id' => $this->user->id,
+        'original_input' => '2024-02-20',
+    ]);
+});
+
+it('validates migrate payload structure', function () {
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.migrate'), [
+            'items' => [
+                ['missing_fields' => true],
+            ],
+        ]);
+
+    $response->assertUnprocessable();
+});
+
+it('rejects migration with more than 3 items', function () {
+    $items = array_map(fn ($i) => [
+        'original_input' => "2024-01-0{$i}",
+        'conversion_data' => ['gregorian' => ['full_date' => "2024-01-0{$i}"]],
+    ], range(1, 4));
+
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.migrate'), [
+            'items' => $items,
+        ]);
+
+    $response->assertUnprocessable();
+});
+
+it('migrates guest conversions with empty notes', function () {
+    $guestItems = [
+        [
+            'original_input' => '2024-01-15',
+            'conversion_data' => [
+                'gregorian' => ['full_date' => '2024-01-15'],
+            ],
+            'note' => '',
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.migrate'), [
+            'items' => $guestItems,
+        ]);
+
+    $response->assertSuccessful();
+
+    $this->assertDatabaseHas('saved_conversions', [
+        'user_id' => $this->user->id,
+        'original_input' => '2024-01-15',
+        'note' => '',
+    ]);
+});
+
+it('preserves created_at from guest data during migration', function () {
+    $guestCreatedAt = '2024-01-10T08:30:00Z';
+
+    $guestItems = [
+        [
+            'original_input' => '2024-01-15',
+            'conversion_data' => [
+                'gregorian' => ['full_date' => '2024-01-15'],
+            ],
+            'created_at' => $guestCreatedAt,
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.migrate'), [
+            'items' => $guestItems,
+        ]);
+
+    $response->assertSuccessful();
+
+    $conversion = SavedConversion::where('user_id', $this->user->id)
+        ->where('original_input', '2024-01-15')
+        ->first();
+
+    expect($conversion)->not->toBeNull();
+    expect($conversion->created_at->toIso8601String())->not->toBeNull();
+});
+
+it('validates note max length on store', function () {
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.store'), [
+            'original_input' => '2024-01-15',
+            'conversion_data' => ['gregorian' => ['full_date' => '2024-01-15']],
+            'note' => str_repeat('a', 1001),
+        ]);
+
+    $response->assertUnprocessable();
+});
+
+it('validates note max length on note update', function () {
+    $conversion = SavedConversion::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $response = $this->actingAs($this->user)
+        ->patchJson(route('frontend.saved-conversions.note.update', $conversion), [
+            'note' => str_repeat('a', 1001),
+        ]);
+
+    $response->assertUnprocessable();
+});

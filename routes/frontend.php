@@ -28,6 +28,7 @@ Route::prefix('frontend')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::get('saved-conversions', [SavedConversionController::class, 'index'])->name('frontend.saved-conversions.index');
         Route::post('saved-conversions', [SavedConversionController::class, 'store'])->name('frontend.saved-conversions.store');
+        Route::post('saved-conversions/migrate', [SavedConversionController::class, 'migrate'])->name('frontend.saved-conversions.migrate');
         Route::patch('saved-conversions/{savedConversion}/note', [SavedConversionNoteController::class, 'update'])->name('frontend.saved-conversions.note.update');
         Route::delete('saved-conversions/{savedConversion}', [SavedConversionController::class, 'destroy'])->name('frontend.saved-conversions.destroy');
     });
