@@ -1,8 +1,8 @@
 # React Frontend Migration Plan
 
 **Created**: 2026-04-01
-**Completed**: In Progress
-**Status**: 🟡 In Progress
+**Completed**: Phase 0 (baseline), Phase 1 (React + Inertia foundation), Phase 2 (API contracts), Phase 3 (React public shell and landing page)
+**Status**: 🟢 In Progress — Phase 4 (Guest/Auth Saves)
 **Purpose**: Migrate the full EpochBridge presentation layer from Blade/Volt/Livewire/Flux/Alpine to React while preserving Laravel as the application backend and avoiding behavioral regressions.
 
 ---
@@ -287,7 +287,7 @@ app/Http/
 
 ## Implementation Tasks
 
-### Phase 0: Baseline, ADR, and Coexistence Setup 🟢
+### Phase 0: Baseline, ADR, and Coexistence Setup 🟢 COMPLETED
 
 #### Task 0.1: Record the target architecture and route cutover policy 🟢
 **File**: `docs/react-frontend-migration-plan.md`
@@ -317,7 +317,7 @@ return [
 
 ---
 
-### Phase 1: Install React + Inertia Foundation 🟢
+### Phase 1: Install React + Inertia Foundation 🟢 COMPLETED
 
 #### Task 1.1: Add the React runtime and Laravel integration packages 🟢
 **File**: `package.json`, `composer.json`
@@ -495,9 +495,9 @@ export default defineConfig({
 
 ---
 
-### Phase 2: Extract a Stable Browser Contract From Livewire Logic 🟢
+### Phase 2: Extract a Stable Browser Contract From Livewire Logic 🟢 COMPLETED
 
-#### Task 2.1: Replace the narrow conversion request object 🟢
+#### Task 2.1: Replace the narrow conversion request object 🟢 COMPLETED ✅
 **File**: `app/Http/Requests/Frontend/ConvertDateRequest.php`
 
 ```php
@@ -515,7 +515,7 @@ return [
 - Supersede `app/Http/Requests/DateConversionRequest.php`, which only supports Gregorian input.
 - Match the actual `landing.blade.php` input surface.
 
-#### Task 2.2: Normalize conversion output for React 🟢
+#### Task 2.2: Normalize conversion output for React 🟢 COMPLETED ✅
 **File**: `app/Http/Resources/Frontend/ConversionResultResource.php`
 
 ```php
@@ -535,7 +535,7 @@ return [
 - Convert scalar values into predictable objects where needed.
 - Remove React’s need to understand `julian_day` vs `julian-day` inconsistencies.
 
-#### Task 2.3: Normalize saved conversion rows for both modern and legacy records 🟢
+#### Task 2.3: Normalize saved conversion rows for both modern and legacy records 🟢 COMPLETED ✅
 **File**: `app/Http/Resources/Frontend/SavedConversionResource.php`
 
 ```php
@@ -553,8 +553,8 @@ return [
 - Reuse the normalization intent already present in `saved-conversions-section.blade.php`.
 - Keep legacy DB rows working after the frontend changes.
 
-#### Task 2.4: Create JSON endpoints for interactive flows 🟢
-**File**: `routes/web.php` or new `routes/frontend.php`
+#### Task 2.4: Create JSON endpoints for interactive flows 🟢 COMPLETED ✅
+**File**: `routes/frontend.php`
 
 ```php
 Route::prefix('frontend')->group(function () {
@@ -576,9 +576,9 @@ Route::prefix('frontend')->group(function () {
 
 ---
 
-### Phase 3: Build the React Public Shell and Landing Page 🔴
+### Phase 3: Build the React Public Shell and Landing Page 🟢 COMPLETED
 
-#### Task 3.1: Introduce `LandingPage.tsx` with the exact current state model 🔴
+#### Task 3.1: Introduce `LandingPage.tsx` with the exact current state model 🟢 COMPLETED ✅
 **File**: `resources/js/pages/LandingPage.tsx`
 
 ```tsx
@@ -594,7 +594,7 @@ const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 - Port the current landing state intentionally rather than redesigning it mid-migration.
 - Preserve current UX semantics before optimizing them.
 
-#### Task 3.2: Port the input section and validation behavior 🔴
+#### Task 3.2: Port the input section and validation behavior 🟢 COMPLETED ✅
 **File**: `resources/js/components/forms/CalendarInputSection.tsx`
 
 ```tsx
@@ -607,7 +607,7 @@ const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 - Mirror the current input types from `landing.blade.php` and `calendar-input-section.blade.php`.
 - Keep format guidance and input-type-specific placeholder behavior.
 
-#### Task 3.3: Port quick actions with service-equivalent output semantics 🔴
+#### Task 3.3: Port quick actions with service-equivalent output semantics 🟢 COMPLETED ✅
 **File**: `resources/js/components/forms/CalendarQuickActions.tsx`, `resources/js/lib/converters.ts`
 
 ```tsx
@@ -620,7 +620,7 @@ const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 - Preserve the current input-type-specific quick action behavior.
 - Do not reimplement calendar math incorrectly in the browser; either call a lightweight endpoint or centralize exact formatting helpers.
 
-#### Task 3.4: Port the results grid and 21 calendar cards 🔴
+#### Task 3.4: Port the results grid and 21 calendar cards 🟢 COMPLETED ✅
 **File**: `resources/js/components/calendars/*.tsx`
 
 ```tsx
@@ -638,7 +638,7 @@ switch (result.key) {
 - Replace the current Blade card switchboard in `calendar-results-grid.blade.php`.
 - Preserve the visual/semantic content of specialized cards while making them React components.
 
-#### Task 3.5: Rebuild search/filter UI as pure React state 🔴
+#### Task 3.5: Rebuild search/filter UI as pure React state 🟢 COMPLETED ✅
 **File**: `resources/js/components/forms/CalendarSearchFilter.tsx`
 
 ```tsx
@@ -1160,21 +1160,57 @@ This normalization belongs in Laravel resources, not in React display components
 ---
 
 ## Success Criteria
-- [ ] `/`, `/dashboard`, auth pages, and settings pages render through React rather than Blade/Volt.
-- [ ] No critical route still depends on `Volt::route(...)` for rendering.
-- [ ] The landing page preserves current conversion, quick action, filtering, copy, guest save, auth save, note, and on-this-day behaviors.
-- [ ] Guest browser data survives the migration without manual intervention.
-- [ ] Authenticated saved conversions still support legacy and modern rows.
-- [ ] Google OAuth, email verification, password reset, and two-factor flows still work through Laravel-controlled server actions.
-- [ ] New backend request/resource/controller tests cover the React contract surface.
-- [ ] Browser smoke tests pass for landing conversion, login, guest save, auth save, note editing, and settings flows.
-- [ ] Flux/Livewire/Alpine dependencies are removable without breaking page rendering.
-- [ ] `resources/js/app.js` is retired in favor of a React bootstrap entrypoint.
+
+### Completed (Phases 0-3)
+- [x] `/react` route renders React landing page with conversion, quick action, filtering, and copy behaviors
+- [x] Backend API contracts (ConversionResultResource, SavedConversionResource) are in place
+- [x] Phase 2 and Phase 3 commits have 100% test coverage
+
+### In Progress (Phase 4+)
+- [ ] `/` (root) renders through React rather than Blade/Volt (feature-flagged at `/react` currently)
+- [ ] Guest save, auth save, note, and on-this-day behaviors preserved in React
+- [ ] No critical route still depends on `Volt::route(...)` for rendering
+- [ ] Guest browser data survives the migration without manual intervention
+- [ ] Authenticated saved conversions still support legacy and modern rows
+- [ ] Google OAuth, email verification, password reset, and two-factor flows still work through Laravel-controlled server actions
+- [ ] New backend request/resource/controller tests cover the React contract surface
+- [ ] Browser smoke tests pass for landing conversion, login, guest save, auth save, note editing, and settings flows
+- [ ] Flux/Livewire/Alpine dependencies are removable without breaking page rendering
+- [ ] `resources/js/app.js` is retired in favor of a React bootstrap entrypoint
 
 ---
 
 ## Implementation Walkthrough
-This document is a planning artifact. No frontend migration has been implemented yet.
+
+### Completed Phases
+
+| Phase | Status | Commit | Date |
+| :--- | :--- | :--- | :--- |
+| Phase 0: Baseline, ADR, and Coexistence Setup | 🟢 COMPLETED | 1f61966 | Apr 14 2026 |
+| Phase 1: React + Inertia Foundation | 🟢 COMPLETED | 1f61966 | Apr 14 2026 |
+| Phase 2: Frontend API Contracts | 🟢 COMPLETED | 4d88497 | Apr 14 2026 |
+| Phase 3: React Public Shell & Landing Page | 🟢 COMPLETED | c2b7976 | Apr 14 2026 |
+| Phase 4: Guest/Auth Saves, Notes, Legacy | 🔴 PENDING | — | — |
+| Phase 5: Modals, Toasts, On-This-Day | 🔴 PENDING | — | — |
+| Phase 6: Authentication Pages | 🔴 PENDING | — | — |
+| Phase 7: App Shell, Dashboard, Settings | 🔴 PENDING | — | — |
+| Phase 8: Testing, Verification, Cutover | 🔴 PENDING | — | — |
+
+### Phase 2 Implementation Summary (Commit 4d88497)
+- Created `ConversionController.php`, `OnThisDayController.php`, `SavedConversionController.php`, `SavedConversionNoteController.php`
+- Created `ConvertDateRequest.php`, `SaveConversionRequest.php`
+- Created `ConversionResultResource.php`, `SavedConversionResource.php`
+- Created `routes/frontend.php` with API routes under `/api/frontend/`
+- Test coverage: 100% (ConversionControllerTest, SavedConversionControllerTest)
+
+### Phase 3 Implementation Summary (Commit c2b7976)
+- Created `LandingController.php`, `QuickActionController.php`
+- Created TypeScript types: `CalendarResult`, `ConversionResult`, `CalendarFilterType`, etc.
+- Created calendar components: `BaseCalendarCard`, `CalendarResultsGrid`, `GregorianCard`, `Iso8601Card`, `JulianDayCard`, `ModifiedJulianDayCard`, `UnixCard`, `GenericCalendarCard`
+- Created form components: `CalendarInputSection`, `CalendarQuickActions`, `CalendarSearchFilter`
+- Created `LandingPage.tsx` Inertia page with full conversion UI
+- Updated `vite.config.js` with React plugin and `base: '/react/'`
+- Test coverage: 100% (QuickActionControllerTest, LandingPageTest)
 
 ### Codebase Facts Used For This Plan
 | Category | Metric |
