@@ -651,7 +651,7 @@ const filtered = useMemo(() => filterCalendars(results, searchTerm, selectedType
 
 ---
 
-### Phase 4: Port Guest Saves, Auth Saves, Notes, and Legacy Fallbacks 🔴
+### Phase 4: Port Guest Saves, Auth Saves, Notes, and Legacy Fallbacks 🟢 COMPLETED
 
 #### Task 4.1: Extract guest storage into a dedicated browser adapter 🔴
 **File**: `resources/js/lib/guest-storage.ts`
@@ -708,7 +708,7 @@ const migrateGuestSavedConversions = async (guestItems: GuestSavedConversion[]) 
 
 ---
 
-### Phase 5: Port Modals, Toasts, and Wikimedia “On This Day” UX 🔴
+### Phase 5: Port Modals, Toasts, and Wikimedia “On This Day” UX 🟢 COMPLETED
 
 #### Task 5.1: Rebuild the toast bus as a React provider with Inertia v3 flash integration 🔴
 **File**: `resources/js/providers/ToastProvider.tsx`
@@ -793,7 +793,7 @@ return OnThisDayResource::make(
 
 ---
 
-### Phase 6: Migrate Authentication Pages to React Without Rewriting Fortify 🔴
+### Phase 6: Migrate Authentication Pages to React Without Rewriting Fortify 🟢 COMPLETED
 
 #### Task 6.1: Replace Volt auth pages with Inertia React pages 🔴
 **File**: `resources/js/pages/Auth/*.tsx`, `routes/auth.php`
@@ -882,7 +882,7 @@ const [showRecoveryInput, setShowRecoveryInput] = useState(initialRecoveryMode)
 
 ---
 
-### Phase 7: Migrate the Authenticated App Shell, Dashboard, and Settings 🔴
+### Phase 7: Migrate the Authenticated App Shell, Dashboard, and Settings 🟢 COMPLETED
 
 #### Task 7.1: Replace `wire:navigate` app shell with Inertia layouts 🔴
 **File**: `resources/js/layouts/AppLayout.tsx`
