@@ -3,7 +3,10 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test": "vitest",
+        "test:run": "vitest run",
+        "test:coverage": "vitest run --coverage"
     },
     "dependencies": {
         "@inertiajs/react": "^3.0.3",
@@ -24,9 +27,15 @@
         "lightningcss-linux-x64-gnu": "^1.30.2"
     },
     "devDependencies": {
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.2",
+        "@testing-library/user-event": "^14.6.1",
+        "@types/node": "^25.6.0",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^4.7.0",
-        "typescript": "^6.0.2"
+        "jsdom": "^29.0.2",
+        "typescript": "^6.0.2",
+        "vitest": "^4.1.4"
     }
 }

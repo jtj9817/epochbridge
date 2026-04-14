@@ -15,5 +15,5 @@ return [
     |
     */
 
-    'react_enabled' => env('FRONTEND_REACT_ENABLED', false),
+    'react_enabled' => env('FRONTEND_REACT_ENABLED', true),
 ];
