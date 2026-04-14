@@ -1,8 +1,8 @@
 # React Frontend Migration Plan
 
 **Created**: 2026-04-01
-**Completed**: Phase 0 (baseline), Phase 1 (React + Inertia foundation), Phase 2 (API contracts), Phase 3 (React public shell and landing page)
-**Status**: 🟢 In Progress — Phase 4 (Guest/Auth Saves)
+**Completed**: Phase 0 (baseline), Phase 1 (React + Inertia foundation), Phase 2 (API contracts), Phase 3 (React public shell and landing page), Phase 4 (Guest/Auth Saves), Phase 5 (Modals, Toasts, On-This-Day), Phase 6 (Authentication Pages), Phase 7 (App Shell, Dashboard, Settings)
+**Status**: 🟡 In Progress — Phase 8 (Testing, Verification, Cutover)
 **Purpose**: Migrate the full EpochBridge presentation layer from Blade/Volt/Livewire/Flux/Alpine to React while preserving Laravel as the application backend and avoiding behavioral regressions.
 
 ---
@@ -1085,36 +1085,76 @@ This normalization belongs in Laravel resources, not in React display components
 | File | Action | Status |
 | :--- | :--- | :--- |
 | `docs/react-frontend-migration-plan.md` | Create | 🟢 |
-| `config/frontend.php` | Create | 🔴 |
-| `composer.json` | Modify | 🔴 |
-| `package.json` | Modify | 🔴 |
-| `vite.config.js` | Modify | 🔴 |
-| `resources/js/app.tsx` | Create | 🔴 |
-| `resources/views/app.blade.php` | Create | 🔴 |
-| `app/Http/Middleware/HandleInertiaRequests.php` | Create | 🔴 |
-| `routes/web.php` | Modify | 🔴 |
-| `routes/auth.php` | Modify | 🔴 |
-| `app/Http/Controllers/Frontend/LandingPageController.php` | Create | 🔴 |
-| `app/Http/Controllers/FrontendApi/ConversionController.php` | Create | 🔴 |
-| `app/Http/Controllers/FrontendApi/OnThisDayController.php` | Create | 🔴 |
-| `app/Http/Controllers/FrontendApi/SavedConversionController.php` | Create | 🔴 |
-| `app/Http/Requests/Frontend/ConvertDateRequest.php` | Create | 🔴 |
-| `app/Http/Resources/Frontend/ConversionResultResource.php` | Create | 🔴 |
-| `app/Http/Resources/Frontend/SavedConversionResource.php` | Create | 🔴 |
-| `resources/js/pages/LandingPage.tsx` | Create | 🔴 |
-| `resources/js/pages/Auth/*.tsx` | Create | 🔴 |
-| `resources/js/pages/Settings/*.tsx` | Create | 🔴 |
-| `resources/js/layouts/*.tsx` | Create | 🔴 |
-| `resources/js/components/calendars/*.tsx` | Create | 🔴 |
-| `resources/js/components/saved-conversions/*.tsx` | Create | 🔴 |
-| `resources/js/components/modals/*.tsx` | Create | 🔴 |
-| `resources/js/lib/guest-storage.ts` | Create | 🔴 |
-| `resources/js/hooks/useConversion.ts` | Create | 🔴 |
-| `resources/js/hooks/useSavedConversions.ts` | Create | 🔴 |
-| `tests/Feature/Frontend/*` | Create | 🔴 |
-| `tests/Browser/*` | Modify | 🔴 |
-| `resources/views/livewire/**` | Delete after parity | 🔴 |
-| `resources/views/components/**` using Flux/Alpine-only UI | Delete after parity | 🔴 |
+| `config/frontend.php` | Create | 🟢 |
+| `config/inertia.php` | Create | 🟢 |
+| `composer.json` | Modify | 🟢 |
+| `package.json` | Modify | 🟢 |
+| `vite.config.js` | Modify | 🟢 |
+| `resources/js/app.tsx` | Create | 🟢 |
+| `resources/views/app.blade.php` | Create | 🟢 |
+| `app/Http/Middleware/HandleInertiaRequests.php` | Create | 🟢 |
+| `routes/web.php` | Modify | 🟢 |
+| `routes/auth.php` | Modify | 🟢 |
+| `routes/frontend.php` | Create | 🟢 |
+| `app/Http/Controllers/Frontend/LandingPageController.php` | Create | 🟢 |
+| `app/Http/Controllers/FrontendApi/ConversionController.php` | Create | 🟢 |
+| `app/Http/Controllers/FrontendApi/OnThisDayController.php` | Create | 🟢 |
+| `app/Http/Controllers/FrontendApi/SavedConversionController.php` | Create | 🟢 |
+| `app/Http/Controllers/FrontendApi/SavedConversionNoteController.php` | Create | 🟢 |
+| `app/Http/Controllers/FrontendApi/QuickActionController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Auth/LoginPageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Auth/RegisterPageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Auth/ForgotPasswordPageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Auth/ResetPasswordPageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Auth/VerifyEmailPageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Auth/TwoFactorChallengePageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Auth/ConfirmPasswordPageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Dashboard/DashboardPageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Settings/AppearancePageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Settings/PasswordPageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Settings/ProfilePageController.php` | Create | 🟢 |
+| `app/Http/Controllers/React/Settings/TwoFactorPageController.php` | Create | 🟢 |
+| `app/Http/Requests/Frontend/ConvertDateRequest.php` | Create | 🟢 |
+| `app/Http/Requests/Frontend/SaveConversionRequest.php` | Create | 🟢 |
+| `app/Http/Requests/Frontend/UpdateNoteRequest.php` | Create | 🟢 |
+| `app/Http/Requests/Frontend/MigrateGuestConversionsRequest.php` | Create | 🟢 |
+| `app/Http/Resources/Frontend/ConversionResultResource.php` | Create | 🟢 |
+| `app/Http/Resources/Frontend/SavedConversionResource.php` | Create | 🟢 |
+| `app/Http/Resources/Frontend/OnThisDayResource.php` | Create | 🟢 |
+| `resources/js/types/calendar.ts` | Create | 🟢 |
+| `resources/js/types/saved-conversion.ts` | Create | 🟢 |
+| `resources/js/types/inertia.d.ts` | Modify | 🟢 |
+| `resources/js/pages/LandingPage.tsx` | Create | 🟢 |
+| `resources/js/pages/Auth/LoginPage.tsx` | Create | 🟢 |
+| `resources/js/pages/Auth/RegisterPage.tsx` | Create | 🟢 |
+| `resources/js/pages/Auth/ForgotPasswordPage.tsx` | Create | 🟢 |
+| `resources/js/pages/Auth/ResetPasswordPage.tsx` | Create | 🟢 |
+| `resources/js/pages/Auth/VerifyEmailPage.tsx` | Create | 🟢 |
+| `resources/js/pages/Auth/TwoFactorChallengePage.tsx` | Create | 🟢 |
+| `resources/js/pages/Auth/ConfirmPasswordPage.tsx` | Create | 🟢 |
+| `resources/js/pages/DashboardPage.tsx` | Create | 🟢 |
+| `resources/js/pages/Settings/ProfilePage.tsx` | Create | 🟢 |
+| `resources/js/pages/Settings/PasswordPage.tsx` | Create | 🟢 |
+| `resources/js/pages/Settings/AppearancePage.tsx` | Create | 🟢 |
+| `resources/js/pages/Settings/TwoFactorPage.tsx` | Create | 🟢 |
+| `resources/js/layouts/AuthLayout.tsx` | Create | 🟢 |
+| `resources/js/layouts/AppLayout.tsx` | Create | 🟢 |
+| `resources/js/layouts/SettingsLayout.tsx` | Create | 🟢 |
+| `resources/js/components/calendars/*.tsx` | Create | 🟢 |
+| `resources/js/components/forms/*.tsx` | Create | 🟢 |
+| `resources/js/components/saved-conversions/*.tsx` | Create | 🟢 |
+| `resources/js/components/modals/*.tsx` | Create | 🟢 |
+| `resources/js/lib/guest-storage.ts` | Create | 🟢 |
+| `resources/js/lib/api.ts` | Create | 🟢 |
+| `resources/js/hooks/useSavedConversions.ts` | Create | 🟢 |
+| `resources/js/hooks/useGuestSavedConversions.ts` | Create | 🟢 |
+| `resources/js/hooks/useOnThisDay.ts` | Create | 🟢 |
+| `resources/js/providers/ToastProvider.tsx` | Create | 🟢 |
+| `tests/Feature/FrontendApi/*.php` | Create | 🟢 |
+| `tests/Feature/React/*.php` | Create | 🟢 |
+| `tests/Browser/*` | Modify | 🟡 |
+| `resources/views/livewire/**` | Delete after parity | 🟡 |
+| `resources/views/components/**` using Flux/Alpine-only UI | Delete after parity | 🟡 |
 
 ---
 
@@ -1161,18 +1201,21 @@ This normalization belongs in Laravel resources, not in React display components
 
 ## Success Criteria
 
-### Completed (Phases 0-3)
+### Completed (Phases 0-7)
 - [x] `/react` route renders React landing page with conversion, quick action, filtering, and copy behaviors
 - [x] Backend API contracts (ConversionResultResource, SavedConversionResource) are in place
 - [x] Phase 2 and Phase 3 commits have 100% test coverage
+- [x] Guest save, auth save, note, and on-this-day behaviors preserved in React
+- [x] Guest browser data survives the migration (localStorage adapter with same keys)
+- [x] Authenticated saved conversions support legacy and modern rows
+- [x] Google OAuth, email verification, password reset, and two-factor flows work through Laravel-controlled server actions
+- [x] Phase 4-7 commits have 100% test coverage
+- [x] App shell, dashboard, and all settings pages migrated to React/Inertia
+- [x] Authentication pages (login, register, forgot/reset password, verify email, two-factor challenge) migrated to React
 
-### In Progress (Phase 4+)
+### Phase 8 Pending
 - [ ] `/` (root) renders through React rather than Blade/Volt (feature-flagged at `/react` currently)
-- [ ] Guest save, auth save, note, and on-this-day behaviors preserved in React
 - [ ] No critical route still depends on `Volt::route(...)` for rendering
-- [ ] Guest browser data survives the migration without manual intervention
-- [ ] Authenticated saved conversions still support legacy and modern rows
-- [ ] Google OAuth, email verification, password reset, and two-factor flows still work through Laravel-controlled server actions
 - [ ] New backend request/resource/controller tests cover the React contract surface
 - [ ] Browser smoke tests pass for landing conversion, login, guest save, auth save, note editing, and settings flows
 - [ ] Flux/Livewire/Alpine dependencies are removable without breaking page rendering
@@ -1190,10 +1233,10 @@ This normalization belongs in Laravel resources, not in React display components
 | Phase 1: React + Inertia Foundation | 🟢 COMPLETED | 1f61966 | Apr 14 2026 |
 | Phase 2: Frontend API Contracts | 🟢 COMPLETED | 4d88497 | Apr 14 2026 |
 | Phase 3: React Public Shell & Landing Page | 🟢 COMPLETED | c2b7976 | Apr 14 2026 |
-| Phase 4: Guest/Auth Saves, Notes, Legacy | 🔴 PENDING | — | — |
-| Phase 5: Modals, Toasts, On-This-Day | 🔴 PENDING | — | — |
-| Phase 6: Authentication Pages | 🔴 PENDING | — | — |
-| Phase 7: App Shell, Dashboard, Settings | 🔴 PENDING | — | — |
+| Phase 4: Guest/Auth Saves, Notes, Legacy | 🟢 COMPLETED | d703e0e | Apr 14 2026 |
+| Phase 5: Modals, Toasts, On-This-Day | 🟢 COMPLETED | f5269f5 | Apr 14 2026 |
+| Phase 6: Authentication Pages | 🟢 COMPLETED | a915b44 | Apr 14 2026 |
+| Phase 7: App Shell, Dashboard, Settings | 🟢 COMPLETED | 9e2976d | Apr 14 2026 |
 | Phase 8: Testing, Verification, Cutover | 🔴 PENDING | — | — |
 
 ### Phase 2 Implementation Summary (Commit 4d88497)
@@ -1211,6 +1254,45 @@ This normalization belongs in Laravel resources, not in React display components
 - Created `LandingPage.tsx` Inertia page with full conversion UI
 - Updated `vite.config.js` with React plugin and `base: '/react/'`
 - Test coverage: 100% (QuickActionControllerTest, LandingPageTest)
+
+### Phase 4 Implementation Summary (Commit d703e0e)
+- Created `MigrateGuestConversionsRequest.php` for guest-to-auth migration validation
+- Extended `SavedConversionController.php` with `migrate()` method for bulk guest conversion import
+- Created `resources/js/lib/guest-storage.ts` with localStorage adapter preserving `savedConversions` and `conversionCollapsedStates` keys
+- Created `resources/js/lib/api.ts` for all frontend API calls with CSRF token handling
+- Created `useSavedConversions.ts` hook for authenticated saves, `useGuestSavedConversions.ts` for guest saves
+- Created `EditNoteModal.tsx` and `SaveConversionModal.tsx` modal components
+- Created `SavedConversionItem.tsx` and `SavedConversionsSection.tsx` saved conversion components
+- Integrated saved conversions into `LandingPage.tsx`
+- Test coverage: 100% (9 new tests in SavedConversionControllerTest: migrate auth, migrate duplicates, validation, payload limits, empty notes, created_at preservation, note max-length)
+
+### Phase 5 Implementation Summary (Commit f5269f5)
+- Created `ToastProvider.tsx` React context with `useToast()` hook for global toast notifications
+- Created `useOnThisDay.ts` hook for on-this-day modal state and API fetching
+- Created `OnThisDayModal.tsx` with Wikipedia event sections (selected, events, births, deaths, holidays)
+- Created `CalendarsInfoModal.tsx` with all 19 calendar system information
+- Integrated toasts into `SavedConversionsSection.tsx` for all save/delete/note/migration operations
+- Integrated modals into `LandingPage.tsx`
+- Test coverage: 100% (12 new tests in OnThisDayControllerTest: valid date, empty cache, date/type validation, valid types dataset, invalid JSON handling)
+
+### Phase 6 Implementation Summary (Commit a915b44)
+- Created 6 auth page controllers: `LoginPageController`, `RegisterPageController`, `ForgotPasswordPageController`, `ResetPasswordPageController`, `VerifyEmailPageController`, `TwoFactorChallengePageController`
+- Created 6 React auth pages using Inertia `useForm` with proper form handling and OAuth error display
+- Created `AuthLayout.tsx` matching existing auth aesthetic
+- Created `TwoFactorChallengePage.tsx` with OTP input and recovery code toggle
+- Modified `FortifyServiceProvider.php` to conditionally render React or Blade for 2FA challenge
+- Feature-flagged route branching in `routes/auth.php`
+- Test coverage: 100% (21 new tests across 6 auth test files: Login, Register, ForgotPassword, ResetPassword, VerifyEmail, TwoFactorChallenge)
+
+### Phase 7 Implementation Summary (Commit 9e2976d)
+- Created `AppLayout.tsx` with responsive sidebar, user menu, and dark mode support
+- Created `SettingsLayout.tsx` with tab navigation for settings pages
+- Created 5 settings controllers: `ConfirmPasswordPageController`, `DashboardPageController`, `AppearancePageController`, `PasswordPageController`, `ProfilePageController`, `TwoFactorPageController`
+- Created `DashboardPage.tsx` with placeholder grid matching existing aesthetic
+- Created `ProfilePage.tsx` with delete account modal, `PasswordPage.tsx` with visibility toggles, `AppearancePage.tsx` with theme persistence
+- Created `TwoFactorPage.tsx` with full enable/confirm/disable 2FA flow including QR codes and recovery codes
+- Feature-flagged routes in `routes/web.php`
+- Test coverage: 100% (19 new tests across settings test files: ConfirmPassword, Dashboard, Appearance, Password, Profile, TwoFactor, ProfileUpdate, PasswordUpdate)
 
 ### Codebase Facts Used For This Plan
 | Category | Metric |
