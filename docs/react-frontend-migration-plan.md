@@ -49,7 +49,24 @@ The migration therefore cannot be treated as a cosmetic rewrite. It requires an 
 | Legacy data support | Preserve current `conversion_data` plus legacy fallback support in API/resources |
 | Browser testing direction | Add React-oriented browser tests, keep critical Dusk smoke coverage until cutover |
 | SSR requirement | Optional later; do not block the migration on React SSR |
-| Boost guidance source | `laravel-boost` MCP was not available in this session; local `laravel/boost` package guidance was used as fallback, especially its Inertia React support |
+| Inertia version | v3 with `@inertiajs/vite` plugin for simplified setup |
+| Route generation | Ziggy (`tightenco/ziggy`) for `route()` helper in React |
+| Boost guidance source | Verified with `laravel-boost` MCP; patterns confirmed against inertiajs/inertia-laravel@3.x docs |
+
+### Inertia v3 Verification Summary (via Laravel Boost MCP)
+
+The following patterns were verified against `inertiajs/inertia-laravel@3.x` documentation:
+
+| Pattern | Verified Detail |
+| :--- | :--- |
+| **Root template** | Use `<x-inertia::head />` and `<x-inertia::app />` Blade components (v3), NOT `@inertia`/`@inertiaHead` directives (v1/v2) |
+| **Vite plugin** | `@inertiajs/vite` auto-resolves pages from `./pages` or `./Pages`; minimal `createInertiaApp()` call needed |
+| **React refresh** | Include `@viteReactRefresh` directive BEFORE `@vite` for Fast Refresh in development |
+| **Middleware** | Publish via `php artisan inertia:middleware`, register in `bootstrap/app.php` with `$middleware->web(append: [...])` |
+| **Flash data** | Use `Inertia::flash()` method (v2/v3), listen via `router.on('flash')` in React; auto-cleared after send |
+| **useForm helper** | Provides `{ data, setData, post, processing, errors }` for type-safe form handling |
+| **Shared data** | Use lazy evaluation (`fn () => ...`) in `share()` method; include Ziggy routes for `route()` helper |
+| **TypeScript** | Augment `@inertiajs/core` PageProps interface for type-safe shared data access |
 
 ### Why Inertia React Instead of a Standalone SPA
 The codebase is still a Laravel monolith with Fortify auth, session redirects, Google OAuth callbacks, and no browser API boundary. A standalone SPA would force unnecessary work up front:
@@ -196,9 +213,34 @@ resources/js/
 │   ├── calendar.ts
 │   ├── saved-conversion.ts
 │   ├── auth.ts
-│   └── page-props.ts
+│   ├── page-props.ts
+│   └── inertia.d.ts          # Global Inertia type augmentation
 └── providers/
     └── ToastProvider.tsx
+```
+
+**Inertia TypeScript Configuration** (`resources/js/types/inertia.d.ts`):
+```ts
+import { PageProps as InertiaPageProps } from '@inertiajs/core'
+
+// Augment Inertia's PageProps with your app's shared data
+declare module '@inertiajs/core' {
+  interface PageProps extends InertiaPageProps {
+    auth: {
+      user: { id: number; name: string; email: string } | null
+    }
+    ziggy: {
+      url: string
+      port: number | null
+      defaults: Record<string, unknown>
+      routes: Record<string, { uri: string; methods: string[] }>
+      location: string
+    }
+    flash?: {
+      toast?: { type: 'success' | 'error' | 'info'; message: string }
+    }
+  }
+}
 ```
 
 ### Target Laravel File Structure
@@ -280,29 +322,48 @@ return [
 #### Task 1.1: Add the React runtime and Laravel integration packages 🔴
 **File**: `package.json`, `composer.json`
 
-```json
-{
-  "dependencies": {
-    "react": "...",
-    "react-dom": "...",
-    "@inertiajs/react": "..."
-  },
-  "devDependencies": {
-    "typescript": "...",
-    "@types/react": "...",
-    "@types/react-dom": "..."
-  }
-}
+```bash
+# PHP packages
+composer require inertiajs/inertia-laravel tightenco/ziggy
+
+# npm packages (Inertia v3 with Vite plugin)
+npm install @inertiajs/react @inertiajs/vite
+npm install react react-dom
+npm install -D typescript @types/react @types/react-dom
 ```
 
 **Key Logic/Responsibilities**:
-- Install a React/TypeScript toolchain without disrupting existing Tailwind/Vite usage.
+- Install Inertia v3 with the `@inertiajs/vite` plugin (simplifies page resolution and SSR setup).
+- Add `tightenco/ziggy` for the `route()` helper in React components.
 - Add `inertiajs/inertia-laravel` on the PHP side.
+- TypeScript toolchain without disrupting existing Tailwind/Vite usage.
 
 #### Task 1.2: Create the Inertia bootstrap entrypoint 🔴
 **File**: `resources/js/app.tsx`
 
 ```tsx
+import { createInertiaApp } from '@inertiajs/react'
+
+// Inertia v3 with @inertiajs/vite plugin - minimal setup required
+// The Vite plugin auto-resolves pages from ./pages or ./Pages directories
+createInertiaApp({
+  // Optional: wrap app with providers
+  withApp(app) {
+    return (
+      <ToastProvider>
+        {app}
+      </ToastProvider>
+    )
+  },
+})
+```
+
+For manual setup (without Vite plugin), use `resolvePageComponent`:
+```tsx
+import { createInertiaApp } from '@inertiajs/react'
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
+import { createRoot } from 'react-dom/client'
+
 createInertiaApp({
   resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
   setup({ el, App, props }) {
@@ -313,44 +374,124 @@ createInertiaApp({
 
 **Key Logic/Responsibilities**:
 - Replace the current JS bootstrap, which only sets axios defaults.
-- Establish the React page resolver and shared providers.
+- Use `@inertiajs/vite` plugin for automatic page resolution (preferred).
+- Establish shared providers via `withApp` callback.
 
 #### Task 1.3: Add Inertia middleware and root Blade shell 🔴
-**File**: `app/Http/Middleware/HandleInertiaRequests.php`, `resources/views/app.blade.php`
 
+**Step 1**: Publish the middleware:
+```bash
+php artisan inertia:middleware
+```
+
+**Step 2**: Register in `bootstrap/app.php`:
+```php
+use App\Http\Middleware\HandleInertiaRequests;
+
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->web(append: [
+        HandleInertiaRequests::class,
+    ]);
+})
+```
+
+**File**: `app/Http/Middleware/HandleInertiaRequests.php`
 ```php
 class HandleInertiaRequests extends Middleware
 {
     public function share(Request $request): array
     {
-        return array_merge(parent::share($request), [
-            'auth.user' => $request->user(),
-            'flash' => [
-                'status' => session('status'),
-                'errors' => session('errors'),
+        return [
+            ...parent::share($request),
+            'auth' => [
+                'user' => fn () => $request->user()?->only('id', 'name', 'email'),
             ],
-        ]);
+            'ziggy' => fn () => [
+                ...(new \Tighten\Ziggy\Ziggy)->toArray(),
+                'location' => $request->url(),
+            ],
+        ];
     }
 }
 ```
 
-**Key Logic/Responsibilities**:
-- Provide global auth/user/flash props for React pages.
-- Keep page chrome, CSRF, and Vite wiring under Laravel control.
-
-#### Task 1.4: Upgrade Vite configuration for React/TSX while retaining Tailwind v4 🔴
-**File**: `vite.config.js`, `resources/css/app.css`
-
-```js
-laravel({
-  input: ['resources/css/app.css', 'resources/js/app.tsx'],
-  refresh: true,
-})
+**File**: `resources/views/app.blade.php` (Inertia v3 syntax)
+```blade
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    @viteReactRefresh
+    @vite(['resources/css/app.css', 'resources/js/app.tsx'])
+    <x-inertia::head />
+</head>
+<body class="font-sans antialiased">
+    <x-inertia::app />
+</body>
+</html>
 ```
 
 **Key Logic/Responsibilities**:
+- Use Inertia v3 Blade components (`<x-inertia::head />`, `<x-inertia::app />`), not legacy directives.
+- Include `@viteReactRefresh` before `@vite` for React Fast Refresh in development.
+- Share Ziggy routes for `route()` helper in React.
+- Use Inertia v3 flash system (`Inertia::flash()`) instead of manual session flash sharing.
+
+#### Task 1.4: Upgrade Vite configuration for React/TSX while retaining Tailwind v4 🔴
+**File**: `vite.config.js`
+
+```js
+import inertia from '@inertiajs/vite'
+import laravel from 'laravel-vite-plugin'
+import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            refresh: true,
+        }),
+        inertia(),        // Inertia v3 Vite plugin for auto page resolution
+        react(),          // React plugin for JSX/TSX support
+        tailwindcss(),    // Existing Tailwind v4 integration
+    ],
+})
+```
+
+**File**: `tsconfig.json` (create if not exists)
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@/*": ["./resources/js/*"]
+    }
+  },
+  "include": ["resources/js/**/*"]
+}
+```
+
+**Key Logic/Responsibilities**:
+- Add `@inertiajs/vite` plugin (auto-resolves pages from `./pages` or `./Pages`).
+- Add `@vitejs/plugin-react` for JSX/TSX compilation.
 - Keep existing theme tokens and CSS variables from `resources/css/app.css`.
-- Switch the JS entrypoint from `app.js` to `app.tsx` once React is ready.
+- TypeScript config with path aliases for clean imports.
 
 ---
 
@@ -569,16 +710,60 @@ const migrateGuestSavedConversions = async (guestItems: GuestSavedConversion[]) 
 
 ### Phase 5: Port Modals, Toasts, and Wikimedia “On This Day” UX 🔴
 
-#### Task 5.1: Rebuild the toast bus as a React provider 🔴
+#### Task 5.1: Rebuild the toast bus as a React provider with Inertia v3 flash integration 🔴
 **File**: `resources/js/providers/ToastProvider.tsx`
 
 ```tsx
-const ToastContext = createContext<ToastApi | null>(null)
+import { router, usePage } from '@inertiajs/react'
+import { createContext, useContext, useEffect, useState } from 'react'
+
+interface Toast { id: string; type: 'success' | 'error' | 'info'; message: string }
+const ToastContext = createContext<{
+  toasts: Toast[]
+  addToast: (type: Toast['type'], message: string) => void
+} | null>(null)
+
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [toasts, setToasts] = useState<Toast[]>([])
+  
+  // Listen for Inertia v3 flash events (preferred over shared data for toasts)
+  useEffect(() => {
+    return router.on('flash', (event) => {
+      const flash = event.detail.flash
+      if (flash.toast) {
+        addToast(flash.toast.type, flash.toast.message)
+      }
+    })
+  }, [])
+  
+  const addToast = (type: Toast['type'], message: string) => {
+    const id = crypto.randomUUID()
+    setToasts(prev => [...prev, { id, type, message }])
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000)
+  }
+  
+  return (
+    <ToastContext.Provider value={{ toasts, addToast }}>
+      {children}
+    </ToastContext.Provider>
+  )
+}
+
+export const useToast = () => useContext(ToastContext)!
+```
+
+**Server-side flash usage** (Inertia v3 pattern):
+```php
+// In controllers - use Inertia::flash() instead of session flash
+Inertia::flash('toast', ['type' => 'success', 'message' => 'Conversion saved!']);
+return back();
 ```
 
 **Key Logic/Responsibilities**:
 - Replace `toast-notification.blade.php` and the current `notify` browser event bus.
+- Integrate with Inertia v3 `router.on('flash')` event for server-triggered toasts.
 - Provide a single notification API for saves, deletes, errors, and copy actions.
+- Flash data is automatically cleared after being sent (no history pollution).
 
 #### Task 5.2: Rebuild the on-this-day modal around a typed endpoint 🔴
 **File**: `resources/js/components/modals/OnThisDayModal.tsx`, `app/Http/Controllers/FrontendApi/OnThisDayController.php`
@@ -624,16 +809,54 @@ Route::middleware('guest')->group(function () {
 - Keep Fortify/session behavior on the server.
 - Move only the rendering/forms to React.
 
-#### Task 6.2: Replace Flux auth controls with React form primitives 🔴
-**File**: `resources/js/components/ui/*`
+#### Task 6.2: Replace Flux auth controls with React form primitives using Inertia useForm 🔴
+**File**: `resources/js/pages/Auth/LoginPage.tsx`
 
 ```tsx
-<TextField label="Email address" value={email} onChange={setEmail} autoComplete="email" />
+import { useForm, usePage } from '@inertiajs/react'
+
+export default function LoginPage() {
+  const { data, setData, post, processing, errors } = useForm({
+    email: '',
+    password: '',
+    remember: false,
+  })
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault()
+    post(route('login'))
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <input
+        type="email"
+        value={data.email}
+        onChange={(e) => setData('email', e.target.value)}
+        autoComplete="email"
+      />
+      {errors.email && <div className="text-red-500">{errors.email}</div>}
+      
+      <input
+        type="password"
+        value={data.password}
+        onChange={(e) => setData('password', e.target.value)}
+      />
+      {errors.password && <div className="text-red-500">{errors.password}</div>}
+      
+      <button type="submit" disabled={processing}>
+        {processing ? 'Signing in...' : 'Sign in'}
+      </button>
+    </form>
+  )
+}
 ```
 
 **Key Logic/Responsibilities**:
+- Use Inertia's `useForm` helper for type-safe form handling, processing state, and error display.
 - Preserve current technical visual language from `resources/css/app.css`.
 - Remove dependence on Flux custom elements.
+- `processing` state auto-disables submit button during form submission.
 
 #### Task 6.3: Keep OAuth server-driven and React-safe 🔴
 **File**: `app/Http/Controllers/Auth/SocialAuthController.php`, React login page
