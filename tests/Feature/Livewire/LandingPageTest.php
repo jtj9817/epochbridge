@@ -4,7 +4,7 @@ namespace Tests\Feature\Livewire;
 
 use App\Models\User;
 use App\Services\DateTimeConverterService;
-use App\Services\Wikimedia\OnThisDayService;
+use App\Services\Wikimedia\OnThisDayCacheService;
 use Livewire\Volt\Volt;
 use Mockery;
 use Mockery\MockInterface;
@@ -278,7 +278,7 @@ beforeEach(function () {
         'holidays' => [],
     ];
 
-    $this->mock(OnThisDayService::class, function (MockInterface $mock) use ($onThisDayPayload) {
+    $this->mock(OnThisDayCacheService::class, function (MockInterface $mock) use ($onThisDayPayload) {
         $mock->shouldReceive('getForDate')
             ->andReturn([
                 'data' => $onThisDayPayload,
@@ -344,7 +344,7 @@ it('loads On This Day content and clears loading state', function () {
 });
 
 it('sets On This Day error when service returns an error', function () {
-    $mock = Mockery::mock(OnThisDayService::class);
+    $mock = Mockery::mock(OnThisDayCacheService::class);
     $mock->shouldReceive('getForDate')
         ->andReturn([
             'data' => null,
@@ -352,7 +352,7 @@ it('sets On This Day error when service returns an error', function () {
             'error' => 'Wikimedia API request failed.',
         ]);
 
-    app()->instance(OnThisDayService::class, $mock);
+    app()->instance(OnThisDayCacheService::class, $mock);
 
     Volt::test('landing')
         ->set('dateInput', '2024-09-01')
