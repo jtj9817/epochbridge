@@ -248,12 +248,12 @@ export function OnThisDayModal({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
       <div
-        className={`fixed inset-0 bg-black/70 z-40 transition-opacity duration-200 ${open ? 'opacity-100' : 'opacity-0'}`}
+        className="fixed inset-0 bg-black/70 z-40"
         onClick={onClose}
       />
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0 relative z-50 pointer-events-none">
         <div
-          className={`relative inline-block align-bottom bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-600 text-left overflow-hidden transform transition-all duration-300 sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full pointer-events-auto ${open ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-4 sm:scale-95'}`}
+          className="relative inline-block align-bottom bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-600 text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full pointer-events-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
