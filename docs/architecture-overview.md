@@ -1278,7 +1278,7 @@ public function test_landing_page_conversion()
 services:
     laravel.test:
         ports:
-            - '8080:80'      # Laravel application
+            - '8081:80'      # Laravel application
     mysql:
         ports:
             - '3307:3306'    # MySQL database

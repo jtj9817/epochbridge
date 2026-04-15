@@ -70,11 +70,11 @@ ALTER TABLE users
 
 2. **Configure OAuth Consent Screen**
    - Set application name (e.g., "EpochBridge")
-   - Add authorized domains (e.g., `localhost:8080` for development)
+   - Add authorized domains (e.g., `localhost:8081` for development)
    - Configure scopes: `email`, `profile`, `openid`
 
 3. **Add Authorized Redirect URIs**
-   - Development: `http://localhost:8080/auth/google/callback`
+   - Development: `http://localhost:8081/auth/google/callback`
    - Production: `https://yourdomain.com/auth/google/callback`
 
 4. **Save Credentials**
@@ -88,7 +88,7 @@ Add the following to your `.env` file:
 ```bash
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_REDIRECT_URI=http://localhost:8080/auth/google/callback
+GOOGLE_REDIRECT_URI=http://localhost:8081/auth/google/callback
 ```
 
 ### 3. Database Migration
@@ -468,7 +468,7 @@ php artisan test --filter GoogleOAuthTest --verbose
 **Solution**: Ensure the redirect URI in Google Cloud Console exactly matches your configured URI:
 ```bash
 # .env
-GOOGLE_REDIRECT_URI=http://localhost:8080/auth/google/callback
+GOOGLE_REDIRECT_URI=http://localhost:8081/auth/google/callback
 ```
 
 #### 2. Invalid Client

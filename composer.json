@@ -11,19 +11,21 @@
     "require": {
         "php": "^8.2",
         "fisharebest/ext-calendar": "^2.6",
+        "inertiajs/inertia-laravel": "^2.0",
+        "laravel/boost": "^1.6",
         "laravel/fortify": "^1.30",
         "laravel/framework": "^12.0",
         "laravel/socialite": "^5.23",
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.1.1",
         "livewire/volt": "^1.7.0",
-        "morilog/jalali": "3.*"
+        "morilog/jalali": "3.*",
+        "tightenco/ziggy": "^2.6"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.16",
         "brianium/paratest": "^7.14",
         "fakerphp/faker": "^1.23",
-        "laravel/boost": "^1.3",
         "laravel/dusk": "^8.2",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
