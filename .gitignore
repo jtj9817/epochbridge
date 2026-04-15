@@ -57,3 +57,11 @@ TEST_RESULTS_FORMATTED.md
 
 # Implementation prompts (generated artifacts)
 docs/saved-conversions-enhancement-plan-prompts.md
+
+# Tool-specific files and test artifacts
+.playwright-mcp/
+.gemini/
+.factory/
+.mcp.json
+boost.json
+opencode.json
