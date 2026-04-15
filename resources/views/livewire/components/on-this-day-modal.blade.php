@@ -117,7 +117,7 @@ $closeModal = function () {
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="relative inline-block align-bottom bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-600 text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full pointer-events-auto"
+            class="relative inline-block align-bottom bg-theme-50 dark:bg-theme-900 border-2 border-theme-300 dark:border-zinc-600 text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full pointer-events-auto"
             @click.stop
         >
             {{-- Header --}}
@@ -236,7 +236,7 @@ $closeModal = function () {
                                                     x-transition:enter="ease-out duration-200"
                                                     x-transition:enter-start="opacity-0 -translate-y-1"
                                                     x-transition:enter-end="opacity-100 translate-y-0"
-                                                    class="flex bg-white dark:bg-zinc-800 border border-theme-200 dark:border-zinc-700 border-l-4 {{ $section['borderLight'] }} {{ $section['borderDark'] }} overflow-hidden"
+                                                    class="flex bg-theme-50 dark:bg-theme-900 border border-theme-200 dark:border-zinc-700 border-l-4 {{ $section['borderLight'] }} {{ $section['borderDark'] }} overflow-hidden"
                                                 >
                                                     {{-- Year Column --}}
                                                     @if ($year)

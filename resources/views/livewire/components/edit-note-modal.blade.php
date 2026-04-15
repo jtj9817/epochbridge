@@ -69,7 +69,7 @@ $saveNote = function () {
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 scale-95"
-            class="relative inline-block align-bottom bg-white dark:bg-zinc-900 text-left overflow-hidden border-2 border-theme-300 dark:border-zinc-700 sm:my-8 sm:align-middle sm:max-w-lg w-full"
+            class="relative inline-block align-bottom bg-theme-50 dark:bg-theme-900 text-left overflow-hidden border-2 border-theme-300 dark:border-zinc-700 sm:my-8 sm:align-middle sm:max-w-lg w-full"
             @click.stop
         >
             <!-- Modal Header -->
@@ -80,14 +80,14 @@ $saveNote = function () {
             </div>
 
             <!-- Modal Body -->
-            <div class="bg-white dark:bg-zinc-900 px-4 py-4">
+            <div class="bg-theme-50 dark:bg-theme-900 px-4 py-4">
                 <textarea
                     id="edit-note-textarea"
                     wire:model="currentNote"
                     rows="6"
                     maxlength="2048"
                     placeholder="e.g., Birthday, Anniversary, Project Deadline..."
-                    class="block w-full px-3 py-2 border-2 border-theme-300 dark:border-zinc-600 focus:outline-none focus:border-theme-500 dark:focus:border-theme-100 bg-white dark:bg-zinc-800 text-theme-900 dark:text-theme-50 placeholder-theme-400 dark:placeholder-zinc-500 resize-none font-mono text-sm"
+                    class="block w-full px-3 py-2 border-2 border-theme-300 dark:border-zinc-600 focus:outline-none focus:border-theme-500 dark:focus:border-theme-100 bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 placeholder-theme-400 dark:placeholder-zinc-500 resize-none font-mono text-sm"
                 ></textarea>
                 <div class="mt-2 flex justify-end">
                     <p class="text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">

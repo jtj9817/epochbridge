@@ -1,4 +1,4 @@
-<div class="bg-white dark:bg-zinc-900 border border-theme-300 dark:border-zinc-700 flex flex-col animate-pulse">
+<div class="bg-theme-50 dark:bg-theme-900 border border-theme-300 dark:border-zinc-700 flex flex-col animate-pulse">
     <div class="px-3 py-2 border-b border-theme-300 dark:border-zinc-700">
         <div class="h-4 w-24 bg-zinc-200 dark:bg-zinc-700"></div>
     </div>

@@ -81,7 +81,7 @@ $refreshDate = function () {
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                class="relative inline-block align-bottom bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-600 text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full pointer-events-auto"
+                class="relative inline-block align-bottom bg-theme-50 dark:bg-theme-900 border-2 border-theme-300 dark:border-zinc-600 text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full pointer-events-auto"
                 @click.stop
             >
                 {{-- Header --}}
@@ -99,7 +99,7 @@ $refreshDate = function () {
                                     wire:change="refreshDate"
                                     wire:loading.attr="disabled"
                                     wire:target="refreshDate"
-                                    class="bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-600 px-3 py-1.5 text-sm font-medium text-theme-900 dark:text-zinc-100 uppercase tracking-wider focus:outline-none focus:border-theme-500 dark:focus:border-zinc-400 transition disabled:opacity-50 disabled:cursor-wait"
+                                    class="bg-theme-50 dark:bg-theme-900 border-2 border-theme-300 dark:border-zinc-600 px-3 py-1.5 text-sm font-medium text-theme-900 dark:text-zinc-100 uppercase tracking-wider focus:outline-none focus:border-theme-500 dark:focus:border-zinc-400 transition disabled:opacity-50 disabled:cursor-wait"
                                 />
                                 {{-- Inline loading spinner --}}
                                 <div wire:loading wire:target="refreshDate" class="flex items-center">
