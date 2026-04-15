@@ -9,6 +9,7 @@ it('renders the react landing page', function () {
     $response = $this->get('/');
 
     $response->assertSuccessful();
+    $response->assertSee('<script data-page="app" type="application/json">', false);
 });
 
 it('passes today date to the landing page', function () {
