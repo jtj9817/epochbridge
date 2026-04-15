@@ -130,11 +130,11 @@ export function SavedConversionsSection({
 
   if (authLoading && isAuthenticated) {
     return (
-      <div className="mt-12 max-w-4xl mx-auto">
-        <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-widest mb-4">
-          Saved Conversions
+      <div className="mt-16 max-w-4xl mx-auto">
+        <h2 className="text-sm font-bold text-theme-900 dark:text-theme-50 uppercase tracking-widest mb-4">
+          Your Saved Conversions
         </h2>
-        <div className="text-center py-8 text-zinc-400 text-xs uppercase tracking-wider">
+        <div className="text-center py-8 text-theme-500 dark:text-theme-100 text-xs uppercase tracking-wider">
           Loading...
         </div>
       </div>
@@ -142,15 +142,15 @@ export function SavedConversionsSection({
   }
 
   return (
-    <div className="mt-12 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-zinc-700">
-        <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-widest">
-          Saved Conversions ({items.length})
+    <div className="mt-16 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-4 pb-4 border-b border-theme-300 dark:border-zinc-700">
+        <h2 className="text-sm font-bold text-theme-900 dark:text-theme-50 uppercase tracking-widest">
+          Your Saved Conversions
         </h2>
         {currentConversion && (
           <button
             onClick={() => setSaveModalOpen(true)}
-            className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 uppercase tracking-wider"
+            className="text-xs font-medium text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white uppercase tracking-wider"
           >
             Save Current
           </button>
@@ -159,13 +159,13 @@ export function SavedConversionsSection({
 
       {/* Migration prompt for newly-authenticated users with guest data */}
       {showMigrationPrompt && (
-        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <p className="text-sm text-blue-800 dark:text-blue-200">
+        <div className="mb-4 p-3 border border-theme-300 dark:border-zinc-700 bg-theme-50 dark:bg-zinc-900">
+          <p className="text-xs text-theme-700 dark:text-zinc-300 uppercase tracking-wider">
             You have {guest.items.length} guest conversion
             {guest.items.length !== 1 ? 's' : ''} to migrate.
             <button
               onClick={handleMigration}
-              className="ml-2 font-semibold underline hover:no-underline"
+              className="ml-2 font-bold underline text-theme-700 dark:text-zinc-300 hover:text-theme-900 dark:hover:text-white"
             >
               Migrate now
             </button>
@@ -174,16 +174,16 @@ export function SavedConversionsSection({
       )}
 
       {migrationStatus === 'done' && (
-        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <p className="text-sm text-green-800 dark:text-green-200">
+        <div className="mb-4 p-3 border border-theme-300 dark:border-zinc-700 bg-theme-50 dark:bg-zinc-900">
+          <p className="text-xs text-theme-700 dark:text-zinc-300 uppercase tracking-wider">
             Guest conversions migrated successfully!
           </p>
         </div>
       )}
 
       {migrationStatus === 'error' && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-sm text-red-800 dark:text-red-200">
+        <div className="mb-4 p-3 border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20">
+          <p className="text-xs text-red-800 dark:text-red-200 uppercase tracking-wider">
             Failed to migrate guest conversions. Please try again.
           </p>
         </div>
@@ -191,11 +191,11 @@ export function SavedConversionsSection({
 
       {/* Conversion Items */}
       {items.length === 0 ? (
-        <p className="text-center py-8 text-zinc-400 text-xs uppercase tracking-wider">
+        <p className="text-center py-8 text-theme-500 dark:text-theme-100 text-xs uppercase tracking-wider">
           No saved conversions yet.
         </p>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {items.map((item) => (
             <SavedConversionItem
               key={item.id}
@@ -213,11 +213,11 @@ export function SavedConversionsSection({
 
       {/* Guest limit notice */}
       {!isAuthenticated && items.length > 0 && (
-        <p className="mt-4 text-center text-xs text-zinc-400 dark:text-zinc-500">
+        <p className="mt-4 text-center text-xs text-theme-500 dark:text-theme-100 uppercase tracking-wider">
           Guest mode: {items.length}/3 saves.{' '}
           <a
             href="/register"
-            className="text-blue-500 hover:underline"
+            className="font-bold underline text-theme-700 dark:text-zinc-300 hover:text-theme-900 dark:hover:text-white"
           >
             Register
           </a>{' '}
