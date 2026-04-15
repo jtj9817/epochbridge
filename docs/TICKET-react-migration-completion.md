@@ -110,7 +110,7 @@ Updated test routes from `/react` to `/` to match the new route configuration.
 ### Route Verification
 
 ```bash
-$ curl -s http://localhost:8086/ | grep -o '"component":"[^"]*"'
+$ curl -s http://localhost:8081/ | grep -o '"component":"[^"]*"'
 "component":"LandingPage"
 ```
 
@@ -158,14 +158,14 @@ Two tests in `tests/Feature/Livewire/LandingPageTest.php` fail due to a **pre-ex
 The `.env` file has inconsistent port configuration:
 
 ```ini
-APP_URL=http://localhost:8080
-APP_PORT=8086  # Actual Docker port mapping
-GOOGLE_REDIRECT_URI=http://localhost:8080/auth/google/callback
+APP_URL=http://localhost:8081
+APP_PORT=8081  # Actual Docker port mapping
+GOOGLE_REDIRECT_URI=http://localhost:8081/auth/google/callback
 ```
 
-**Impact**: OAuth callbacks may fail in development if using port 8080 URLs.
+**Impact**: OAuth callbacks may fail in development if using port 8081 URLs.
 
-**Recommendation**: Update `APP_URL` and `GOOGLE_REDIRECT_URI` to use port `8086`.
+**Recommendation**: Update `APP_URL` and `GOOGLE_REDIRECT_URI` to use port `8081`.
 
 ### 3. Legacy Blade Files Remain
 
