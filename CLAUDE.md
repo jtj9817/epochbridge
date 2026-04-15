@@ -20,7 +20,7 @@ EpochBridge is a Laravel 12 application built with the TALL Stack (Tailwind CSS,
 
 ### Laravel Sail (Docker)
 ```bash
-# Start the development environment (use port 8080 to avoid conflicts)
+# Start the development environment (use port 8081 to avoid conflicts)
 ./vendor/bin/sail up
 
 # Stop the environment
@@ -110,7 +110,7 @@ Volt components are located in:
 ## Environment Configuration
 
 ### Docker Ports
-- **Laravel**: Port 8080 (APP_PORT)
+- **Laravel**: Port 8081 (APP_PORT)
 - **MySQL**: Port 3307 (FORWARD_DB_PORT)
 - **Vite**: Port 5174 (VITE_PORT)
 
@@ -292,7 +292,7 @@ plugins: [
 This enables automatic refresh for Blade file changes and integrates Tailwind CSS compilation.
 
 ### Production Considerations
-- **Port Configuration**: Uses custom ports (8080, 5174, 3307) to avoid conflicts
+- **Port Configuration**: Uses custom ports (8081, 5174, 3307) to avoid conflicts
 - **Asset Compilation**: Run `npm run build` for production-optimized assets
 - **Caching**: Enable Laravel optimization caches with `php artisan optimize`
 - **Environment**: Ensure `APP_DEBUG=false` and proper cache drivers in production

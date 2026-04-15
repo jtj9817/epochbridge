@@ -91,7 +91,7 @@ php artisan key:generate
 # Add to .env file:
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_REDIRECT_URI=http://localhost:8080/auth/google/callback
+GOOGLE_REDIRECT_URI=http://localhost:8081/auth/google/callback
 ```
 
 To obtain Google OAuth credentials:
@@ -99,7 +99,7 @@ To obtain Google OAuth credentials:
 2. Create a new project or select existing
 3. Enable Google+ API
 4. Create OAuth 2.0 credentials
-5. Add authorized redirect URI: `http://localhost:8080/auth/google/callback`
+5. Add authorized redirect URI: `http://localhost:8081/auth/google/callback`
 
 5. Configure Wikimedia On This Day (optional)
 ```bash
@@ -128,7 +128,7 @@ npm run dev
 ```
 
 The application will be available at:
-- **Laravel**: http://localhost:8080
+- **Laravel**: http://localhost:8081
 - **Vite Dev Server**: http://localhost:5174
 
 ## Development Commands
@@ -538,7 +538,7 @@ Pre-built component library providing:
 ## Environment Configuration
 
 ### Docker Ports
-- **Laravel**: Port 8080
+- **Laravel**: Port 8081
 - **MySQL**: Port 3307
 - **Vite**: Port 5174
 
