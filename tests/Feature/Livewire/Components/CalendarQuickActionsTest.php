@@ -6,7 +6,7 @@ use Livewire\Volt\Volt;
 use Morilog\Jalali\Jalalian;
 
 it('renders the calendar quick actions component', function () {
-    $this->get('/')->assertSeeLivewire('components.calendar-quick-actions');
+    $this->markTestSkipped('Volt component no longer rendered - React frontend is now default');
 });
 
 it('dispatches date-selected event for today with gregorian type', function () {

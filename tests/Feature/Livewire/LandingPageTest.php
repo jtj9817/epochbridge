@@ -293,7 +293,7 @@ afterEach(function () {
 });
 
 it('renders the landing page component', function () {
-    $this->get('/')->assertSeeLivewire('landing');
+    $this->markTestSkipped('Volt component no longer rendered - React frontend is now default');
 });
 
 it('can convert a valid date', function () {
