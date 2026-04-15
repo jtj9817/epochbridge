@@ -338,7 +338,7 @@
     @if($conversionKeyValue !== null)
         data-conversion-id="{{ $conversionKeyValue }}"
     @endif
-    {{ $attributes->class('bg-theme-50 dark:bg-theme-900 border-2 border-theme-300 dark:border-zinc-700 overflow-hidden') }}
+    {{ $attributes->class('bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-700 overflow-hidden') }}
 >
     <!-- Collapsible header -->
     <div

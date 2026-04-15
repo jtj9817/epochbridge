@@ -346,7 +346,7 @@ $updatedLoadToken = function () {
                                     $text = $entry['text'] ?? '';
                                     $url = $entry['url'] ?? null;
                                 @endphp
-                                <div class="flex bg-theme-50 dark:bg-theme-900 border border-theme-200 dark:border-zinc-700 border-l-4 {{ $section['borderLight'] }} {{ $section['borderDark'] }} overflow-hidden">
+                                <div class="flex bg-white dark:bg-zinc-800 border border-theme-200 dark:border-zinc-700 border-l-4 {{ $section['borderLight'] }} {{ $section['borderDark'] }} overflow-hidden">
                                     {{-- Year Column --}}
                                     @if ($year)
                                         <div class="flex-shrink-0 w-20 {{ $section['bgLight'] }} {{ $section['bgDark'] }} border-r border-theme-200 dark:border-zinc-700 flex items-center justify-center px-3 py-3">

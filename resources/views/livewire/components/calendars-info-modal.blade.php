@@ -52,7 +52,7 @@ $closeModal = function () {
                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 scale-95"
                 @click.stop
-                class="bg-theme-50 dark:bg-theme-900 rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] pointer-events-auto overflow-hidden flex flex-col"
+                class="bg-white dark:bg-zinc-900 rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] pointer-events-auto overflow-hidden flex flex-col"
             >
                 <!-- Modal Header -->
                 <div class="bg-theme-100 dark:bg-zinc-800 px-6 py-4 border-b border-theme-300 dark:border-zinc-600">
@@ -79,7 +79,7 @@ $closeModal = function () {
                 <div class="bg-theme-100 dark:bg-zinc-900 px-6 py-6 overflow-y-auto flex-1">
                     <div class="grid gap-6 md:grid-cols-2">
                         <!-- Gregorian Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">📅</div>
                                 <div class="flex-1">
@@ -96,7 +96,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Jalali Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🌙</div>
                                 <div class="flex-1">
@@ -113,7 +113,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Hebrew Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">✡️</div>
                                 <div class="flex-1">
@@ -130,7 +130,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Islamic Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">☪️</div>
                                 <div class="flex-1">
@@ -147,7 +147,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Chinese Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🐉</div>
                                 <div class="flex-1">
@@ -164,7 +164,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Japanese Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🌸</div>
                                 <div class="flex-1">
@@ -181,7 +181,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Julian Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🏛️</div>
                                 <div class="flex-1">
@@ -198,7 +198,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- French Republican Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🇫🇷</div>
                                 <div class="flex-1">
@@ -215,7 +215,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Coptic Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">☦️</div>
                                 <div class="flex-1">
@@ -232,7 +232,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Ethiopian Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🇪🇹</div>
                                 <div class="flex-1">
@@ -249,7 +249,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Ancient Egyptian Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🏺</div>
                                 <div class="flex-1">
@@ -266,7 +266,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Babylonian Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🏺</div>
                                 <div class="flex-1">
@@ -283,7 +283,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Assyrian Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">📜</div>
                                 <div class="flex-1">
@@ -300,7 +300,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Ancient Macedonian Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🏛️</div>
                                 <div class="flex-1">
@@ -317,7 +317,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Mayan Calendar -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🗿</div>
                                 <div class="flex-1">
@@ -334,7 +334,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- ISO 8601 -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🔢</div>
                                 <div class="flex-1">
@@ -351,7 +351,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Unix Timestamp -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">⏰</div>
                                 <div class="flex-1">
@@ -368,7 +368,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Julian Day Number -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🔭</div>
                                 <div class="flex-1">
@@ -385,7 +385,7 @@ $closeModal = function () {
                         </div>
 
                         <!-- Modified Julian Day -->
-                        <div class="bg-theme-50 dark:bg-theme-900 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
+                        <div class="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm">
                             <div class="flex items-start gap-3 mb-3">
                                 <div class="text-4xl">🛰️</div>
                                 <div class="flex-1">
@@ -404,7 +404,7 @@ $closeModal = function () {
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="bg-theme-50 dark:bg-theme-900 px-6 py-4 flex justify-between items-center border-t border-theme-300 dark:border-zinc-600">
+                <div class="bg-white dark:bg-zinc-900 px-6 py-4 flex justify-between items-center border-t border-theme-300 dark:border-zinc-600">
                     <p class="text-sm text-zinc-600 dark:text-zinc-400">
                         19 Supported Calendar Systems
                     </p>

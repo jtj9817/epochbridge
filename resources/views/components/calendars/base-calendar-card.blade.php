@@ -5,7 +5,7 @@
     'disclaimer' => null,
 ])
 
-<div {{ $attributes->merge(['class' => 'calendar-card bg-theme-50 dark:bg-theme-900 border border-theme-300 dark:border-zinc-700 flex flex-col']) }}>
+<div {{ $attributes->merge(['class' => 'calendar-card bg-white dark:bg-zinc-900 border border-theme-300 dark:border-zinc-700 flex flex-col']) }}>
     <div class="calendar-card-header border-b border-theme-300 dark:border-zinc-700 flex items-center justify-between">
         <h3 class="flex items-center gap-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 uppercase tracking-wider">
             @if(isset($icon))
