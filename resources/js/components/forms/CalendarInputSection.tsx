@@ -75,7 +75,7 @@ export function CalendarInputSection({
             id="input-type-selector"
             value={inputType}
             onChange={(e) => onInputTypeChange(e.target.value as InputType)}
-            className="w-full px-3 py-2 text-sm border-2 border-theme-100 dark:border-theme-500 bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+            className="w-full px-3 py-2 text-sm border-2 border-theme-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:border-theme-500 dark:focus:border-theme-100 transition-colors"
           >
             {INPUT_TYPES.map((type) => (
               <option key={type} value={type}>
@@ -93,14 +93,14 @@ export function CalendarInputSection({
           >
             Enter Value
           </label>
-          <div className="relative">
+          <div className="relative datetime-input">
             <input
               type={inputHtmlType}
               id="date-input"
               value={dateInput}
               onChange={(e) => onDateChange(e.target.value)}
               step={inputType === 'jd' || inputType === 'mjd' ? 'any' : undefined}
-              className="w-full px-4 py-3 text-base font-medium text-center border-2 border-theme-100 dark:border-theme-500 bg-theme-50 dark:bg-theme-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:ring-2 focus:ring-theme-300 dark:focus:ring-theme-100 shadow-inner transition"
+              className="w-full px-4 py-3 text-base font-medium text-center border-0 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none transition-colors"
               placeholder={getPlaceholder()}
             />
           </div>
