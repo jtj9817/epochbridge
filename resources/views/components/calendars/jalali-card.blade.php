@@ -20,8 +20,8 @@
         {{ $data['day'] }}
     </div>
     <div class="text-sm text-teal-600 dark:text-teal-300 uppercase tracking-wider">
-        {{ $data['day_of_week'] }}
-        <span class="block text-xs opacity-75">{{ $data['day_of_week_en'] }}</span>
+        {{ $data['day_of_week'] ?? '' }}
+        <span class="block text-xs opacity-75">{{ $data['day_of_week_en'] ?? '' }}</span>
     </div>
     <div class="text-xs font-mono text-teal-500 dark:text-teal-500 mt-2">
         {{ $data['year'] }}

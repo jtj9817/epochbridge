@@ -41,7 +41,7 @@ class DateTimeConverterService
         0 => 'Shanbeh',      // Saturday
         1 => 'Yekshanbeh',   // Sunday
         2 => 'Doshanbeh',    // Monday
-        3 => 'Seshhanbeh',   // Tuesday
+        3 => 'Seshanbeh',   // Tuesday
         4 => 'Chaharshanbeh', // Wednesday
         5 => 'Panjshanbeh',  // Thursday
         6 => 'Jomeh',        // Friday

@@ -211,7 +211,8 @@
                                 || 'Unavailable'
                             : (cardData ?? 'Unavailable');
                         const dow = isObject ? (cardData.day_of_week || '') : '';
-                        text += `${name}: ${date}${dow ? ' (' + dow + ')' : ''}\n`;
+                        const dowEn = isObject ? (cardData.day_of_week_en || '') : '';
+                        text += `${name}: ${date}${dow ? ' (' + dow + ')' : ''}${dowEn ? ' (' + dowEn + ')' : ''}\n`;
                     }
                 });
             }
@@ -608,6 +609,9 @@
                                     <template x-if="cardData.day_of_week">
                                         <span x-text="cardData.day_of_week"></span>
                                     </template>
+                                    <template x-if="cardData.day_of_week_en">
+                                        <span class="block text-xs opacity-75" x-text="cardData.day_of_week_en"></span>
+                                    </template>
                                 </td>
                                 <td class="px-4 py-2 w-auto text-right">
                                     <button
@@ -660,6 +664,9 @@
                                         </td>
                                         <td class="px-4 py-2 w-1/3 text-sm text-[#7E7254]">
                                             {{ $data['day_of_week'] ?? '' }}
+                                            @if(!empty($data['day_of_week_en']))
+                                                <span class="block text-xs opacity-75">{{ $data['day_of_week_en'] }}</span>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-2 w-auto text-right">
                                             <button
@@ -696,7 +703,12 @@
                                         <tr class="hover:bg-[#50493E]/30 transition-colors">
                                             <td class="px-4 py-2 w-1/3"><span class="font-bold text-[#F5D2A5]">{{ $label }}:</span></td>
                                             <td class="px-4 py-2 w-1/3 text-[#CDB586]">{{ $value }}</td>
-                                            <td class="px-4 py-2 w-1/3 text-[#7E7254]">{{ $data['day_of_week'] ?? '' }}</td>
+                                            <td class="px-4 py-2 w-1/3 text-[#7E7254]">
+                                                {{ $data['day_of_week'] ?? '' }}
+                                                @if(!empty($data['day_of_week_en']))
+                                                    <span class="block text-xs opacity-75">{{ $data['day_of_week_en'] }}</span>
+                                                @endif
+                                            </td>
                                             <td class="px-4 py-2 w-auto text-right">
                                                 <button
                                                     x-on:click="copyValue('{{ $value }}', '{{ $label }}')"
