@@ -137,6 +137,10 @@
     border-image-width: 4px 8px;
     box-shadow: 2px 3px 0 var(--sd-shadow-1);
 }
+/* Semantic status banners: colored band, parchment interior. */
+.sd-panel--red { border-image-source: var(--sd-frame-panel-red); }
+.sd-panel--green { border-image-source: var(--sd-frame-panel-green); }
+.sd-panel--gold { border-image-source: var(--sd-frame-panel-gold); }
 /* Title banner strip used inside panels/modals */
 .sd-panel__title {
     background: var(--sd-parch-dark);
@@ -230,6 +234,11 @@
     color: var(--sd-ink);
 }
 .dark .sd-btn--ghost { background: #D5BE8E; }
+/* Variant faces must win over the .dark wood fallback above. */
+.dark .sd-btn--primary { background: var(--sd-green); }
+.dark .sd-btn--danger { background: var(--sd-red); }
+.dark .sd-btn--info { background: var(--sd-blue); }
+.dark .sd-btn--gold { background: var(--sd-gold); }
 .sd-btn--sm {
     padding: 4px 10px;
     min-height: 32px;
@@ -424,4 +433,27 @@ body.sd-bg summary,
 body.sd-bg label,
 body.sd-bg select {
     cursor: url('/images/sd/cursor-hand.png') 5 0, pointer;
+}
+
+/* ---------------- Pixel scrollbar ---------------- */
+html {
+    scrollbar-color: var(--sd-wood) var(--sd-wood-shade);
+}
+body.sd-bg ::-webkit-scrollbar,
+.sd-root ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+body.sd-bg ::-webkit-scrollbar-track,
+.sd-root ::-webkit-scrollbar-track {
+    background: var(--sd-wood-shade);
+}
+body.sd-bg ::-webkit-scrollbar-thumb,
+.sd-root ::-webkit-scrollbar-thumb {
+    background: var(--sd-wood-light);
+    border: 2px solid var(--sd-wood-shade);
+}
+body.sd-bg ::-webkit-scrollbar-thumb:hover,
+.sd-root ::-webkit-scrollbar-thumb:hover {
+    background: var(--sd-gold-dark);
 }

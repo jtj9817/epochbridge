@@ -14,6 +14,7 @@ interface SectionConfig {
   key: keyof OnThisDayData
   label: string
   accent: string
+  labelColor: string
   icon: string
 }
 
@@ -22,30 +23,35 @@ const SECTIONS: SectionConfig[] = [
     key: 'selected',
     label: 'Selected',
     accent: 'var(--sd-gold)',
+    labelColor: 'var(--sd-ink)',
     icon: 'icon-star',
   },
   {
     key: 'events',
     label: 'Events',
     accent: 'var(--sd-blue)',
+    labelColor: 'var(--sd-cream)',
     icon: 'icon-clock',
   },
   {
     key: 'births',
     label: 'Births',
     accent: 'var(--sd-green)',
+    labelColor: 'var(--sd-cream)',
     icon: 'sprout',
   },
   {
     key: 'deaths',
     label: 'Deaths',
     accent: 'var(--sd-wood-dark)',
+    labelColor: 'var(--sd-cream)',
     icon: 'icon-moon',
   },
   {
     key: 'holidays',
     label: 'Holidays',
     accent: 'var(--sd-red)',
+    labelColor: 'var(--sd-cream)',
     icon: 'flower-pink',
   },
 ]
@@ -91,10 +97,16 @@ function SectionBlock({
             className="sd-pixel"
             aria-hidden="true"
           />
-          <h4 className="sd-label text-[color:var(--sd-cream)]">
+          <h4
+            className="sd-label"
+            style={{ color: section.labelColor }}
+          >
             {section.label}
           </h4>
-          <span className="sd-small text-[color:var(--sd-cream)]">
+          <span
+            className="sd-small"
+            style={{ color: section.labelColor }}
+          >
             &mdash; {totalItems} {totalItems === 1 ? 'entry' : 'entries'}
           </span>
         </div>
@@ -261,7 +273,7 @@ export function OnThisDayModal({
             {error && !isLoading && (
               <div
                 className="sd-panel sd-panel--thin p-4"
-                style={{ borderImageSource: 'var(--sd-frame-red)' }}
+                style={{ borderImageSource: 'var(--sd-frame-panel-red)' }}
               >
                 <p className="sd-small text-[color:var(--sd-red)]">{error}</p>
               </div>

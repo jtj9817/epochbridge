@@ -13,8 +13,8 @@ export default function SettingsLayout({ children, heading, subheading, title }:
     <>
       {title && <Head title={title} />}
 
-      {/* Settings heading */}
-      <div className="relative mb-6 w-full">
+      {/* Settings heading on a parchment strip for contrast in both modes */}
+      <div className="sd-panel sd-panel--thin relative mb-6 w-full px-4 py-3">
         <h1 className="sd-h2 text-[color:var(--sd-ink)]">
           Settings
         </h1>
@@ -47,7 +47,8 @@ export default function SettingsLayout({ children, heading, subheading, title }:
 
 function SettingsTab({ href, label }: { href: string; label: string }) {
   const page = usePage()
-  const isActive = page.url === href
+  const path = new URL(href, window.location.origin).pathname
+  const isActive = page.url.split('?')[0] === path
 
   return (
     <Link

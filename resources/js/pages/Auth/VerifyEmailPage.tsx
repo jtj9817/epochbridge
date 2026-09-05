@@ -29,7 +29,7 @@ export default function VerifyEmailPage({ status }: VerifyEmailPageProps) {
         {status === 'verification-link-sent' && (
           <div
             className="sd-panel sd-panel--thin p-3 text-center"
-            style={{ borderImageSource: 'var(--sd-frame-green)' }}
+            style={{ borderImageSource: 'var(--sd-frame-panel-green)' }}
           >
             <span className="sd-small text-[color:var(--sd-green-dark)]">
               A new verification link has been sent to the email address you provided during registration.

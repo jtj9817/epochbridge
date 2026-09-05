@@ -40,7 +40,7 @@ export default function ResetPasswordPage({ token, email, status }: ResetPasswor
         {status && (
           <div
             className="sd-panel sd-panel--thin p-3 text-center"
-            style={{ borderImageSource: 'var(--sd-frame-green)' }}
+            style={{ borderImageSource: 'var(--sd-frame-panel-green)' }}
           >
             <span className="sd-small text-[color:var(--sd-green-dark)]">
               {status}

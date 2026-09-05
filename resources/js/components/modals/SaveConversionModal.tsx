@@ -56,7 +56,7 @@ export function SaveConversionModal({
         <div className="flex items-center justify-center min-h-screen px-4">
           <div
             className="sd-panel sd-panel--thin sd-pop w-full max-w-md p-6"
-            style={{ borderImageSource: 'var(--sd-frame-gold)' }}
+            style={{ borderImageSource: 'var(--sd-frame-panel-gold)' }}
           >
             <div className="mb-3 flex items-center gap-2">
               <img

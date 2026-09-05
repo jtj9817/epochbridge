@@ -45,7 +45,7 @@ export default function LoginPage({
         {status && (
           <div
             className="sd-panel sd-panel--thin p-3 text-center"
-            style={{ borderImageSource: 'var(--sd-frame-green)' }}
+            style={{ borderImageSource: 'var(--sd-frame-panel-green)' }}
           >
             <span className="sd-small text-[color:var(--sd-green-dark)]">
               {status}
@@ -57,7 +57,7 @@ export default function LoginPage({
         {oauthError && (
           <div
             className="sd-panel sd-panel--thin p-3"
-            style={{ borderImageSource: 'var(--sd-frame-red)' }}
+            style={{ borderImageSource: 'var(--sd-frame-panel-red)' }}
           >
             <p className="sd-small text-[color:var(--sd-red)]">
               <strong>Authentication Error:</strong> {oauthError}

@@ -188,7 +188,7 @@ export default function TwoFactorPage({ twoFactorEnabled: initialEnabled, requir
           {setupError && !showSetupModal && (
             <div
               className="sd-panel sd-panel--thin p-3"
-              style={{ borderImageSource: 'var(--sd-frame-red)' }}
+              style={{ borderImageSource: 'var(--sd-frame-panel-red)' }}
             >
               <p className="sd-small text-[color:var(--sd-red)]">{setupError}</p>
             </div>
@@ -262,7 +262,7 @@ export default function TwoFactorPage({ twoFactorEnabled: initialEnabled, requir
                       {recoveryCodesError && (
                         <div
                           className="sd-panel sd-panel--thin p-3"
-                          style={{ borderImageSource: 'var(--sd-frame-red)' }}
+                          style={{ borderImageSource: 'var(--sd-frame-panel-red)' }}
                         >
                           <p className="sd-small text-[color:var(--sd-red)]">{recoveryCodesError}</p>
                         </div>
@@ -427,7 +427,7 @@ export default function TwoFactorPage({ twoFactorEnabled: initialEnabled, requir
                     {setupError && (
                       <div
                         className="sd-panel sd-panel--thin p-3"
-                        style={{ borderImageSource: 'var(--sd-frame-red)' }}
+                        style={{ borderImageSource: 'var(--sd-frame-panel-red)' }}
                       >
                         <p className="sd-small text-[color:var(--sd-red)]">{setupError}</p>
                       </div>

@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
 import AppLayout from '@/layouts/AppLayout'
 
 export default function DashboardPage() {
@@ -27,7 +27,7 @@ export default function DashboardPage() {
 
         {/* Stat row */}
         <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          <div className="sd-slot flex items-center gap-4 p-4">
+          <div className="sd-slot flex items-center justify-center gap-4 p-4 md:justify-start">
             <img
               src="/images/sd/icon-calendar.svg"
               width={32}
@@ -40,7 +40,7 @@ export default function DashboardPage() {
               <p className="sd-data-md text-[color:var(--sd-cream)]">19</p>
             </div>
           </div>
-          <div className="sd-slot flex items-center gap-4 p-4">
+          <div className="sd-slot flex items-center justify-center gap-4 p-4 md:justify-start">
             <img
               src="/images/sd/icon-clock.svg"
               width={32}
@@ -53,7 +53,7 @@ export default function DashboardPage() {
               <p className="sd-data-md text-[color:var(--sd-cream)]">{unixNow}</p>
             </div>
           </div>
-          <div className="sd-slot flex items-center gap-4 p-4">
+          <div className="sd-slot flex items-center justify-center gap-4 p-4 md:justify-start">
             <img
               src="/images/sd/icon-tilestar.svg"
               width={32}
@@ -94,19 +94,19 @@ export default function DashboardPage() {
             />
             <img
               src="/images/sd/flower-yellow.svg"
-              width={16}
-              height={16}
+              width={32}
+              height={32}
               className="sd-pixel"
               aria-hidden="true"
             />
           </div>
-          <img
-            src="/images/sd/hills-strip.svg"
-            width={32}
-            height={32}
-            className="sd-pixel"
-            aria-hidden="true"
-          />
+          <h2 className="sd-h3 text-[color:var(--sd-ink)]">No recent conversions</h2>
+          <p className="sd-small max-w-md text-[color:var(--sd-ink-soft)]">
+            Convert a date on the landing page and save it to pin your favorite results here.
+          </p>
+          <Link href="/" className="sd-btn sd-btn--primary sd-btn--sm">
+            Start converting
+          </Link>
         </div>
       </div>
     </AppLayout>

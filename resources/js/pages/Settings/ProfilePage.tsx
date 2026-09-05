@@ -163,7 +163,7 @@ export default function ProfilePage({ user, status }: ProfilePageProps) {
         <div className="mt-10">
           <div
             className="sd-panel sd-panel--thin space-y-6 p-6"
-            style={{ borderImageSource: 'var(--sd-frame-red)' }}
+            style={{ borderImageSource: 'var(--sd-frame-panel-red)' }}
           >
             <div className="relative">
               <div className="mb-2 flex items-center gap-2">
