@@ -102,7 +102,7 @@ export const mockRoute = vi.fn((name: string, params?: Record<string, unknown>) 
     'two-factor.disable': '/user/two-factor-authentication',
     'profile.edit': '/settings/profile',
     'user-profile-information.update': '/user/profile-information',
-    'user-password-update': '/user/password',
+    'user-password.update': '/user/password',
     'current-user.destroy': '/user',
     'social.redirect': `/auth/${params?.provider ?? 'google'}/redirect`,
   }
