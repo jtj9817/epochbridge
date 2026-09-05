@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "epochbridge/epochbridge",
     "type": "project",
-    "description": "EpochBridge - A Laravel application built with Livewire.",
+    "description": "A Laravel application with a React/Inertia frontend.",
     "keywords": [
         "laravel",
         "framework"

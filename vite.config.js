@@ -9,8 +9,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
-                'resources/js/app.js',   // Existing Livewire pages
-                'resources/js/app.tsx',  // New Inertia/React pages
+                'resources/js/app.tsx', // Inertia/React pages
             ],
             refresh: true,
         }),

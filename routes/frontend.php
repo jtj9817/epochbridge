@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 | These routes provide JSON endpoints for the React frontend to consume.
-| They are separate from the Livewire-based routes and use the web
+| They serve the React frontend and use the web
 | middleware stack for session/CSRF handling.
 |
 */

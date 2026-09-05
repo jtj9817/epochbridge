@@ -35,24 +35,16 @@ class FortifyServiceProvider extends ServiceProvider
     protected function registerTwoFactorChallengeView(): void
     {
         Fortify::twoFactorChallengeView(function () {
-            if (config('frontend.react_enabled')) {
-                return Inertia::render('Auth/TwoFactorChallengePage', [
-                    'recovery' => request()->session()->get('errors')?->has('recovery_code') ?? false,
-                ]);
-            }
-
-            return view('livewire.auth.two-factor-challenge');
+            return Inertia::render('Auth/TwoFactorChallengePage', [
+                'recovery' => request()->session()->get('errors')?->has('recovery_code') ?? false,
+            ]);
         });
     }
 
     protected function registerConfirmPasswordView(): void
     {
         Fortify::confirmPasswordView(function () {
-            if (config('frontend.react_enabled')) {
-                return Inertia::render('Auth/ConfirmPasswordPage');
-            }
-
-            return view('livewire.auth.confirm-password');
+            return Inertia::render('Auth/ConfirmPasswordPage');
         });
     }
 }
