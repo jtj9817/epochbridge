@@ -25,7 +25,10 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
   if (!user) return null
 
   const initials = getInitials(user.name)
-  const isDashboardActive = pageUrl === route('dashboard') || pageUrl === '/'
+  const currentPath = pageUrl.split('?')[0]
+  const dashboardPath = new URL(route('dashboard'), window.location.origin).pathname
+  const isDashboardActive = currentPath === dashboardPath || currentPath === '/'
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
 
   return (
     <>
@@ -153,7 +156,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                     <div className="my-1 h-0.5 bg-[color:var(--sd-parch-shadow)]" />
                     <div>
                       <form method="POST" action={route('logout')}>
-                        <input type="hidden" name="_token" value={(usePage().props as Record<string, unknown>).ziggy ? '' : ''} />
+                        <input type="hidden" name="_token" value={csrfToken} />
                         <button
                           type="submit"
                           className="sd-btn sd-btn--ghost sd-btn--sm w-full"
@@ -241,6 +244,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                     <div className="my-1 h-0.5 bg-[color:var(--sd-parch-shadow)]" />
                     <div>
                       <form method="POST" action={route('logout')}>
+                        <input type="hidden" name="_token" value={csrfToken} />
                         <button
                           type="submit"
                           className="sd-btn sd-btn--ghost sd-btn--sm w-full"
