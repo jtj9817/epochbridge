@@ -1,44 +1,19 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import './stardew.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 
-/* ============================================
-   BERKELEY MONO FONT
-   ============================================
-   Add font files to public/fonts/:
-   - BerkeleyMono-Regular.woff2
-   - BerkeleyMono-Regular.woff
-   - BerkeleyMono-Bold.woff2
-   - BerkeleyMono-Bold.woff
-   ============================================ */
-
-@font-face {
-    font-family: 'Berkeley Mono';
-    src: url('/fonts/BerkeleyMono-Regular.woff2') format('woff2'),
-         url('/fonts/BerkeleyMono-Regular.woff') format('woff');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Berkeley Mono';
-    src: url('/fonts/BerkeleyMono-Bold.woff2') format('woff2'),
-         url('/fonts/BerkeleyMono-Bold.woff') format('woff');
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
-}
+/* Pixel fonts are registered in stardew.css (Pixelify Sans + VT323). */
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    /* Technical Rationalist Typography - Monospace Primary */
-    --font-sans: 'Berkeley Mono', ui-monospace, 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', Menlo, Consolas, monospace;
+    /* Pixel-first typography (Stardew theme) */
+    --font-sans: 'Pixelify Sans', ui-monospace, 'SF Mono', 'Monaco', Menlo, Consolas, monospace;
 
     /* Preserved Theme Colors */
     --color-theme-50: #F5D2A5;

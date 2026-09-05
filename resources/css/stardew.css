@@ -1,0 +1,427 @@
+/* ============================================================
+   STARDEW-STYLE PIXEL DESIGN SYSTEM (.sd-*)
+   Original pixel art, parchment/wood/gold palette, day + night.
+   Imported by app.css. Legacy classes are untouched; React
+   components opt into .sd-*. Frame data-URIs live in
+   stardew-frames.css (generated).
+   ============================================================ */
+
+@import './stardew-frames.css';
+
+/* ---------------- Fonts (self-hosted, OFL) ---------------- */
+@font-face {
+    font-family: 'Pixelify Sans';
+    src: url('/fonts/PixelifySans-Variable.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Pixelify Sans';
+    src: url('/fonts/PixelifySans-Variable-latinext.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: 'VT323';
+    src: url('/fonts/VT323-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'VT323';
+    src: url('/fonts/VT323-Regular-latinext.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ---------------- Tokens ---------------- */
+:root {
+    --sd-parch-light: #FCF3D8;
+    --sd-parch: #F4E3B2;
+    --sd-parch-dark: #E5C988;
+    --sd-parch-shadow: #D9BC85;
+    --sd-wood-dark: #4A2E19;
+    --sd-wood: #8A5A32;
+    --sd-wood-light: #B0793F;
+    --sd-wood-shade: #6B4123;
+    --sd-frame-shadow: #5A3820;
+    --sd-ink: #4A2E19;
+    --sd-ink-soft: #6B4A28;
+    --sd-cream: #F2E3BC;
+    --sd-gold: #F7C244;
+    --sd-gold-light: #FFE08A;
+    --sd-gold-dark: #C98F1F;
+    --sd-gold-text: #8C6414;
+    --sd-gold-fill: #F9E6B0;
+    --sd-green: #3E7C2C;
+    --sd-green-light: #57A044;
+    --sd-green-dark: #2C5C1E;
+    --sd-red: #B03A2E;
+    --sd-red-light: #CC5A48;
+    --sd-red-dark: #7E2820;
+    --sd-blue: #2E6B9E;
+    --sd-blue-light: #4E8CC4;
+    --sd-blue-dark: #1E4C74;
+    --sd-btn-label: #FFF8E7;
+    --sd-shadow-1: rgba(38, 22, 10, 0.4);
+    --sd-shadow-2: rgba(38, 22, 10, 0.3);
+    --sd-overlay: rgba(30, 17, 8, 0.65);
+}
+
+.dark {
+    --sd-parch-light: #EFE2BC;
+    --sd-parch: #E3CD96;
+    --sd-parch-dark: #C9AF74;
+    --sd-parch-shadow: #C1A874;
+    --sd-wood-dark: #322013;
+    --sd-wood: #5E3F26;
+    --sd-wood-light: #7A5533;
+    --sd-wood-shade: #4A2E19;
+    --sd-frame-shadow: #3A2410;
+    --sd-ink: #3A2410;
+    --sd-ink-soft: #5C4326;
+    --sd-gold: #FFD35C;
+    --sd-gold-light: #FFEC9E;
+    --sd-gold-dark: #D89A2B;
+    --sd-gold-text: #B8860B;
+    --sd-gold-fill: #EED9A0;
+    --sd-green: #2E5C24;
+    --sd-green-light: #4A8C38;
+    --sd-green-dark: #224A18;
+    --sd-red: #8C2B22;
+    --sd-red-light: #A84A3C;
+    --sd-red-dark: #641E16;
+    --sd-blue: #3C7CB4;
+    --sd-blue-light: #5E9CC8;
+    --sd-blue-dark: #2A5C88;
+    --sd-shadow-1: rgba(10, 6, 2, 0.55);
+    --sd-shadow-2: rgba(10, 6, 2, 0.65);
+    --sd-overlay: rgba(0, 0, 0, 0.75);
+}
+
+/* ---------------- Root scope ---------------- */
+.sd-root {
+    letter-spacing: 0;
+    font-family: 'Pixelify Sans', ui-monospace, 'VT323', monospace;
+    color: var(--sd-ink);
+}
+
+/* Page wood-plank background (body class in the Inertia root) */
+.sd-bg {
+    background-color: #B0854E;
+    background-image: url('/images/sd/wood-tile-day.svg');
+    background-size: 128px 128px;
+    image-rendering: pixelated;
+    background-attachment: fixed;
+}
+.dark .sd-bg,
+.sd-bg.dark {
+    background-color: #3E2C1E;
+    background-image: url('/images/sd/wood-tile-night.svg');
+}
+
+/* ---------------- Panels (dialogue boxes) ---------------- */
+.sd-panel {
+    border: 8px solid transparent;
+    border-image: var(--sd-frame-panel) 33.33% fill / 8px repeat;
+    background: var(--sd-parch);
+    box-shadow: 4px 6px 0 var(--sd-shadow-1);
+}
+.sd-panel--thin {
+    border-image-width: 4px 8px;
+    box-shadow: 2px 3px 0 var(--sd-shadow-1);
+}
+/* Title banner strip used inside panels/modals */
+.sd-panel__title {
+    background: var(--sd-parch-dark);
+    margin: -8px -8px 8px;
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--sd-parch-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+/* ---------------- Inputs (recessed) ---------------- */
+.sd-input,
+.sd-select,
+.sd-textarea {
+    border: 4px solid transparent;
+    border-image: var(--sd-frame-inset) 25% fill / 4px repeat;
+    background: var(--sd-parch-light);
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--sd-ink);
+    box-shadow: inset 2px 2px 0 rgba(74, 46, 25, 0.15);
+    width: 100%;
+}
+.sd-input::placeholder,
+.sd-textarea::placeholder {
+    color: var(--sd-ink-soft);
+    opacity: 0.7;
+}
+.sd-select {
+    appearance: none;
+}
+
+/* ---------------- Buttons ---------------- */
+.sd-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 6px solid transparent;
+    border-image: var(--sd-frame-btn) 25% fill / 6px repeat;
+    box-shadow: 2px 3px 0 var(--sd-shadow-1);
+    padding: 8px 16px;
+    min-height: 40px;
+    font-family: 'Pixelify Sans', monospace;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--sd-btn-label);
+    background: #A9713B;
+    cursor: inherit;
+    transition: transform 80ms steps(2, end), box-shadow 80ms steps(2, end);
+}
+.dark .sd-btn { background: #6B4A2C; }
+.sd-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 2px 4px 0 var(--sd-shadow-1);
+    border-image-source: var(--sd-frame-gold);
+}
+.sd-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 1px 1px 0 var(--sd-shadow-1);
+}
+.sd-btn:disabled {
+    opacity: 0.55;
+    box-shadow: none;
+}
+.sd-btn--primary {
+    border-image: var(--sd-frame-green) 25% fill / 6px repeat;
+    background: var(--sd-green);
+}
+.sd-btn--danger {
+    border-image: var(--sd-frame-red) 25% fill / 6px repeat;
+    background: var(--sd-red);
+}
+.sd-btn--info {
+    border-image: var(--sd-frame-blue) 25% fill / 6px repeat;
+    background: var(--sd-blue);
+}
+.sd-btn--gold {
+    border-image: var(--sd-frame-gold) 25% fill / 6px repeat;
+    background: var(--sd-gold);
+    color: var(--sd-wood-dark);
+}
+.sd-btn--ghost {
+    border-image: var(--sd-frame-tab) 25% fill / 6px repeat;
+    background: #E8D5A5;
+    color: var(--sd-ink);
+}
+.dark .sd-btn--ghost { background: #D5BE8E; }
+.sd-btn--sm {
+    padding: 4px 10px;
+    min-height: 32px;
+    font-size: 12px;
+    border-image-width: 4px;
+    border-width: 4px;
+}
+
+/* ---------------- Tabs ---------------- */
+.sd-tab {
+    border: 6px solid transparent;
+    border-image: var(--sd-frame-tab) 25% fill / 6px repeat;
+    padding: 8px 14px;
+    font-family: 'Pixelify Sans', monospace;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sd-ink-soft);
+    margin-bottom: -6px;
+    position: relative;
+    z-index: 1;
+    background: #E8D5A5;
+    transition: transform 80ms steps(2, end);
+}
+.dark .sd-tab { background: #D5BE8E; }
+.sd-tab:hover {
+    transform: translateY(-1px);
+    color: var(--sd-ink);
+}
+.sd-tab--active {
+    border-image: var(--sd-frame-gold) 25% fill / 6px repeat;
+    background: var(--sd-gold-fill);
+    color: var(--sd-ink);
+}
+
+/* ---------------- Inventory slots ---------------- */
+.sd-slot {
+    border: 4px solid transparent;
+    border-image: var(--sd-frame-slot) 25% fill / 4px repeat;
+    background: #3E2C1E;
+}
+.dark .sd-slot { background: #2E2114; }
+
+/* ---------------- Result cards (item-tooltip look) ---------------- */
+.sd-card {
+    border: 8px solid transparent;
+    border-image: var(--sd-frame-panel) 33.33% fill / 8px repeat;
+    background: var(--sd-parch);
+    box-shadow: 3px 4px 0 var(--sd-shadow-2);
+    transition: transform 120ms steps(3, end), box-shadow 120ms steps(3, end);
+}
+.sd-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 6px 8px 0 var(--sd-shadow-2);
+}
+/* rarity frame + tint per calendar (frames/tints generated) */
+.sd-card--gregorian { border-image-source: var(--sd-frame-card-gregorian); background: var(--sd-tint-gregorian); }
+.sd-card--jalali { border-image-source: var(--sd-frame-card-jalali); background: var(--sd-tint-jalali); }
+.sd-card--hebrew { border-image-source: var(--sd-frame-card-hebrew); background: var(--sd-tint-hebrew); }
+.sd-card--islamic { border-image-source: var(--sd-frame-card-islamic); background: var(--sd-tint-islamic); }
+.sd-card--chinese { border-image-source: var(--sd-frame-card-chinese); background: var(--sd-tint-chinese); }
+.sd-card--japanese { border-image-source: var(--sd-frame-card-japanese); background: var(--sd-tint-japanese); }
+.sd-card--coptic { border-image-source: var(--sd-frame-card-coptic); background: var(--sd-tint-coptic); }
+.sd-card--ethiopian { border-image-source: var(--sd-frame-card-ethiopian); background: var(--sd-tint-ethiopian); }
+.sd-card--egyptian { border-image-source: var(--sd-frame-card-egyptian); background: var(--sd-tint-egyptian); }
+.sd-card--french-republican { border-image-source: var(--sd-frame-card-french-republican); background: var(--sd-tint-french-republican); }
+.sd-card--babylonian { border-image-source: var(--sd-frame-card-babylonian); background: var(--sd-tint-babylonian); }
+.sd-card--assyrian { border-image-source: var(--sd-frame-card-assyrian); background: var(--sd-tint-assyrian); }
+.sd-card--macedonian { border-image-source: var(--sd-frame-card-macedonian); background: var(--sd-tint-macedonian); }
+.sd-card--mayan { border-image-source: var(--sd-frame-card-mayan); background: var(--sd-tint-mayan); }
+.sd-card--julian { border-image-source: var(--sd-frame-card-julian); background: var(--sd-tint-julian); }
+.sd-card--julian-day { border-image-source: var(--sd-frame-card-julian-day); background: var(--sd-tint-julian-day); }
+.sd-card--modified-julian-day { border-image-source: var(--sd-frame-card-modified-julian-day); background: var(--sd-tint-modified-julian-day); }
+.sd-card--unix { border-image-source: var(--sd-frame-card-unix); background: var(--sd-tint-unix); }
+.sd-card--iso8601 { border-image-source: var(--sd-frame-card-iso8601); background: var(--sd-tint-iso8601); }
+
+/* Card title strip (gold item-name bar) */
+.sd-card__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    margin: -8px -8px 8px;
+    background: var(--sd-gold-fill);
+    border-bottom: 2px solid var(--sd-gold-dark);
+}
+
+/* ---------------- Typography helpers ---------------- */
+.sd-h1 {
+    font-family: 'Pixelify Sans', monospace;
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 1.1;
+    letter-spacing: 0.04em;
+}
+@media (max-width: 640px) {
+    .sd-h1 { font-size: 36px; }
+}
+.sd-h2 {
+    font-family: 'Pixelify Sans', monospace;
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+}
+.sd-h3 {
+    font-family: 'Pixelify Sans', monospace;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+.sd-label {
+    font-family: 'Pixelify Sans', monospace;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.sd-small {
+    font-family: 'Pixelify Sans', monospace;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+}
+.sd-data-lg {
+    font-family: 'VT323', monospace;
+    font-size: 40px;
+    line-height: 1;
+}
+.sd-data-md {
+    font-family: 'VT323', monospace;
+    font-size: 24px;
+    line-height: 1.1;
+}
+.sd-data-sm {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    line-height: 1.1;
+}
+
+/* ---------------- Pixel art ---------------- */
+.sd-pixel {
+    image-rendering: pixelated;
+    shape-rendering: crispEdges;
+}
+
+/* ---------------- Modal + motion ---------------- */
+.sd-overlay {
+    background: var(--sd-overlay);
+}
+.sd-pop {
+    animation: sd-pop 200ms steps(5, end) both;
+}
+@keyframes sd-pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.06); opacity: 1; }
+    100% { transform: scale(1); }
+}
+.sd-slide-in {
+    animation: sd-slide-in 160ms steps(4, end) both;
+}
+@keyframes sd-slide-in {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sd-pop, .sd-slide-in { animation: none; }
+    .sd-btn, .sd-card, .sd-tab { transition: none; transform: none; }
+}
+
+/* ---------------- Focus ring ---------------- */
+.sd-root :focus-visible,
+body.sd-bg :focus-visible {
+    outline: 3px solid var(--sd-gold);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px var(--sd-gold-dark);
+}
+
+/* ---------------- Custom pixel cursor ---------------- */
+body.sd-bg {
+    cursor: url('/images/sd/cursor-arrow.png') 0 0, default;
+}
+body.sd-bg a,
+body.sd-bg button,
+body.sd-bg [role='button'],
+body.sd-bg summary,
+body.sd-bg label,
+body.sd-bg select {
+    cursor: url('/images/sd/cursor-hand.png') 5 0, pointer;
+}

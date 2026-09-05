@@ -65,3 +65,6 @@ docs/saved-conversions-enhancement-plan-prompts.md
 .mcp.json
 boost.json
 opencode.json
+
+# Visual QA evidence screenshots
+gui-test-screenshots/
