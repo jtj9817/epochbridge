@@ -9,7 +9,7 @@ test('shows toast notification when authenticated user saves conversion', functi
 
         $browser->loginAs($user)
             ->visit('/')
-            ->waitForLivewireToLoad()
+            ->waitFor('input[name="dateInput"]')
             ->type('input[name="dateInput"]', '2024-01-01')
             ->click('button:contains("Convert Date")')
             ->waitForText('Conversion Results', 10)
@@ -25,7 +25,7 @@ test('shows toast notification when authenticated user saves conversion', functi
 test('shows success toast when guest user saves conversion', function () {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
-            ->waitForLivewireToLoad()
+            ->waitFor('input[name="dateInput"]')
             ->type('input[name="dateInput"]', '2024-01-01')
             ->click('button:contains("Convert Date")')
             ->waitForText('Conversion Results', 10)
@@ -41,7 +41,7 @@ test('shows success toast when guest user saves conversion', function () {
 test('shows info toast when guest user saves already saved conversion', function () {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
-            ->waitForLivewireToLoad()
+            ->waitFor('input[name="dateInput"]')
             ->type('input[name="dateInput"]', '2024-01-01')
             ->click('button:contains("Convert Date")')
             ->waitForText('Conversion Results', 10)
@@ -58,7 +58,7 @@ test('shows info toast when guest user saves already saved conversion', function
 test('shows info toast when guest user reaches save limit', function () {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
-            ->waitForLivewireToLoad();
+            ->waitFor('input[name="dateInput"]');
 
         // Save 3 conversions (the limit)
         for ($i = 1; $i <= 3; $i++) {

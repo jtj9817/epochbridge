@@ -2,40 +2,69 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Livewire\Volt\Volt;
+use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Features;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-test('password can be updated', function () {
+it('updates the password via the Fortify endpoint', function () {
     $user = User::factory()->create([
         'password' => Hash::make('password'),
     ]);
 
     $this->actingAs($user);
 
-    $response = Volt::test('settings.password')
-        ->set('current_password', 'password')
-        ->set('password', 'new-password')
-        ->set('password_confirmation', 'new-password')
-        ->call('updatePassword');
+    $response = $this->put(route('user-password.update'), [
+        'current_password' => 'password',
+        'password' => 'new-password',
+        'password_confirmation' => 'new-password',
+    ]);
 
-    $response->assertHasNoErrors();
+    $response->assertSessionHasNoErrors();
 
     expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();
-});
+})->skip(
+    fn () => ! (Features::enabled(Features::updatePasswords()) && Route::has('user-password.update')),
+    'Password updating is not enabled.'
+);
 
-test('correct password must be provided to update password', function () {
+it('requires the correct current password to update the password', function () {
     $user = User::factory()->create([
         'password' => Hash::make('password'),
     ]);
 
     $this->actingAs($user);
 
-    $response = Volt::test('settings.password')
-        ->set('current_password', 'wrong-password')
-        ->set('password', 'new-password')
-        ->set('password_confirmation', 'new-password')
-        ->call('updatePassword');
+    $response = $this->put(route('user-password.update'), [
+        'current_password' => 'wrong-password',
+        'password' => 'new-password',
+        'password_confirmation' => 'new-password',
+    ]);
 
-    $response->assertHasErrors(['current_password']);
-});
+    $response->assertSessionHasErrors(['current_password']);
+
+    expect(Hash::check('password', $user->refresh()->password))->toBeTrue();
+})->skip(
+    fn () => ! (Features::enabled(Features::updatePasswords()) && Route::has('user-password.update')),
+    'Password updating is not enabled.'
+);
+
+it('keeps the password update endpoint unavailable while the feature is disabled', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('password'),
+    ]);
+
+    $response = $this->actingAs($user)
+        ->put('/user/password', [
+            'current_password' => 'password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ]);
+
+    expect($response->status())->toBeIn([404, 405]);
+
+    expect(Hash::check('password', $user->refresh()->password))->toBeTrue();
+})->skip(
+    fn () => Features::enabled(Features::updatePasswords()) && Route::has('user-password.update'),
+    'Password updating is enabled.'
+);

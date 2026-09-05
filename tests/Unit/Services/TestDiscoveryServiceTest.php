@@ -24,7 +24,6 @@ describe('TestDiscoveryService', function () {
 
         File::makeDirectory($this->root.'/unit', 0755, true);
         File::makeDirectory($this->root.'/feature', 0755, true);
-        File::makeDirectory($this->root.'/feature/Livewire', 0755, true);
         File::makeDirectory($this->root.'/browser', 0755, true);
 
         $relative = fn (string $suffix) => trim(str_replace(base_path().'/', '', $this->root.'/'.$suffix), '/');
@@ -75,13 +74,11 @@ PHP);
             'paths' => [
                 'unit' => $relative('unit'),
                 'feature' => $relative('feature'),
-                'livewire' => $relative('feature/Livewire'),
                 'browser' => $relative('browser'),
             ],
             'patterns' => [
                 'unit' => $relative('unit').'/*Test.php',
                 'feature' => $relative('feature').'/*Test.php',
-                'livewire' => $relative('feature/Livewire').'/*Test.php',
                 'browser' => $relative('browser').'/*Test.php',
             ],
         ]);
@@ -96,7 +93,6 @@ PHP);
     it('discovers tests across all categories', function () {
         $unit = ($this->createPestTest)('unit/SampleUnitTest.php');
         $feature = ($this->createPestTest)('feature/ExampleFeatureTest.php');
-        $livewire = ($this->createPestTest)('feature/Livewire/LivewireWidgetTest.php');
         $browser = ($this->createPhpunitTest)('browser/UserJourneyTest.php', 'DuskUserJourneyTest');
 
         $result = $this->service->discoverAllTests(useCache: false);
@@ -107,27 +103,22 @@ PHP);
         expect($result['feature'])->toHaveCount(1)
             ->and($result['feature'][0]['file_path'])->toBe($feature);
 
-        expect($result['livewire'])->toHaveCount(1)
-            ->and($result['livewire'][0]['file_path'])->toBe($livewire);
-
         expect($result['browser'])->toHaveCount(1)
             ->and($result['browser'][0]['file_path'])->toBe($browser);
 
-        expect($result['all'])->toHaveCount(4);
+        expect($result['all'])->toHaveCount(3);
     });
 
-    it('filters out livewire tests from generic feature set', function () {
+    it('includes nested feature tests in the generic feature set', function () {
         ($this->createPestTest)('feature/FeatureOnlyTest.php');
-        ($this->createPestTest)('feature/Livewire/ComponentStateTest.php');
+        ($this->createPestTest)('feature/Nested/ComponentStateTest.php');
 
         $features = $this->service->getFeatureTests();
-        $livewire = $this->service->getLivewireTests();
 
-        expect($features)->toHaveCount(1)
-            ->and($features[0]['filename'])->toBe('FeatureOnlyTest.php');
-
-        expect($livewire)->toHaveCount(1)
-            ->and($livewire[0]['filename'])->toBe('ComponentStateTest.php');
+        expect($features)->toHaveCount(2)
+            ->and(collect($features)->pluck('filename')->toArray())
+            ->toContain('FeatureOnlyTest.php')
+            ->toContain('ComponentStateTest.php');
     });
 
     it('ignores non test php files and unreadable files', function () {
@@ -192,10 +183,9 @@ PHP);
         expect($unitTests)->toHaveCount(1)
             ->and($unitTests[0]['file_path'])->toBe($nested);
 
-        File::deleteDirectory($this->root.'/livewire');
+        File::deleteDirectory($this->root.'/feature');
 
-        $livewire = $this->service->getLivewireTests();
-        expect($livewire)->toBeEmpty();
+        expect($this->service->getFeatureTests())->toBeEmpty();
     });
 
     it('skips duplicate discovery via symlinks', function () {

@@ -23,7 +23,6 @@ class TestDiscoveryService
     private array $paths = [
         'unit' => 'tests/Unit',
         'feature' => 'tests/Feature',
-        'livewire' => 'tests/Feature/Livewire',
         'browser' => 'tests/Browser',
     ];
 
@@ -35,7 +34,6 @@ class TestDiscoveryService
     private array $patterns = [
         'unit' => 'tests/Unit/*Test.php',
         'feature' => 'tests/Feature/*Test.php',
-        'livewire' => 'tests/Feature/Livewire/*Test.php',
         'browser' => 'tests/Browser/*Test.php',
     ];
 
@@ -87,7 +85,6 @@ class TestDiscoveryService
         $discovered = [
             'unit' => $this->getUnitTests(),
             'feature' => $this->getFeatureTests(),
-            'livewire' => $this->getLivewireTests(),
             'browser' => $this->getBrowserTests(),
             'all' => [],
         ];
@@ -96,7 +93,6 @@ class TestDiscoveryService
         $discovered['all'] = array_merge(
             $discovered['unit'],
             $discovered['feature'],
-            $discovered['livewire'],
             $discovered['browser']
         );
 
@@ -123,41 +119,13 @@ class TestDiscoveryService
     }
 
     /**
-     * Get all feature test files (excluding Livewire)
+     * Get all feature test files
      *
      * @return array<int, array> Array of test file information
      */
     public function getFeatureTests(): array
     {
-        $featurePath = $this->paths['feature'];
-        $allFeatureTests = $this->scanDirectory($featurePath, 'feature');
-
-        // Filter out Livewire tests from feature tests when configured
-        $livewireBase = rtrim(base_path($this->paths['livewire']), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
-
-        if ($this->paths['livewire'] === '' || ! File::isDirectory(base_path($this->paths['livewire']))) {
-            return $allFeatureTests;
-        }
-
-        return array_filter($allFeatureTests, function ($test) use ($livewireBase) {
-            return ! str_starts_with($test['file_path'], $livewireBase);
-        });
-    }
-
-    /**
-     * Get all Livewire test files
-     *
-     * @return array<int, array> Array of test file information
-     */
-    public function getLivewireTests(): array
-    {
-        $livewireDirectory = $this->paths['livewire'];
-
-        if ($livewireDirectory === '' || ! File::isDirectory(base_path($livewireDirectory))) {
-            return [];
-        }
-
-        return $this->scanDirectory($livewireDirectory, 'livewire');
+        return $this->scanDirectory($this->paths['feature'], 'feature');
     }
 
     /**
@@ -378,7 +346,6 @@ class TestDiscoveryService
             'total' => count($discovered['all']),
             'unit' => count($discovered['unit']),
             'feature' => count($discovered['feature']),
-            'livewire' => count($discovered['livewire']),
             'browser' => count($discovered['browser']),
         ];
     }
@@ -405,7 +372,7 @@ class TestDiscoveryService
     public function searchTests(string $query, ?array $categories = null): array
     {
         $discovered = $this->discoverAllTests();
-        $searchCategories = $categories ?? ['unit', 'feature', 'livewire', 'browser'];
+        $searchCategories = $categories ?? ['unit', 'feature', 'browser'];
 
         $results = [];
 

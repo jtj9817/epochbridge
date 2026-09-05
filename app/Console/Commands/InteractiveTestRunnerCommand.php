@@ -33,8 +33,6 @@ class InteractiveTestRunnerCommand extends Command
 
     private const FEATURE_TESTS = 'feature';
 
-    private const LIVEWIRE_TESTS = 'livewire';
-
     private const BROWSER_TESTS = 'browser';
 
     private const CUSTOM_SELECTION = 'custom';
@@ -226,7 +224,6 @@ class InteractiveTestRunnerCommand extends Command
                 self::ALL_TESTS => "🌍 All Tests - Run the complete test suite ({$statistics['total']} files)",
                 self::UNIT_TESTS => "⚙️  Unit Tests - Test individual components and services ({$statistics['unit']} files)",
                 self::FEATURE_TESTS => "🎭 Feature Tests - Test complete user workflows ({$statistics['feature']} files)",
-                self::LIVEWIRE_TESTS => "⚡ Livewire Tests - Test reactive components ({$statistics['livewire']} files)",
                 self::BROWSER_TESTS => "🌐 Browser Tests - Test full user interactions with Dusk ({$statistics['browser']} files)",
                 self::CUSTOM_SELECTION => '🎯 Custom Selection - Choose specific test files',
             ],
@@ -254,7 +251,6 @@ class InteractiveTestRunnerCommand extends Command
             self::ALL_TESTS,
             self::UNIT_TESTS,
             self::FEATURE_TESTS,
-            self::LIVEWIRE_TESTS,
             self::BROWSER_TESTS,
             self::CUSTOM_SELECTION,
         ];
@@ -281,10 +277,9 @@ class InteractiveTestRunnerCommand extends Command
             info('📋 Test Selection Summary');
 
             $descriptions = [
-                self::ALL_TESTS => 'Complete test suite (Unit, Feature, Livewire, Browser)',
+                self::ALL_TESTS => 'Complete test suite (Unit, Feature, Browser)',
                 self::UNIT_TESTS => 'Unit tests only - Fast isolated component testing',
                 self::FEATURE_TESTS => 'Feature tests only - Application workflow testing',
-                self::LIVEWIRE_TESTS => 'Livewire tests only - Component interaction testing',
                 self::BROWSER_TESTS => 'Browser tests only - Full user interaction testing',
                 self::CUSTOM_SELECTION => 'Custom selection - User-specified test files',
             ];
@@ -293,7 +288,6 @@ class InteractiveTestRunnerCommand extends Command
                 self::ALL_TESTS => $statistics['total'],
                 self::UNIT_TESTS => $statistics['unit'],
                 self::FEATURE_TESTS => $statistics['feature'],
-                self::LIVEWIRE_TESTS => $statistics['livewire'],
                 self::BROWSER_TESTS => $statistics['browser'],
                 default => 0,
             };
@@ -489,7 +483,6 @@ class InteractiveTestRunnerCommand extends Command
         return match ($testSelection) {
             self::UNIT_TESTS => $discovered['unit'] ?? [],
             self::FEATURE_TESTS => $discovered['feature'] ?? [],
-            self::LIVEWIRE_TESTS => $discovered['livewire'] ?? [],
             self::BROWSER_TESTS => $discovered['browser'] ?? [],
             default => [],
         };
@@ -512,7 +505,6 @@ class InteractiveTestRunnerCommand extends Command
         $testsByType = [
             'unit' => 0,
             'feature' => 0,
-            'livewire' => 0,
             'browser' => 0,
         ];
 
@@ -525,7 +517,6 @@ class InteractiveTestRunnerCommand extends Command
         } elseif ($selection === self::ALL_TESTS) {
             $testsByType['unit'] = (int) ($statistics['unit'] ?? 0);
             $testsByType['feature'] = (int) ($statistics['feature'] ?? 0);
-            $testsByType['livewire'] = (int) ($statistics['livewire'] ?? 0);
             $testsByType['browser'] = (int) ($statistics['browser'] ?? 0);
         }
 

@@ -37,7 +37,6 @@ PHP);
 
     Config::set('test-runner.paths.unit', 'tests/tmp/integration/unit');
     Config::set('test-runner.paths.feature', 'tests/tmp/integration/feature');
-    Config::set('test-runner.paths.livewire', '');
     Config::set('test-runner.paths.browser', '');
     Config::set('test-runner.patterns.unit', 'tests/tmp/integration/unit/*Test.php');
     Config::set('test-runner.patterns.feature', 'tests/tmp/integration/feature/*Test.php');

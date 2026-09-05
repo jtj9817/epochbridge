@@ -56,7 +56,6 @@ return [
     'patterns' => [
         'unit' => env('TEST_RUNNER_PATTERN_UNIT', 'tests/Unit/*Test.php'),
         'feature' => env('TEST_RUNNER_PATTERN_FEATURE', 'tests/Feature/*Test.php'),
-        'livewire' => env('TEST_RUNNER_PATTERN_LIVEWIRE', 'tests/Feature/Livewire/*Test.php'),
         'browser' => env('TEST_RUNNER_PATTERN_BROWSER', 'tests/Browser/*Test.php'),
     ],
 

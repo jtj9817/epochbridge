@@ -79,7 +79,7 @@ test('oauth error is handled gracefully', function () {
 test('oauth callback rejects invalid state', function () {
     $provider = \Mockery::mock(\Laravel\Socialite\Contracts\Provider::class);
     $provider->shouldReceive('enablePKCE')->andReturn($provider);
-    $provider->shouldReceive('user')->andThrow(new \Laravel\Socialite\Two\InvalidStateException());
+    $provider->shouldReceive('user')->andThrow(new \Laravel\Socialite\Two\InvalidStateException);
 
     Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
 

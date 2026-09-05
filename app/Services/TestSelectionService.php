@@ -108,7 +108,6 @@ class TestSelectionService
             options: [
                 'unit' => "⚙️  Unit Tests ({$statistics['unit']} files)",
                 'feature' => "🎭 Feature Tests ({$statistics['feature']} files)",
-                'livewire' => "⚡ Livewire Tests ({$statistics['livewire']} files)",
                 'browser' => "🌐 Browser Tests ({$statistics['browser']} files)",
             ],
             hint: 'Use space to select, enter to continue',
@@ -369,7 +368,6 @@ class TestSelectionService
         $categoryCounts = [
             'unit' => 0,
             'feature' => 0,
-            'livewire' => 0,
             'browser' => 0,
         ];
 
@@ -382,7 +380,6 @@ class TestSelectionService
             [
                 ['Unit Tests', $categoryCounts['unit'], $this->getTestFilesByCategory($selectedTests, 'unit')],
                 ['Feature Tests', $categoryCounts['feature'], $this->getTestFilesByCategory($selectedTests, 'feature')],
-                ['Livewire Tests', $categoryCounts['livewire'], $this->getTestFilesByCategory($selectedTests, 'livewire')],
                 ['Browser Tests', $categoryCounts['browser'], $this->getTestFilesByCategory($selectedTests, 'browser')],
                 ['Total', count($selectedTests), ''],
             ]
@@ -427,7 +424,6 @@ class TestSelectionService
         return match ($category) {
             'unit' => '⚙️',
             'feature' => '🎭',
-            'livewire' => '⚡',
             'browser' => '🌐',
             default => '📄',
         };
@@ -509,7 +505,6 @@ class TestSelectionService
             [
                 ['⚙️  Unit Tests', $statistics['unit']],
                 ['🎭 Feature Tests', $statistics['feature']],
-                ['⚡ Livewire Tests', $statistics['livewire']],
                 ['🌐 Browser Tests', $statistics['browser']],
                 ['📊 Total', $statistics['total']],
             ]

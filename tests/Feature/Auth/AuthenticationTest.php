@@ -1,46 +1,60 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Fortify\Features;
-use Livewire\Volt\Volt as LivewireVolt;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-test('login screen can be rendered', function () {
+it('renders the login screen', function () {
     $response = $this->get(route('login'));
 
     $response->assertStatus(200);
 });
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+it('authenticates users with valid credentials via the Fortify login endpoint', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('password'),
+    ]);
 
-    $response = LivewireVolt::test('auth.login')
-        ->set('email', $user->email)
-        ->set('password', 'password')
-        ->call('login');
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
 
-    $response
-        ->assertHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+    $response->assertSessionHasNoErrors();
+    $response->assertRedirect(route('dashboard', absolute: false));
 
     $this->assertAuthenticated();
 });
 
-test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+it('rejects authentication with an invalid password', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('password'),
+    ]);
 
-    $response = LivewireVolt::test('auth.login')
-        ->set('email', $user->email)
-        ->set('password', 'wrong-password')
-        ->call('login');
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'wrong-password',
+    ]);
 
-    $response->assertHasErrors('email');
+    $response->assertSessionHasErrors(['email']);
 
     $this->assertGuest();
 });
 
-test('users with two factor enabled are redirected to two factor challenge', function () {
+it('requires a valid email address to authenticate', function () {
+    $response = $this->post(route('login.store'), [
+        'email' => 'not-a-user@example.com',
+        'password' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors(['email']);
+
+    $this->assertGuest();
+});
+
+it('redirects users with two factor enabled to the two factor challenge', function () {
     if (! Features::canManageTwoFactorAuthentication()) {
         $this->markTestSkipped('Two-factor authentication is not enabled.');
     }
@@ -58,17 +72,18 @@ test('users with two factor enabled are redirected to two factor challenge', fun
         'two_factor_confirmed_at' => now(),
     ])->save();
 
-    $response = LivewireVolt::test('auth.login')
-        ->set('email', $user->email)
-        ->set('password', 'password')
-        ->call('login');
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
 
     $response->assertRedirect(route('two-factor.login'));
     $response->assertSessionHas('login.id', $user->id);
+
     $this->assertGuest();
 });
 
-test('users can logout', function () {
+it('logs users out via the Fortify logout endpoint', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post(route('logout'));

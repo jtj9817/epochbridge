@@ -294,7 +294,6 @@ class MarkdownReportService
         $sections = [
             'Unit Tests' => '<!-- UNIT_RESULTS -->',
             'Feature Tests' => '<!-- FEATURE_RESULTS -->',
-            'Livewire Tests' => '<!-- LIVEWIRE_RESULTS -->',
             'Browser Tests' => '<!-- BROWSER_RESULTS -->',
             'Other Tests' => '<!-- OTHER_RESULTS -->',
         ];
@@ -459,10 +458,6 @@ class MarkdownReportService
     private function determineResultMarker(string $relativePath): string
     {
         $relativePath = strtolower($relativePath);
-
-        if (str_contains($relativePath, 'livewire')) {
-            return '<!-- LIVEWIRE_RESULTS -->';
-        }
 
         if (str_contains($relativePath, 'tests/unit')) {
             return '<!-- UNIT_RESULTS -->';

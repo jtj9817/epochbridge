@@ -3,7 +3,6 @@
 use App\Models\User;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Fortify\Features;
-use Livewire\Volt\Volt;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
@@ -64,25 +63,13 @@ test('two factor authentication disabled when confirmation abandoned between req
 
     $this->actingAs($user);
 
-    if (config('frontend.react_enabled')) {
-        // In React mode, the TwoFactorPageController also disables unconfirmed 2FA
-        // (matching the Volt component's mount behavior)
-        $this->withSession(['auth.password_confirmed_at' => time()])
-            ->get(route('two-factor.show'));
+    // The TwoFactorPageController disables unconfirmed 2FA when the page is rendered.
+    $this->withSession(['auth.password_confirmed_at' => time()])
+        ->get(route('two-factor.show'));
 
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-        ]);
-    } else {
-        $component = Volt::test('settings.two-factor');
-        $component->assertSet('twoFactorEnabled', false);
-
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-        ]);
-    }
+    $this->assertDatabaseHas('users', [
+        'id' => $user->id,
+        'two_factor_secret' => null,
+        'two_factor_recovery_codes' => null,
+    ]);
 });

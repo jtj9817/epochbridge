@@ -34,11 +34,6 @@ _Last Updated: {{timestamp}}_
 | --- | --- | --- | --- |
 <!-- FEATURE_RESULTS -->
 
-### Livewire Tests
-| Test | Status | Duration | Details |
-| --- | --- | --- | --- |
-<!-- LIVEWIRE_RESULTS -->
-
 ### Browser Tests
 | Test | Status | Duration | Details |
 | --- | --- | --- | --- |

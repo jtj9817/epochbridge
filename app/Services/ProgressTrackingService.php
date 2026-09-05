@@ -63,7 +63,6 @@ class ProgressTrackingService
         $byType = [
             'unit' => $typeTemplate,
             'feature' => $typeTemplate,
-            'livewire' => $typeTemplate,
             'browser' => $typeTemplate,
             'other' => $typeTemplate,
         ];
@@ -215,7 +214,7 @@ class ProgressTrackingService
             $percentage
         );
 
-        foreach (['unit' => 'Unit', 'feature' => 'Feature', 'livewire' => 'Livewire', 'browser' => 'Browser'] as $typeKey => $typeLabel) {
+        foreach (['unit' => 'Unit', 'feature' => 'Feature', 'browser' => 'Browser'] as $typeKey => $typeLabel) {
             $typeStats = $execution['by_type'][$typeKey] ?? ['completed' => 0, 'total' => 0];
             $bar = $this->getProgressBar($typeStats['completed'], max(1, $typeStats['total']), (int) floor($barWidth * 0.6));
             $lines[] = sprintf(
@@ -374,7 +373,6 @@ class ProgressTrackingService
         return match (true) {
             str_contains($path, 'tests/unit') => 'unit',
             str_contains($path, 'tests/feature') => 'feature',
-            str_contains($path, 'livewire') => 'livewire',
             str_contains($path, 'browser') || str_contains($path, 'dusk') => 'browser',
             default => 'other',
         };
