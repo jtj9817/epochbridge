@@ -22,10 +22,10 @@ export default function RegisterPage() {
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-lg font-bold uppercase tracking-wider text-theme-900 dark:text-theme-50">
+          <h2 className="sd-h2 text-center text-[color:var(--sd-ink)]">
             Create an account
           </h2>
-          <p className="mt-1 text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+          <p className="sd-small mt-2 text-center text-[color:var(--sd-ink-soft)]">
             Enter your details below to create your account
           </p>
         </div>
@@ -35,7 +35,7 @@ export default function RegisterPage() {
           <div className="grid gap-2">
             <label
               htmlFor="name"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Name
             </label>
@@ -48,10 +48,10 @@ export default function RegisterPage() {
               autoFocus
               autoComplete="name"
               placeholder="Full name"
-              className="input-technical"
+              className="sd-input"
             />
             {errors.name && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.name}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.name}</p>
             )}
           </div>
 
@@ -59,7 +59,7 @@ export default function RegisterPage() {
           <div className="grid gap-2">
             <label
               htmlFor="email"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Email address
             </label>
@@ -71,10 +71,10 @@ export default function RegisterPage() {
               required
               autoComplete="email"
               placeholder="email@example.com"
-              className="input-technical"
+              className="sd-input"
             />
             {errors.email && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.email}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.email}</p>
             )}
           </div>
 
@@ -82,7 +82,7 @@ export default function RegisterPage() {
           <div className="grid gap-2">
             <label
               htmlFor="password"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Password
             </label>
@@ -95,12 +95,13 @@ export default function RegisterPage() {
                 required
                 autoComplete="new-password"
                 placeholder="Password"
-                className="input-technical pr-10"
+                className="sd-input"
+                style={{ paddingRight: '2.5rem' }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-500 dark:text-zinc-400 hover:text-theme-700 dark:hover:text-zinc-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--sd-ink-soft)]"
               >
                 {showPassword ? (
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -115,7 +116,7 @@ export default function RegisterPage() {
               </button>
             </div>
             {errors.password && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.password}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.password}</p>
             )}
           </div>
 
@@ -123,7 +124,7 @@ export default function RegisterPage() {
           <div className="grid gap-2">
             <label
               htmlFor="password_confirmation"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Confirm password
             </label>
@@ -135,10 +136,10 @@ export default function RegisterPage() {
               required
               autoComplete="new-password"
               placeholder="Confirm password"
-              className="input-technical"
+              className="sd-input"
             />
             {errors.password_confirmation && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.password_confirmation}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.password_confirmation}</p>
             )}
           </div>
 
@@ -146,7 +147,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={processing}
-            className="btn-primary-technical w-full disabled:opacity-75 disabled:cursor-not-allowed"
+            className="sd-btn sd-btn--primary w-full"
             data-test="register-user-button"
           >
             {processing ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
@@ -154,11 +155,11 @@ export default function RegisterPage() {
         </form>
 
         {/* Login Link */}
-        <div className="text-xs text-center text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+        <div className="sd-small text-center text-[color:var(--sd-ink-soft)]">
           <span>Already have an account? </span>
           <Link
             href={route('login')}
-            className="font-bold text-theme-700 dark:text-zinc-300 hover:text-theme-900 dark:hover:text-white"
+            className="font-bold text-[color:var(--sd-gold-text)]"
           >
             Log in
           </Link>

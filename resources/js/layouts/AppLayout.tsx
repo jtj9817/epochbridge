@@ -18,69 +18,88 @@ function getInitials(name: string): string {
 export default function AppLayout({ children, title }: AppLayoutProps) {
   const { auth } = usePage().props
   const user = auth.user
+  const pageUrl = usePage().url
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   if (!user) return null
 
   const initials = getInitials(user.name)
+  const isDashboardActive = pageUrl === route('dashboard') || pageUrl === '/'
 
   return (
     <>
       <Head title={title} />
 
-      <div className="min-h-screen bg-white dark:bg-zinc-800">
+      <div className="min-h-screen">
         {/* Mobile sidebar overlay */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            className="sd-overlay fixed inset-0 z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         {/* Sidebar */}
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-[color:var(--sd-wood-shade)] transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
+          style={{ backgroundColor: 'color-mix(in srgb, var(--sd-wood-shade) 35%, transparent)' }}
         >
           {/* Sidebar header */}
-          <div className="flex h-14 items-center justify-between px-4 border-b border-zinc-200 dark:border-zinc-700">
+          <div className="flex h-16 items-center justify-between gap-2 border-b border-[color:var(--sd-wood-shade)] px-4">
             <Link
               href={route('dashboard')}
               className="flex items-center gap-2"
               onClick={() => setSidebarOpen(false)}
             >
-              <span className="flex h-8 w-8 items-center justify-center bg-neutral-800 dark:bg-white text-white dark:text-black text-xs font-bold">
-                E
-              </span>
-              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <img
+                src="/images/sd/logo-mark.svg"
+                width={40}
+                height={40}
+                className="sd-pixel"
+                aria-hidden="true"
+              />
+              <span className="sd-h3 text-[color:var(--sd-cream)]">
                 EpochBridge
               </span>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-1 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              className="lg:hidden"
+              aria-label="Close sidebar"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <img
+                src="/images/sd/icon-x.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
+              />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex flex-col gap-1 p-3">
-            <p className="px-3 py-2 text-[0.625rem] uppercase tracking-[0.15em] font-medium text-zinc-500 dark:text-zinc-400">
+          <nav className="flex flex-col gap-2 p-3">
+            <p className="sd-label px-3 py-2 text-[color:var(--sd-cream)] opacity-80">
               Platform
             </p>
             <Link
               href={route('dashboard')}
               onClick={() => setSidebarOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className={`sd-btn w-full ${
+                isDashboardActive ? 'sd-btn--gold' : 'sd-btn--ghost'
+              }`}
+              style={{ justifyContent: 'flex-start' }}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
+              <img
+                src="/images/sd/icon-tilestar.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
+              />
               Dashboard
             </Link>
           </nav>
@@ -89,21 +108,23 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
           <div className="flex-1" />
 
           {/* Sidebar footer - user menu (desktop) */}
-          <div className="hidden lg:block border-t border-zinc-200 dark:border-zinc-700 p-3">
+          <div className="hidden border-t border-[color:var(--sd-wood-shade)] p-3 lg:block">
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="flex w-full items-center gap-3 p-1 text-left"
                 data-test="sidebar-menu-button"
               >
-                <span className="flex h-8 w-8 items-center justify-center bg-theme-100 dark:bg-zinc-700 text-theme-900 dark:text-white text-xs font-bold uppercase">
-                  {initials}
+                <span className="sd-slot flex h-10 w-10 shrink-0 items-center justify-center">
+                  <span className="sd-data-md text-[color:var(--sd-gold)]">
+                    {initials}
+                  </span>
                 </span>
-                <div className="flex-1 text-left">
-                  <p className="truncate font-semibold text-sm">{user.name}</p>
-                  <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{user.email}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="sd-small truncate text-[color:var(--sd-cream)]">{user.name}</p>
+                  <p className="sd-data-sm truncate text-[color:var(--sd-cream)] opacity-70">{user.email}</p>
                 </div>
-                <svg className="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 shrink-0 text-[color:var(--sd-cream)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                 </svg>
               </button>
@@ -111,29 +132,35 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
               {userMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                  <div className="absolute bottom-full left-0 mb-2 w-[220px] border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 z-50">
-                    <div className="p-2">
+                  <div className="sd-panel sd-pop absolute bottom-full left-0 z-50 mb-2 w-[220px] p-2">
+                    <div>
                       <Link
                         href={route('profile.edit')}
                         onClick={() => { setUserMenuOpen(false); setSidebarOpen(false) }}
-                        className="flex items-center gap-3 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        className="sd-btn sd-btn--ghost sd-btn--sm w-full"
+                        style={{ justifyContent: 'flex-start' }}
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
+                        <img
+                          src="/images/sd/icon-gear.svg"
+                          width={16}
+                          height={16}
+                          className="sd-pixel"
+                          aria-hidden="true"
+                        />
                         Settings
                       </Link>
                     </div>
-                    <div className="border-t border-zinc-200 dark:border-zinc-700 p-2">
+                    <div className="my-1 h-0.5 bg-[color:var(--sd-parch-shadow)]" />
+                    <div>
                       <form method="POST" action={route('logout')}>
                         <input type="hidden" name="_token" value={(usePage().props as Record<string, unknown>).ziggy ? '' : ''} />
                         <button
                           type="submit"
-                          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                          className="sd-btn sd-btn--ghost sd-btn--sm w-full"
+                          style={{ justifyContent: 'flex-start' }}
                           data-test="logout-button"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                           </svg>
                           Log Out
@@ -150,12 +177,16 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
         {/* Main content area */}
         <div className="lg:pl-64">
           {/* Top header (mobile) */}
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 px-4 lg:hidden">
+          <header
+            className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-[color:var(--sd-wood-shade)] px-4 lg:hidden"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--sd-wood-shade) 65%, transparent)' }}
+          >
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-1 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              aria-label="Open sidebar"
+              className="text-[color:var(--sd-cream)]"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
@@ -166,45 +197,57 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex h-8 w-8 items-center justify-center bg-theme-100 dark:bg-zinc-700 text-theme-900 dark:text-white text-xs font-bold uppercase"
+                className="sd-slot flex h-9 w-9 items-center justify-center"
+                aria-label="Open user menu"
               >
-                {initials}
+                <span className="sd-data-sm text-[color:var(--sd-gold)]">
+                  {initials}
+                </span>
               </button>
 
               {userMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-[220px] border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 z-50">
-                    <div className="p-3 flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-700">
-                      <span className="flex h-8 w-8 items-center justify-center bg-theme-100 dark:bg-zinc-700 text-theme-900 dark:text-white text-xs font-bold uppercase">
-                        {initials}
+                  <div className="sd-panel sd-pop absolute right-0 top-full z-50 mt-2 w-[220px] p-2">
+                    <div className="flex items-center gap-3 p-1">
+                      <span className="sd-slot flex h-10 w-10 shrink-0 items-center justify-center">
+                        <span className="sd-data-md text-[color:var(--sd-gold)]">
+                          {initials}
+                        </span>
                       </span>
-                      <div>
-                        <p className="truncate font-semibold text-sm">{user.name}</p>
-                        <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{user.email}</p>
+                      <div className="min-w-0">
+                        <p className="sd-small truncate text-[color:var(--sd-ink)]">{user.name}</p>
+                        <p className="sd-data-sm truncate text-[color:var(--sd-ink-soft)]">{user.email}</p>
                       </div>
                     </div>
-                    <div className="p-2">
+                    <div className="my-1 h-0.5 bg-[color:var(--sd-parch-shadow)]" />
+                    <div>
                       <Link
                         href={route('profile.edit')}
                         onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        className="sd-btn sd-btn--ghost sd-btn--sm w-full"
+                        style={{ justifyContent: 'flex-start' }}
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
+                        <img
+                          src="/images/sd/icon-gear.svg"
+                          width={16}
+                          height={16}
+                          className="sd-pixel"
+                          aria-hidden="true"
+                        />
                         Settings
                       </Link>
                     </div>
-                    <div className="border-t border-zinc-200 dark:border-zinc-700 p-2">
+                    <div className="my-1 h-0.5 bg-[color:var(--sd-parch-shadow)]" />
+                    <div>
                       <form method="POST" action={route('logout')}>
                         <button
                           type="submit"
-                          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                          className="sd-btn sd-btn--ghost sd-btn--sm w-full"
+                          style={{ justifyContent: 'flex-start' }}
                           data-test="logout-button"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                           </svg>
                           Log Out

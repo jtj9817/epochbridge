@@ -64,18 +64,24 @@ export default function ProfilePage({ user, status }: ProfilePageProps) {
     form.submit()
   }
 
+  function closeDeleteModal() {
+    setShowDeleteModal(false)
+    setDeleteError('')
+    setDeletePassword('')
+  }
+
   return (
     <AppLayout title="Profile Settings">
       <SettingsLayout
         heading="Profile"
         subheading="Update your name and email address"
       >
-        <form onSubmit={submitProfile} className="my-6 w-full space-y-6">
+        <form onSubmit={submitProfile} className="w-full space-y-6">
           {/* Name */}
           <div className="grid gap-2">
             <label
               htmlFor="name"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Name
             </label>
@@ -87,10 +93,10 @@ export default function ProfilePage({ user, status }: ProfilePageProps) {
               required
               autoFocus
               autoComplete="name"
-              className="input-technical"
+              className="sd-input"
             />
             {errors.name && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.name}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.name}</p>
             )}
           </div>
 
@@ -98,7 +104,7 @@ export default function ProfilePage({ user, status }: ProfilePageProps) {
           <div className="grid gap-2">
             <label
               htmlFor="email"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Email
             </label>
@@ -109,26 +115,26 @@ export default function ProfilePage({ user, status }: ProfilePageProps) {
               onChange={(e) => setData('email', e.target.value)}
               required
               autoComplete="email"
-              className="input-technical"
+              className="sd-input"
             />
             {errors.email && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.email}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.email}</p>
             )}
 
             {!user.has_verified_email && (
               <div className="mt-4">
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="sd-small text-[color:var(--sd-ink-soft)]">
                   Your email address is unverified.{' '}
                   <button
                     onClick={handleResendVerification}
-                    className="text-sm text-theme-500 dark:text-zinc-300 hover:text-theme-700 dark:hover:text-zinc-100 underline cursor-pointer"
+                    className="sd-small underline text-[color:var(--sd-gold-text)]"
                   >
                     Click here to re-send the verification email.
                   </button>
                 </p>
 
                 {status === 'verification-link-sent' && (
-                  <p className="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
+                  <p className="sd-small mt-2 text-[color:var(--sd-green-dark)]">
                     A new verification link has been sent to your email address.
                   </p>
                 )}
@@ -141,91 +147,132 @@ export default function ProfilePage({ user, status }: ProfilePageProps) {
             <button
               type="submit"
               disabled={processing}
-              className="btn-primary-technical disabled:opacity-75 disabled:cursor-not-allowed"
+              className="sd-btn sd-btn--primary sd-btn--sm"
               data-test="update-profile-button"
             >
               Save
             </button>
 
             {recentlySuccessful && (
-              <span className="text-sm text-green-600 dark:text-green-400">Saved.</span>
+              <span className="sd-small text-[color:var(--sd-green-dark)]">Saved.</span>
             )}
           </div>
         </form>
 
         {/* Delete Account Section */}
-        <div className="mt-10 space-y-6 border-t-2 border-red-300 dark:border-red-800 pt-6">
-          <div className="relative mb-5">
-            <h3 className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-widest">
-              Delete account
-            </h3>
-            <p className="text-xs text-red-600 dark:text-red-500 uppercase tracking-wider mt-1">
-              Delete your account and all of its resources
-            </p>
-          </div>
-
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="btn-technical border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-            data-test="delete-user-button"
+        <div className="mt-10">
+          <div
+            className="sd-panel sd-panel--thin space-y-6 p-6"
+            style={{ borderImageSource: 'var(--sd-frame-red)' }}
           >
-            Delete account
-          </button>
+            <div className="relative">
+              <div className="mb-2 flex items-center gap-2">
+                <img
+                  src="/images/sd/icon-trash.svg"
+                  width={16}
+                  height={16}
+                  className="sd-pixel"
+                  aria-hidden="true"
+                />
+                <h3 className="sd-h3 text-[color:var(--sd-red)]">
+                  Delete account
+                </h3>
+              </div>
+              <p className="sd-small text-[color:var(--sd-ink-soft)]">
+                Delete your account and all of its resources
+              </p>
+            </div>
 
-          {/* Delete confirmation modal */}
-          {showDeleteModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div
-                className="absolute inset-0 bg-black/50"
-                onClick={() => { setShowDeleteModal(false); setDeleteError(''); setDeletePassword('') }}
-              />
-              <div className="relative w-full max-w-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Are you sure you want to delete your account?</h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                    Once your account is deleted, all of its resources and data will be permanently deleted.
-                    Please enter your password to confirm you would like to permanently delete your account.
-                  </p>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="sd-btn sd-btn--danger"
+              data-test="delete-user-button"
+            >
+              Delete account
+            </button>
 
-                  <div className="grid gap-2">
-                    <label
-                      htmlFor="delete-password"
-                      className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+            {/* Delete confirmation modal */}
+            {showDeleteModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div
+                  className="sd-overlay absolute inset-0"
+                  onClick={closeDeleteModal}
+                />
+                <div className="sd-panel sd-pop relative w-full max-w-lg p-6">
+                  <div className="sd-panel__title">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="/images/sd/icon-trash.svg"
+                        width={16}
+                        height={16}
+                        className="sd-pixel"
+                        aria-hidden="true"
+                      />
+                      <h3 className="sd-label text-[color:var(--sd-ink)]">
+                        Are you sure you want to delete your account?
+                      </h3>
+                    </div>
+                    <button
+                      onClick={closeDeleteModal}
+                      aria-label="Close modal"
+                      className="sd-btn sd-btn--ghost sd-btn--sm"
                     >
-                      Password
-                    </label>
-                    <input
-                      id="delete-password"
-                      type="password"
-                      value={deletePassword}
-                      onChange={(e) => setDeletePassword(e.target.value)}
-                      className="input-technical"
-                      autoFocus
-                    />
-                    {deleteError && (
-                      <p className="text-xs text-red-600 dark:text-red-400">{deleteError}</p>
-                    )}
+                      <img
+                        src="/images/sd/icon-x.svg"
+                        width={16}
+                        height={16}
+                        className="sd-pixel"
+                        aria-hidden="true"
+                      />
+                    </button>
                   </div>
 
-                  <div className="flex justify-end gap-2">
-                    <button
-                      onClick={() => { setShowDeleteModal(false); setDeleteError(''); setDeletePassword('') }}
-                      className="btn-technical"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleDeleteUser}
-                      className="btn-technical border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      data-test="confirm-delete-user-button"
-                    >
-                      Delete account
-                    </button>
+                  <div className="space-y-4 pt-4">
+                    <p className="sd-small text-[color:var(--sd-ink-soft)]">
+                      Once your account is deleted, all of its resources and data will be permanently deleted.
+                      Please enter your password to confirm you would like to permanently delete your account.
+                    </p>
+
+                    <div className="grid gap-2">
+                      <label
+                        htmlFor="delete-password"
+                        className="sd-label text-[color:var(--sd-ink-soft)]"
+                      >
+                        Password
+                      </label>
+                      <input
+                        id="delete-password"
+                        type="password"
+                        value={deletePassword}
+                        onChange={(e) => setDeletePassword(e.target.value)}
+                        className="sd-input"
+                        autoFocus
+                      />
+                      {deleteError && (
+                        <p className="sd-small text-[color:var(--sd-red)]">{deleteError}</p>
+                      )}
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={closeDeleteModal}
+                        className="sd-btn sd-btn--ghost"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleDeleteUser}
+                        className="sd-btn sd-btn--danger"
+                        data-test="confirm-delete-user-button"
+                      >
+                        Delete account
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </SettingsLayout>
     </AppLayout>

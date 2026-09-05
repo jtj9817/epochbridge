@@ -66,84 +66,57 @@ function ToastContainer({
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-3 max-w-sm">
       {toasts.map((toast) => (
         <div
           key={toast.id}
           role="alert"
-          className={[
-            'flex items-center gap-3 px-4 py-3 border-2 border-white/20 text-white text-xs font-bold uppercase tracking-wider animate-slide-in',
-            toast.type === 'success' && 'bg-green-600',
-            toast.type === 'error' && 'bg-red-600',
-            toast.type === 'info' && 'bg-blue-600',
-          ]
-            .filter(Boolean)
-            .join(' ')}
+          className="sd-panel sd-panel--thin sd-slide-in flex items-center gap-3 p-3"
         >
-          {toast.type === 'success' && (
-            <svg
-              className="h-5 w-5 shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
+          <span className="sd-slot flex h-7 w-7 shrink-0 items-center justify-center">
+            {toast.type === 'success' && (
+              <img
+                src="/images/sd/icon-star.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
               />
-            </svg>
-          )}
-          {toast.type === 'error' && (
-            <svg
-              className="h-5 w-5 shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
+            )}
+            {toast.type === 'error' && (
+              <img
+                src="/images/sd/icon-x.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
               />
-            </svg>
-          )}
-          {toast.type === 'info' && (
-            <svg
-              className="h-5 w-5 shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            )}
+            {toast.type === 'info' && (
+              <img
+                src="/images/sd/icon-scroll.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
               />
-            </svg>
-          )}
-          <span className="font-medium">{toast.message}</span>
+            )}
+          </span>
+          <span className="sd-small flex-1 text-[color:var(--sd-ink)]">
+            {toast.message}
+          </span>
           <button
             onClick={() => onDismiss(toast.id)}
-            className="ml-auto shrink-0 hover:opacity-80"
+            className="shrink-0"
             aria-label="Dismiss"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <img
+              src="/images/sd/icon-x.svg"
+              width={16}
+              height={16}
+              className="sd-pixel"
+              aria-hidden="true"
+            />
           </button>
         </div>
       ))}

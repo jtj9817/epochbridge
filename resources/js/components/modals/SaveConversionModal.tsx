@@ -52,30 +52,36 @@ export function SaveConversionModal({
         role="dialog"
         aria-modal="true"
       >
-        <div
-          className="fixed inset-0 bg-black/50 transition-opacity"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 sd-overlay" onClick={onClose} />
         <div className="flex items-center justify-center min-h-screen px-4">
-          <div className="relative bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-700 max-w-md w-full p-6">
-            <h3 className="text-sm font-bold text-theme-900 dark:text-theme-50 uppercase tracking-widest mb-3">
-              Guest Limit Reached
-            </h3>
-            <p className="text-xs text-theme-700 dark:text-zinc-300 uppercase tracking-wider mb-4">
+          <div
+            className="sd-panel sd-panel--thin sd-pop w-full max-w-md p-6"
+            style={{ borderImageSource: 'var(--sd-frame-gold)' }}
+          >
+            <div className="mb-3 flex items-center gap-2">
+              <img
+                src="/images/sd/icon-coin.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
+              />
+              <h3 className="sd-h3 text-[color:var(--sd-ink)]">
+                Guest Limit Reached
+              </h3>
+            </div>
+            <p className="sd-small mb-4 text-[color:var(--sd-ink-soft)]">
               You have reached the guest limit of 3 saved conversions.{' '}
               <a
                 href="/register"
-                className="font-bold underline text-theme-700 dark:text-zinc-300 hover:text-theme-900 dark:hover:text-white"
+                className="font-bold underline text-[color:var(--sd-gold-text)]"
               >
                 Create an account
               </a>{' '}
               for unlimited saves.
             </p>
             <div className="flex justify-end">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 bg-theme-500 hover:bg-theme-300 border-2 border-theme-500 hover:border-theme-300 text-white text-xs font-bold uppercase tracking-wider"
-              >
+              <button onClick={onClose} className="sd-btn sd-btn--gold">
                 OK
               </button>
             </div>
@@ -91,28 +97,47 @@ export function SaveConversionModal({
       role="dialog"
       aria-modal="true"
     >
-      <div
-        className="fixed inset-0 bg-black/50 transition-opacity"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 sd-overlay" onClick={onClose} />
 
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div className="inline-block align-bottom bg-white dark:bg-zinc-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20">
+        <div className="sd-panel sd-pop w-full max-w-lg p-6">
           {/* Header */}
-          <div className="bg-theme-100 dark:bg-zinc-700 px-6 py-4 border-b border-theme-200 dark:border-zinc-600">
-            <h3 className="text-lg font-semibold text-theme-900 dark:text-theme-50">
-              Save Conversion
-            </h3>
-            {isGuest && (
-              <p className="text-xs text-theme-500 dark:text-theme-300 mt-1">
-                Guest mode: 3 saves maximum
-              </p>
-            )}
+          <div className="sd-panel__title">
+            <div className="flex items-center gap-2">
+              <img
+                src="/images/sd/icon-floppy.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
+              />
+              <h3 className="sd-h3 text-[color:var(--sd-ink)]">
+                Save Conversion
+              </h3>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="Close modal"
+              className="sd-btn sd-btn--ghost sd-btn--sm"
+            >
+              <img
+                src="/images/sd/icon-x.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
+              />
+            </button>
           </div>
 
           {/* Body */}
-          <div className="bg-white dark:bg-zinc-800 px-6 py-4">
-            <label className="block text-sm font-medium text-theme-700 dark:text-theme-300 mb-2">
+          <div className="pt-4">
+            {isGuest && (
+              <p className="sd-small mb-3 text-[color:var(--sd-ink-soft)]">
+                Guest mode: 3 saves maximum
+              </p>
+            )}
+            <label className="sd-label mb-2 block text-[color:var(--sd-ink-soft)]">
               Add a note (optional)
             </label>
             <textarea
@@ -123,25 +148,19 @@ export function SaveConversionModal({
               rows={3}
               maxLength={MAX_NOTE_LENGTH}
               placeholder="e.g., Birthday, Anniversary, Project Deadline..."
-              className="w-full px-3 py-2 border border-theme-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-theme-500 focus:border-transparent bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 placeholder-theme-400 dark:placeholder-theme-500 text-sm resize-none"
+              className="sd-textarea resize-none"
             />
-            <p className="mt-1 text-xs text-theme-500 dark:text-theme-400">
+            <p className="sd-data-sm mt-1 text-right text-[color:var(--sd-ink-soft)]">
               {note.length}/{MAX_NOTE_LENGTH} characters
             </p>
           </div>
 
           {/* Footer */}
-          <div className="bg-theme-50 dark:bg-zinc-900 px-6 py-4 flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 border border-theme-300 dark:border-zinc-600 rounded-lg text-theme-700 dark:text-theme-300 hover:bg-theme-100 dark:hover:bg-zinc-800 transition-colors"
-            >
+          <div className="mt-4 flex justify-end gap-3">
+            <button onClick={onClose} className="sd-btn sd-btn--ghost">
               Cancel
             </button>
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-theme-500 hover:bg-theme-600 text-white rounded-lg transition-colors"
-            >
+            <button onClick={handleSubmit} className="sd-btn sd-btn--primary">
               Save
             </button>
           </div>

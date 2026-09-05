@@ -17,10 +17,10 @@ export default function ConfirmPasswordPage() {
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-lg font-bold uppercase tracking-wider text-theme-900 dark:text-theme-50">
+          <h2 className="sd-h2 text-center text-[color:var(--sd-ink)]">
             Confirm password
           </h2>
-          <p className="mt-1 text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+          <p className="sd-small mt-2 text-center text-[color:var(--sd-ink-soft)]">
             This is a secure area of the application. Please confirm your password before continuing.
           </p>
         </div>
@@ -30,7 +30,7 @@ export default function ConfirmPasswordPage() {
           <div className="grid gap-2">
             <label
               htmlFor="password"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Password
             </label>
@@ -42,10 +42,10 @@ export default function ConfirmPasswordPage() {
               required
               autoComplete="current-password"
               placeholder="Password"
-              className="input-technical"
+              className="sd-input"
             />
             {errors.password && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.password}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.password}</p>
             )}
           </div>
 
@@ -53,7 +53,7 @@ export default function ConfirmPasswordPage() {
           <button
             type="submit"
             disabled={processing}
-            className="btn-primary-technical w-full disabled:opacity-75 disabled:cursor-not-allowed"
+            className="sd-btn sd-btn--primary w-full"
             data-test="confirm-password-button"
           >
             {processing ? 'CONFIRMING...' : 'CONFIRM'}

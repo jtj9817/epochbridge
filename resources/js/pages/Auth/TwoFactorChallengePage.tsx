@@ -40,19 +40,19 @@ export default function TwoFactorChallengePage({ recovery }: TwoFactorChallengeP
       <div className="flex flex-col gap-6">
         {!showRecoveryInput ? (
           <div className="text-center">
-            <h2 className="text-lg font-bold uppercase tracking-wider text-theme-900 dark:text-theme-50">
+            <h2 className="sd-h2 text-center text-[color:var(--sd-ink)]">
               Authentication Code
             </h2>
-            <p className="mt-1 text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+            <p className="sd-small mt-2 text-center text-[color:var(--sd-ink-soft)]">
               Enter the authentication code provided by your authenticator application.
             </p>
           </div>
         ) : (
           <div className="text-center">
-            <h2 className="text-lg font-bold uppercase tracking-wider text-theme-900 dark:text-theme-50">
+            <h2 className="sd-h2 text-center text-[color:var(--sd-ink)]">
               Recovery Code
             </h2>
-            <p className="mt-1 text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+            <p className="sd-small mt-2 text-center text-[color:var(--sd-ink-soft)]">
               Please confirm access to your account by entering one of your emergency recovery codes.
             </p>
           </div>
@@ -62,7 +62,7 @@ export default function TwoFactorChallengePage({ recovery }: TwoFactorChallengeP
           <div className="space-y-5 text-center">
             {!showRecoveryInput ? (
               <div>
-                <div className="flex items-center justify-center my-5 gap-2">
+                <div className="my-5 flex items-center justify-center gap-2">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <input
                       key={i}
@@ -80,13 +80,14 @@ export default function TwoFactorChallengePage({ recovery }: TwoFactorChallengeP
                           next?.focus()
                         }
                       }}
-                      className="w-12 h-14 text-center text-lg font-bold input-technical"
+                      className="sd-input sd-data-md text-center"
+                      style={{ width: '3rem' }}
                       autoComplete="one-time-code"
                     />
                   ))}
                 </div>
                 {errors.code && (
-                  <p className="text-xs text-red-600 dark:text-red-400">{errors.code}</p>
+                  <p className="sd-small text-[color:var(--sd-red)]">{errors.code}</p>
                 )}
               </div>
             ) : (
@@ -99,12 +100,12 @@ export default function TwoFactorChallengePage({ recovery }: TwoFactorChallengeP
                     onChange={(e) => setData('recovery_code', e.target.value)}
                     required={showRecoveryInput}
                     autoComplete="one-time-code"
-                    className="input-technical w-full text-center font-mono"
+                    className="sd-input sd-data-md text-center"
                     placeholder="Recovery code"
                   />
                 </div>
                 {errors.recovery_code && (
-                  <p className="text-xs text-red-600 dark:text-red-400">{errors.recovery_code}</p>
+                  <p className="sd-small text-[color:var(--sd-red)]">{errors.recovery_code}</p>
                 )}
               </div>
             )}
@@ -112,18 +113,18 @@ export default function TwoFactorChallengePage({ recovery }: TwoFactorChallengeP
             <button
               type="submit"
               disabled={processing}
-              className="btn-primary-technical w-full disabled:opacity-75 disabled:cursor-not-allowed"
+              className="sd-btn sd-btn--primary w-full"
             >
               {processing ? 'VERIFYING...' : 'CONTINUE'}
             </button>
           </div>
 
-          <div className="mt-5 text-xs leading-5 text-center uppercase tracking-wider">
-            <span className="text-theme-500 dark:text-zinc-400">or you can </span>
+          <div className="mt-5 text-center">
+            <span className="sd-small text-[color:var(--sd-ink-soft)]">or you can </span>
             <button
               type="button"
               onClick={toggleInput}
-              className="inline font-bold underline cursor-pointer text-theme-700 dark:text-zinc-300 hover:text-theme-900 dark:hover:text-white"
+              className="sd-small inline font-bold underline text-[color:var(--sd-gold-text)]"
             >
               {!showRecoveryInput
                 ? 'login using a recovery code'

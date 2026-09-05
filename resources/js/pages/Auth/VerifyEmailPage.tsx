@@ -22,21 +22,26 @@ export default function VerifyEmailPage({ status }: VerifyEmailPageProps) {
   return (
     <AuthLayout title="Email Verification">
       <div className="mt-4 flex flex-col gap-6">
-        <p className="text-center text-sm text-theme-700 dark:text-zinc-300">
+        <p className="sd-small text-center text-[color:var(--sd-ink)]">
           Please verify your email address by clicking on the link we just emailed to you.
         </p>
 
         {status === 'verification-link-sent' && (
-          <p className="text-center font-medium text-green-600 dark:text-green-400">
-            A new verification link has been sent to the email address you provided during registration.
-          </p>
+          <div
+            className="sd-panel sd-panel--thin p-3 text-center"
+            style={{ borderImageSource: 'var(--sd-frame-green)' }}
+          >
+            <span className="sd-small text-[color:var(--sd-green-dark)]">
+              A new verification link has been sent to the email address you provided during registration.
+            </span>
+          </div>
         )}
 
         <div className="flex flex-col items-center justify-between space-y-3">
           <button
             onClick={sendVerification}
             disabled={processing}
-            className="btn-primary-technical w-full disabled:opacity-75 disabled:cursor-not-allowed"
+            className="sd-btn sd-btn--primary w-full"
           >
             {processing ? 'SENDING...' : 'RESEND VERIFICATION EMAIL'}
           </button>
@@ -44,7 +49,7 @@ export default function VerifyEmailPage({ status }: VerifyEmailPageProps) {
           <Link
             href="#"
             onClick={logout}
-            className="text-sm cursor-pointer text-theme-500 dark:text-zinc-400 hover:text-theme-700 dark:hover:text-zinc-200 uppercase tracking-wider"
+            className="sd-small cursor-pointer underline text-[color:var(--sd-ink-soft)]"
             data-test="logout-button"
           >
             Log out

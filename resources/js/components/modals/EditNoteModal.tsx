@@ -47,22 +47,41 @@ export function EditNoteModal({
       role="dialog"
       aria-modal="true"
     >
-      <div
-        className="fixed inset-0 bg-gray-900/25 transition-opacity"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 sd-overlay" onClick={onClose} />
 
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20">
-        <div className="relative inline-block align-bottom bg-white dark:bg-zinc-900 text-left overflow-hidden border-2 border-theme-300 dark:border-zinc-700 sm:my-8 sm:align-middle sm:max-w-lg w-full">
+        <div className="sd-panel sd-pop w-full max-w-lg p-6">
           {/* Header */}
-          <div className="bg-theme-100 dark:bg-zinc-800 px-4 py-3 border-b border-theme-300 dark:border-zinc-700">
-            <h3 className="text-sm font-bold text-theme-900 dark:text-theme-50 uppercase tracking-widest">
-              {note.trim() === '' ? 'Add Note' : 'Edit Note'}
-            </h3>
+          <div className="sd-panel__title">
+            <div className="flex items-center gap-2">
+              <img
+                src="/images/sd/icon-tome.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
+              />
+              <h3 className="sd-label text-[color:var(--sd-ink)]">
+                {note.trim() === '' ? 'Add Note' : 'Edit Note'}
+              </h3>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="Close modal"
+              className="sd-btn sd-btn--ghost sd-btn--sm"
+            >
+              <img
+                src="/images/sd/icon-x.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
+              />
+            </button>
           </div>
 
           {/* Body */}
-          <div className="bg-white dark:bg-zinc-900 px-4 py-4">
+          <div className="pt-4">
             <textarea
               ref={textareaRef}
               value={note}
@@ -71,27 +90,21 @@ export function EditNoteModal({
               rows={6}
               maxLength={MAX_NOTE_LENGTH}
               placeholder="e.g., Birthday, Anniversary, Project Deadline..."
-              className="block w-full px-3 py-2 border-2 border-theme-300 dark:border-zinc-600 focus:outline-none focus:border-theme-500 dark:focus:border-theme-100 bg-white dark:bg-zinc-800 text-theme-900 dark:text-theme-50 placeholder-theme-400 dark:placeholder-zinc-500 resize-none font-mono text-sm"
+              className="sd-textarea resize-none"
             />
             <div className="mt-2 flex justify-end">
-              <p className="text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+              <p className="sd-data-sm text-[color:var(--sd-ink-soft)]">
                 {note.length}/{MAX_NOTE_LENGTH}
               </p>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="bg-theme-50 dark:bg-zinc-800 px-4 py-3 flex justify-end gap-3 border-t border-theme-300 dark:border-zinc-700">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 border-2 border-theme-300 dark:border-zinc-600 text-theme-700 dark:text-zinc-300 hover:bg-theme-100 dark:hover:bg-zinc-700 text-xs font-bold uppercase tracking-wider"
-            >
+          <div className="mt-4 flex justify-end gap-3">
+            <button onClick={onClose} className="sd-btn sd-btn--ghost">
               Cancel
             </button>
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-theme-500 hover:bg-theme-300 border-2 border-theme-500 hover:border-theme-300 text-white text-xs font-bold uppercase tracking-wider"
-            >
+            <button onClick={handleSubmit} className="sd-btn sd-btn--primary">
               Save
             </button>
           </div>

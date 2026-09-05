@@ -29,12 +29,12 @@ export default function PasswordPage() {
         heading="Update password"
         subheading="Ensure your account is using a long, random password to stay secure"
       >
-        <form onSubmit={submit} className="mt-6 space-y-6">
+        <form onSubmit={submit} className="space-y-6">
           {/* Current password */}
           <div className="grid gap-2">
             <label
               htmlFor="current_password"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Current password
             </label>
@@ -46,12 +46,13 @@ export default function PasswordPage() {
                 onChange={(e) => setData('current_password', e.target.value)}
                 required
                 autoComplete="current-password"
-                className="input-technical pr-10"
+                className="sd-input"
+                style={{ paddingRight: '2.5rem' }}
               />
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-500 dark:text-zinc-400 hover:text-theme-700 dark:hover:text-zinc-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--sd-ink-soft)]"
               >
                 {showCurrentPassword ? (
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -66,7 +67,7 @@ export default function PasswordPage() {
               </button>
             </div>
             {errors.current_password && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.current_password}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.current_password}</p>
             )}
           </div>
 
@@ -74,7 +75,7 @@ export default function PasswordPage() {
           <div className="grid gap-2">
             <label
               htmlFor="password"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               New password
             </label>
@@ -86,12 +87,13 @@ export default function PasswordPage() {
                 onChange={(e) => setData('password', e.target.value)}
                 required
                 autoComplete="new-password"
-                className="input-technical pr-10"
+                className="sd-input"
+                style={{ paddingRight: '2.5rem' }}
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-500 dark:text-zinc-400 hover:text-theme-700 dark:hover:text-zinc-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--sd-ink-soft)]"
               >
                 {showNewPassword ? (
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,7 +108,7 @@ export default function PasswordPage() {
               </button>
             </div>
             {errors.password && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.password}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.password}</p>
             )}
           </div>
 
@@ -114,7 +116,7 @@ export default function PasswordPage() {
           <div className="grid gap-2">
             <label
               htmlFor="password_confirmation"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Confirm password
             </label>
@@ -125,7 +127,7 @@ export default function PasswordPage() {
               onChange={(e) => setData('password_confirmation', e.target.value)}
               required
               autoComplete="new-password"
-              className="input-technical"
+              className="sd-input"
             />
           </div>
 
@@ -134,14 +136,14 @@ export default function PasswordPage() {
             <button
               type="submit"
               disabled={processing}
-              className="btn-primary-technical disabled:opacity-75 disabled:cursor-not-allowed"
+              className="sd-btn sd-btn--primary sd-btn--sm"
               data-test="update-password-button"
             >
               Save
             </button>
 
             {recentlySuccessful && (
-              <span className="text-sm text-green-600 dark:text-green-400">Saved.</span>
+              <span className="sd-small text-[color:var(--sd-green-dark)]">Saved.</span>
             )}
           </div>
         </form>

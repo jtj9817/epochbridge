@@ -21,18 +21,23 @@ export default function ForgotPasswordPage({ status }: ForgotPasswordPageProps) 
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-lg font-bold uppercase tracking-wider text-theme-900 dark:text-theme-50">
+          <h2 className="sd-h2 text-center text-[color:var(--sd-ink)]">
             Forgot password
           </h2>
-          <p className="mt-1 text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+          <p className="sd-small mt-2 text-center text-[color:var(--sd-ink-soft)]">
             Enter your email to receive a password reset link
           </p>
         </div>
 
         {/* Status */}
         {status && (
-          <div className="p-3 text-xs text-center font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 uppercase tracking-wider">
-            {status}
+          <div
+            className="sd-panel sd-panel--thin p-3 text-center"
+            style={{ borderImageSource: 'var(--sd-frame-green)' }}
+          >
+            <span className="sd-small text-[color:var(--sd-green-dark)]">
+              {status}
+            </span>
           </div>
         )}
 
@@ -41,7 +46,7 @@ export default function ForgotPasswordPage({ status }: ForgotPasswordPageProps) 
           <div className="grid gap-2">
             <label
               htmlFor="email"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Email Address
             </label>
@@ -53,10 +58,10 @@ export default function ForgotPasswordPage({ status }: ForgotPasswordPageProps) 
               required
               autoFocus
               placeholder="email@example.com"
-              className="input-technical"
+              className="sd-input"
             />
             {errors.email && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.email}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.email}</p>
             )}
           </div>
 
@@ -64,7 +69,7 @@ export default function ForgotPasswordPage({ status }: ForgotPasswordPageProps) 
           <button
             type="submit"
             disabled={processing}
-            className="btn-primary-technical w-full disabled:opacity-75 disabled:cursor-not-allowed"
+            className="sd-btn sd-btn--primary w-full"
             data-test="email-password-reset-link-button"
           >
             {processing ? 'SENDING...' : 'EMAIL PASSWORD RESET LINK'}
@@ -72,11 +77,11 @@ export default function ForgotPasswordPage({ status }: ForgotPasswordPageProps) 
         </form>
 
         {/* Login Link */}
-        <div className="text-xs text-center text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+        <div className="sd-small text-center text-[color:var(--sd-ink-soft)]">
           <span>Or, return to </span>
           <Link
             href={route('login')}
-            className="font-bold text-theme-700 dark:text-zinc-300 hover:text-theme-900 dark:hover:text-white"
+            className="font-bold text-[color:var(--sd-gold-text)]"
           >
             log in
           </Link>

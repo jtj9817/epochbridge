@@ -265,6 +265,28 @@ const CALENDARS: CalendarInfo[] = [
   },
 ]
 
+const CALENDAR_ICONS: Record<string, string> = {
+  'Gregorian Calendar': 'icon-calendar',
+  'Jalali Calendar (Persian)': 'sun',
+  'Hebrew Calendar': 'icon-star',
+  'Islamic Calendar (Hijri)': 'icon-moon',
+  'Chinese Lunisolar Calendar': 'icon-lantern',
+  'Japanese Calendar': 'icon-torii',
+  'Julian Calendar': 'icon-pillar',
+  'French Republican Calendar': 'icon-banner',
+  'Coptic Calendar': 'icon-cross-coptic',
+  'Ethiopian Calendar': 'flower-yellow',
+  'Ancient Egyptian Calendar': 'icon-ankh',
+  'Babylonian Calendar': 'icon-ziggurat',
+  'Assyrian Calendar': 'icon-tablet',
+  'Ancient Macedonian Calendar': 'icon-coin',
+  'Mayan Calendar': 'icon-tilestar',
+  'ISO 8601': 'icon-tome',
+  'Unix Timestamp': 'icon-clock',
+  'Julian Day Number': 'icon-scroll',
+  'Modified Julian Day': 'icon-gear',
+}
+
 export function CalendarsInfoModal({ open, onClose }: CalendarsInfoModalProps) {
   const [visible, setVisible] = useState(false)
 
@@ -291,88 +313,91 @@ export function CalendarsInfoModal({ open, onClose }: CalendarsInfoModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-50"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 sd-overlay" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] pointer-events-auto overflow-hidden flex flex-col"
+          className="sd-panel sd-pop pointer-events-auto flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="bg-theme-100 dark:bg-zinc-800 px-6 py-4 border-b border-theme-300 dark:border-zinc-600">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold text-theme-900 dark:text-zinc-50">
+          <div className="sd-panel__title">
+            <div className="flex items-center gap-2">
+              <img
+                src="/images/sd/icon-scroll.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
+              />
+              <h3 className="sd-h3 text-[color:var(--sd-ink)]">
                 Supported Calendar Systems
               </h3>
-              <button
-                onClick={onClose}
-                className="text-theme-900 hover:text-theme-500 dark:text-zinc-300 dark:hover:text-zinc-100 transition-colors"
-                aria-label="Close modal"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
             </div>
-            <p className="mt-2 text-sm text-theme-500 dark:text-zinc-300">
-              EpochBridge supports 19 calendar systems spanning modern,
-              historical, ancient, and technical formats.
-            </p>
+            <button
+              onClick={onClose}
+              aria-label="Close modal"
+              className="sd-btn sd-btn--ghost sd-btn--sm"
+            >
+              <img
+                src="/images/sd/icon-x.svg"
+                width={16}
+                height={16}
+                className="sd-pixel"
+                aria-hidden="true"
+              />
+            </button>
           </div>
 
           {/* Body */}
-          <div className="bg-theme-100 dark:bg-zinc-900 px-6 py-6 overflow-y-auto flex-1">
-            <div className="grid gap-6 md:grid-cols-2">
+          <div className="flex-1 overflow-y-auto p-6">
+            <p className="sd-small mb-6 text-[color:var(--sd-ink-soft)]">
+              EpochBridge supports 19 calendar systems spanning modern,
+              historical, ancient, and technical formats.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2">
               {CALENDARS.map((cal) => (
-                <div
-                  key={cal.name}
-                  className="bg-white dark:bg-zinc-800 rounded-lg p-5 border border-theme-300 dark:border-zinc-600 shadow-sm"
-                >
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="text-4xl">{cal.emoji}</div>
-                    <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                <div key={cal.name} className="sd-panel sd-panel--thin p-4">
+                  <div className="mb-3 flex items-start gap-3">
+                    <span className="sd-slot flex h-12 w-12 shrink-0 items-center justify-center">
+                      <img
+                        src={`/images/sd/${CALENDAR_ICONS[cal.name] ?? 'icon-calendar'}.svg`}
+                        width={32}
+                        height={32}
+                        className="sd-pixel"
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="sd-small text-[color:var(--sd-ink)]">
                         {cal.name}
                       </h4>
-                      <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full bg-theme-100 dark:bg-zinc-700 text-theme-900 dark:text-zinc-200">
+                      <span className="sd-label mt-1 inline-block bg-[color:var(--sd-parch-dark)] px-2 py-0.5 text-[color:var(--sd-ink-soft)]">
                         {cal.category}
                       </span>
                     </div>
                   </div>
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300 mb-2">
+                  <p className="sd-small mb-2 text-[color:var(--sd-ink)]">
                     {cal.description}
                   </p>
-                  <div className="space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
-                    <div>
-                      <strong className="text-zinc-800 dark:text-zinc-200">
+                  <div className="space-y-2">
+                    <p className="sd-data-sm text-[color:var(--sd-ink-soft)]">
+                      <strong className="text-[color:var(--sd-ink)]">
                         Details:
                       </strong>{' '}
                       {cal.details}
-                    </div>
-                    <div>
-                      <strong className="text-zinc-800 dark:text-zinc-200">
+                    </p>
+                    <p className="sd-data-sm text-[color:var(--sd-ink-soft)]">
+                      <strong className="text-[color:var(--sd-ink)]">
                         Use Cases:
                       </strong>{' '}
                       {cal.useCases}
-                    </div>
-                    <div>
-                      <strong className="text-zinc-800 dark:text-zinc-200">
+                    </p>
+                    <p className="sd-data-sm text-[color:var(--sd-ink-soft)]">
+                      <strong className="text-[color:var(--sd-ink)]">
                         Technical:
                       </strong>{' '}
                       {cal.technical}
-                    </div>
+                    </p>
                   </div>
                 </div>
               ))}
@@ -380,14 +405,14 @@ export function CalendarsInfoModal({ open, onClose }: CalendarsInfoModalProps) {
           </div>
 
           {/* Footer */}
-          <div className="bg-white dark:bg-zinc-900 px-6 py-4 flex justify-between items-center border-t border-theme-300 dark:border-zinc-600">
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="flex items-center justify-between border-t-2 border-[color:var(--sd-parch-shadow)] px-6 py-4">
+            <p className="sd-small text-[color:var(--sd-ink-soft)]">
               19 Supported Calendar Systems
             </p>
             <button
               onClick={onClose}
               type="button"
-              className="px-6 py-2 bg-theme-500 hover:bg-theme-300 text-white rounded-lg transition-colors font-medium"
+              className="sd-btn sd-btn--primary"
             >
               Close
             </button>

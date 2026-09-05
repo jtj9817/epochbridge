@@ -33,25 +33,35 @@ export default function LoginPage({
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-lg font-bold uppercase tracking-wider text-theme-900 dark:text-theme-50">
+          <h2 className="sd-h2 text-center text-[color:var(--sd-ink)]">
             Log in to your account
           </h2>
-          <p className="mt-1 text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+          <p className="sd-small mt-2 text-center text-[color:var(--sd-ink-soft)]">
             Enter your email and password below to log in
           </p>
         </div>
 
         {/* Session Status */}
         {status && (
-          <div className="p-3 text-xs text-center font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 uppercase tracking-wider">
-            {status}
+          <div
+            className="sd-panel sd-panel--thin p-3 text-center"
+            style={{ borderImageSource: 'var(--sd-frame-green)' }}
+          >
+            <span className="sd-small text-[color:var(--sd-green-dark)]">
+              {status}
+            </span>
           </div>
         )}
 
         {/* OAuth Errors */}
         {oauthError && (
-          <div className="p-3 text-xs text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-900/30 border-2 border-red-300 dark:border-red-800 uppercase tracking-wider">
-            <strong>Authentication Error:</strong> {oauthError}
+          <div
+            className="sd-panel sd-panel--thin p-3"
+            style={{ borderImageSource: 'var(--sd-frame-red)' }}
+          >
+            <p className="sd-small text-[color:var(--sd-red)]">
+              <strong>Authentication Error:</strong> {oauthError}
+            </p>
           </div>
         )}
 
@@ -60,7 +70,7 @@ export default function LoginPage({
           <div className="grid gap-2">
             <label
               htmlFor="email"
-              className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+              className="sd-label text-[color:var(--sd-ink-soft)]"
             >
               Email address
             </label>
@@ -73,10 +83,10 @@ export default function LoginPage({
               autoFocus
               autoComplete="email"
               placeholder="email@example.com"
-              className="input-technical"
+              className="sd-input"
             />
             {errors.email && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.email}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.email}</p>
             )}
           </div>
 
@@ -85,14 +95,14 @@ export default function LoginPage({
             <div className="flex items-center justify-between">
               <label
                 htmlFor="password"
-                className="text-xs uppercase tracking-wider text-theme-500 dark:text-zinc-400 font-medium"
+                className="sd-label text-[color:var(--sd-ink-soft)]"
               >
                 Password
               </label>
               {canResetPassword && (
                 <Link
                   href={route('password.request')}
-                  className="text-xs text-theme-500 dark:text-zinc-400 hover:text-theme-700 dark:hover:text-zinc-200 uppercase tracking-wider"
+                  className="sd-small underline text-[color:var(--sd-gold-text)]"
                 >
                   Forgot your password?
                 </Link>
@@ -107,12 +117,13 @@ export default function LoginPage({
                 required
                 autoComplete="current-password"
                 placeholder="Password"
-                className="input-technical pr-10"
+                className="sd-input"
+                style={{ paddingRight: '2.5rem' }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-500 dark:text-zinc-400 hover:text-theme-700 dark:hover:text-zinc-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--sd-ink-soft)]"
               >
                 {showPassword ? (
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -127,19 +138,19 @@ export default function LoginPage({
               </button>
             </div>
             {errors.password && (
-              <p className="text-xs text-red-600 dark:text-red-400">{errors.password}</p>
+              <p className="sd-small text-[color:var(--sd-red)]">{errors.password}</p>
             )}
           </div>
 
           {/* Remember Me */}
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
               checked={data.remember}
               onChange={(e) => setData('remember', e.target.checked)}
-              className="w-4 h-4 border-2 border-theme-300 dark:border-zinc-600 accent-theme-500"
+              className="h-4 w-4 accent-[color:var(--sd-green)]"
             />
-            <span className="text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="sd-label text-[color:var(--sd-ink-soft)]">
               Remember me
             </span>
           </label>
@@ -148,7 +159,7 @@ export default function LoginPage({
           <button
             type="submit"
             disabled={processing}
-            className="btn-primary-technical w-full disabled:opacity-75 disabled:cursor-not-allowed"
+            className="sd-btn sd-btn--primary w-full"
             data-test="login-button"
           >
             {processing ? 'SIGNING IN...' : 'LOG IN'}
@@ -157,34 +168,35 @@ export default function LoginPage({
 
         {/* Social Login Divider */}
         <div className="relative flex items-center justify-center">
-          <div className="flex-grow border-t border-theme-300 dark:border-zinc-700" />
-          <span className="flex-shrink mx-4 text-xs text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+          <div className="h-0.5 flex-grow bg-[color:var(--sd-parch-shadow)]" />
+          <span className="sd-label mx-4 shrink-0 text-[color:var(--sd-ink-soft)]">
             Or continue with
           </span>
-          <div className="flex-grow border-t border-theme-300 dark:border-zinc-700" />
+          <div className="h-0.5 flex-grow bg-[color:var(--sd-parch-shadow)]" />
         </div>
 
         {/* Google Sign-In Button */}
         <a
           href={route('social.redirect', { provider: 'google' })}
-          className="flex items-center justify-center px-4 py-2 bg-white dark:bg-zinc-800 border-2 border-theme-300 dark:border-zinc-600 font-bold text-xs text-theme-700 dark:text-zinc-300 hover:bg-theme-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-theme-500 uppercase tracking-wider transition-colors"
+          className="sd-btn sd-btn--ghost w-full"
         >
-          <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-          </svg>
+          <img
+            src="/images/sd/sparkle.svg"
+            width={16}
+            height={16}
+            className="sd-pixel"
+            aria-hidden="true"
+          />
           Sign in with Google
         </a>
 
         {/* Register Link */}
         {canRegister && (
-          <div className="text-xs text-center text-theme-500 dark:text-zinc-400 uppercase tracking-wider">
+          <div className="sd-small text-center text-[color:var(--sd-ink-soft)]">
             <span>Don&apos;t have an account? </span>
             <Link
               href={route('register')}
-              className="font-bold text-theme-700 dark:text-zinc-300 hover:text-theme-900 dark:hover:text-white"
+              className="font-bold text-[color:var(--sd-gold-text)]"
             >
               Sign up
             </Link>
