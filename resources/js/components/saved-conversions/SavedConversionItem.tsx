@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { EditNoteModal } from '../modals/EditNoteModal'
+import { CalendarIcon } from '../calendars/BaseCalendarCard'
 
 interface ConversionItemCommon {
   id: number
@@ -119,6 +120,11 @@ export function SavedConversionItem({
 
   const conversionData = item.conversion_data as Record<string, CalendarEntryValue>
 
+  const primaryCalendarKey = useMemo(() => {
+    const keys = Object.keys(conversionData)
+    return keys.includes('gregorian') ? 'gregorian' : (keys[0] ?? 'gregorian')
+  }, [conversionData])
+
   const conversionEntries = useMemo(
     () =>
       Object.entries(conversionData).filter(([, value]) => {
@@ -173,32 +179,37 @@ export function SavedConversionItem({
   return (
     <>
       <div
-        className="bg-white dark:bg-zinc-900 border-2 border-theme-300 dark:border-zinc-700 overflow-hidden"
+        className="sd-panel sd-panel--thin"
         data-testid={`saved-conversion-${item.id}`}
       >
-        <div className="bg-[#50493E] px-4 py-3 border-b border-theme-300 dark:border-zinc-700 flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-3 p-3">
           <button
             type="button"
             onClick={() => setCollapsed((current) => !current)}
-            className="flex-1 min-w-0 text-left"
+            className="flex items-center gap-3 flex-1 min-w-0 text-left"
             aria-expanded={!collapsed}
           >
-            <p className="text-xs font-bold uppercase tracking-widest text-white/70">
-              Input Date
-            </p>
-            <p className="mt-1 font-semibold text-white truncate font-mono">
-              {item.original_input}
-            </p>
-            {createdAt && (
-              <p className="mt-1 text-xs text-white/60 uppercase tracking-wider">
-                Saved: {createdAt}
-              </p>
-            )}
-            {hasLegacyIndicator && (
-              <span className="inline-flex mt-2 px-2 py-0.5 text-[10px] uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                Legacy
+            <span className="sd-slot w-12 h-12 flex items-center justify-center shrink-0">
+              <CalendarIcon calendarKey={primaryCalendarKey} size={32} />
+            </span>
+            <span className="min-w-0">
+              <span className="sd-label block text-[color:var(--sd-ink-soft)]">
+                Input Date
               </span>
-            )}
+              <span className="sd-data-sm block truncate text-[color:var(--sd-ink)]">
+                {item.original_input}
+              </span>
+              {createdAt && (
+                <span className="sd-data-sm block text-[color:var(--sd-ink-soft)]">
+                  Saved: {createdAt}
+                </span>
+              )}
+              {hasLegacyIndicator && (
+                <span className="inline-flex mt-1 px-2 py-0.5 sd-label border border-[color:var(--sd-gold-dark)] bg-[color:var(--sd-gold-fill)] text-[color:var(--sd-gold-text)]">
+                  Legacy
+                </span>
+              )}
+            </span>
           </button>
 
           <div className="flex flex-col gap-2 items-end">
@@ -206,64 +217,50 @@ export function SavedConversionItem({
               <button
                 type="button"
                 onClick={() => setNoteModalOpen(true)}
-                className="flex items-center gap-1.5 bg-yellow-500/20 px-3 py-1 border border-yellow-500/30 hover:bg-yellow-500/30"
+                className="sd-btn sd-btn--gold sd-btn--sm"
                 title="Click to view/edit note"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-yellow-400 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                  />
-                </svg>
-                <span className="text-xs text-yellow-300 font-medium">Note</span>
+                <img
+                  src="/images/sd/icon-scroll.svg"
+                  width={14}
+                  height={14}
+                  className="sd-pixel"
+                  aria-hidden="true"
+                />
+                <span>Note</span>
               </button>
             )}
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={copyAll}
-                className="text-blue-400 hover:text-blue-300 p-2 hover:bg-blue-900/20"
+                className="p-2 text-[color:var(--sd-ink-soft)] hover:text-[color:var(--sd-ink)] transition-colors"
                 title="Copy all conversions"
                 aria-label="Copy all calendar conversions to clipboard"
               >
                 {copiedField === 'all' ? (
-                  <span className="text-xs uppercase tracking-wider text-green-400">
+                  <span className="sd-label text-[color:var(--sd-green)]">
                     OK
                   </span>
                 ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
+                  <img
+                    src="/images/sd/icon-copy.svg"
+                    width={16}
+                    height={16}
+                    className="sd-pixel"
+                    aria-hidden="true"
+                  />
                 )}
               </button>
 
               <button
                 type="button"
                 onClick={() => setNoteModalOpen(true)}
-                className={`p-2 ${
+                className={`p-2 transition-colors ${
                   item.note
-                    ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-900/20'
-                    : 'text-gray-400 hover:text-gray-300 hover:bg-gray-900/20'
+                    ? 'text-[color:var(--sd-gold-text)] hover:text-[color:var(--sd-gold-dark)]'
+                    : 'text-[color:var(--sd-ink-soft)] hover:text-[color:var(--sd-ink)]'
                 }`}
                 title={item.note ? 'Edit note' : 'Add note'}
                 aria-label={item.note ? 'Edit conversion note' : 'Add conversion note'}
@@ -287,30 +284,23 @@ export function SavedConversionItem({
               <button
                 type="button"
                 onClick={() => onDelete(item.id)}
-                className="text-red-400 hover:text-red-300 p-2 hover:bg-red-900/20"
+                className="p-2 text-[color:var(--sd-ink-soft)] hover:text-[color:var(--sd-red-dark)] transition-colors"
                 title="Delete conversion"
                 aria-label="Delete saved conversion"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
+                <img
+                  src="/images/sd/icon-trash.svg"
+                  width={16}
+                  height={16}
+                  className="sd-pixel"
+                  aria-hidden="true"
+                />
               </button>
 
               <button
                 type="button"
                 onClick={() => setCollapsed((current) => !current)}
-                className="cursor-pointer p-2"
+                className="cursor-pointer p-2 text-[color:var(--sd-ink)]"
                 aria-expanded={!collapsed}
                 aria-label="Toggle conversion details"
               >
@@ -320,7 +310,7 @@ export function SavedConversionItem({
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="3"
-                  className={`w-5 h-5 transition-transform duration-200 ease-in-out text-white/80 ${
+                  className={`w-5 h-5 transition-transform duration-200 ease-in-out ${
                     collapsed ? '' : 'rotate-180'
                   }`}
                   aria-hidden="true"
@@ -337,11 +327,11 @@ export function SavedConversionItem({
         </div>
 
         {!collapsed && (
-          <div className="border-t border-theme-300 dark:border-zinc-700">
+          <div className="px-3 pb-3">
             {conversionEntries.length > 0 ? (
-              <div className="overflow-x-auto bg-[#13100B]">
+              <div className="sd-slot overflow-x-auto">
                 <table className="w-full">
-                  <tbody className="divide-y divide-[#50493E]">
+                  <tbody className="divide-y divide-white/10">
                     {conversionEntries.map(([key, value]) => {
                       const name = getCalendarName(key, value)
                       const calendarValue = getCalendarValue(value)
@@ -350,46 +340,39 @@ export function SavedConversionItem({
                       return (
                         <tr
                           key={key}
-                          className="hover:bg-[#50493E]/30 transition-colors"
+                          className="hover:bg-white/5 transition-colors"
                         >
-                          <td className="px-4 py-2 w-1/3">
-                            <span className="font-bold text-[#F5D2A5]">
+                          <td className="px-3 py-2 w-1/3">
+                            <span className="sd-label text-[color:var(--sd-gold-light)]">
                               {name}
                             </span>
                           </td>
-                          <td className="px-4 py-2 w-1/3 text-[#CDB586]">
+                          <td className="px-3 py-2 w-1/3 sd-data-sm text-[color:var(--sd-cream)]">
                             {calendarValue}
                           </td>
-                          <td className="px-4 py-2 w-1/3 text-sm text-[#7E7254]">
+                          <td className="px-3 py-2 w-1/3 sd-small text-[color:var(--sd-cream)] opacity-60">
                             {dayOfWeek}
                           </td>
-                          <td className="px-4 py-2 w-auto text-right">
+                          <td className="px-3 py-2 w-auto text-right">
                             <button
                               type="button"
                               onClick={() => copyValue(calendarValue, key)}
-                              className="text-theme-400 hover:text-theme-600 dark:text-theme-500 dark:hover:text-theme-300 transition-colors p-1.5 rounded hover:bg-theme-100 dark:hover:bg-theme-700/30"
+                              className="p-1.5 text-[color:var(--sd-cream)] opacity-70 hover:opacity-100 transition-opacity"
                               title="Copy value"
                               aria-label="Copy calendar value to clipboard"
                             >
                               {copiedField === key ? (
-                                <span className="text-xs uppercase tracking-wider text-green-400">
+                                <span className="sd-label text-[color:var(--sd-gold)]">
                                   OK
                                 </span>
                               ) : (
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                  />
-                                </svg>
+                                <img
+                                  src="/images/sd/icon-copy.svg"
+                                  width={14}
+                                  height={14}
+                                  className="sd-pixel"
+                                  aria-hidden="true"
+                                />
                               )}
                             </button>
                           </td>
@@ -400,8 +383,8 @@ export function SavedConversionItem({
                 </table>
               </div>
             ) : (
-              <div className="p-4 bg-[#13100B]">
-                <p className="text-center text-[#7E7254]">
+              <div className="sd-slot p-4">
+                <p className="sd-small text-center text-[color:var(--sd-cream)] opacity-60">
                   No conversion data available
                 </p>
               </div>
@@ -422,4 +405,3 @@ export function SavedConversionItem({
     </>
   )
 }
-

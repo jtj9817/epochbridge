@@ -61,21 +61,21 @@ export function CalendarInputSection({
   const inputHtmlType = getInputType()
 
   return (
-    <div id="date-input-section" className="mb-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Input Type Selector */}
-        <div className="mb-3">
-          <label
-            htmlFor="input-type-selector"
-            className="block text-xs font-medium text-theme-500 dark:text-theme-100 mb-2 text-left uppercase tracking-wider"
-          >
-            Input Format
-          </label>
+    <div id="date-input-section" className="sd-panel p-6 mb-8">
+      {/* Input Type Selector */}
+      <div className="mb-4">
+        <label
+          htmlFor="input-type-selector"
+          className="sd-label block text-left mb-2 text-[color:var(--sd-ink)]"
+        >
+          Input Format
+        </label>
+        <div className="relative">
           <select
             id="input-type-selector"
             value={inputType}
             onChange={(e) => onInputTypeChange(e.target.value as InputType)}
-            className="w-full px-3 py-2 text-sm border-2 border-theme-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none focus:border-theme-500 dark:focus:border-theme-100 transition-colors"
+            className="sd-select pr-8"
           >
             {INPUT_TYPES.map((type) => (
               <option key={type} value={type}>
@@ -83,27 +83,33 @@ export function CalendarInputSection({
               </option>
             ))}
           </select>
-        </div>
-
-        {/* Main Input Field */}
-        <div className="mb-6">
-          <label
-            htmlFor="date-input"
-            className="block text-xs font-medium text-theme-500 dark:text-theme-100 mb-2 text-left uppercase tracking-wider"
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 sd-small text-[color:var(--sd-ink)]"
           >
-            Enter Value
-          </label>
-          <div className="relative datetime-input">
-            <input
-              type={inputHtmlType}
-              id="date-input"
-              value={dateInput}
-              onChange={(e) => onDateChange(e.target.value)}
-              step={inputType === 'jd' || inputType === 'mjd' ? 'any' : undefined}
-              className="w-full px-4 py-3 text-base font-medium text-center border-0 bg-white dark:bg-zinc-900 text-theme-900 dark:text-theme-50 focus:outline-none transition-colors"
-              placeholder={getPlaceholder()}
-            />
-          </div>
+            ▼
+          </span>
+        </div>
+      </div>
+
+      {/* Main Input Field */}
+      <div>
+        <label
+          htmlFor="date-input"
+          className="sd-label block text-left mb-2 text-[color:var(--sd-ink)]"
+        >
+          Enter Value
+        </label>
+        <div className="relative">
+          <input
+            type={inputHtmlType}
+            id="date-input"
+            value={dateInput}
+            onChange={(e) => onDateChange(e.target.value)}
+            step={inputType === 'jd' || inputType === 'mjd' ? 'any' : undefined}
+            className="sd-input text-base font-medium text-center"
+            placeholder={getPlaceholder()}
+          />
         </div>
       </div>
     </div>

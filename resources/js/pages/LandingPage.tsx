@@ -118,14 +118,11 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
     <>
       <Head title="EpochBridge - Universal Calendar Conversion" />
 
-      <div
-        id="landing-page-container"
-        className="min-h-screen bg-theme-50 dark:bg-theme-900"
-      >
+      <div id="landing-page-container" className="sd-root min-h-screen">
         {/* Header */}
         <header
           id="landing-header"
-          className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 border-b border-theme-300 dark:border-zinc-700"
+          className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"
         >
           <nav
             id="auth-navigation"
@@ -136,22 +133,30 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
               <button
                 id="btn-calendars-info"
                 onClick={() => setCalendarsInfoOpen(true)}
-                className="inline-flex items-center gap-2 px-5 py-2 bg-theme-100 dark:bg-theme-700 border border-theme-300 dark:border-theme-600 rounded-lg text-sm font-medium text-theme-700 dark:text-theme-200 hover:bg-theme-200 dark:hover:bg-theme-600 transition-colors"
+                className="sd-btn sd-btn--ghost sd-btn--sm"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+                <img
+                  src="/images/sd/icon-calendar.svg"
+                  width={16}
+                  height={16}
+                  className="sd-pixel"
+                  aria-hidden="true"
+                />
                 <span>Calendars</span>
               </button>
               {gregorianDateFromResults && (
                 <button
                   id="btn-on-this-day"
                   onClick={() => onThisDay.open(gregorianDateFromResults)}
-                  className="inline-flex items-center gap-2 px-5 py-2 bg-theme-100 dark:bg-theme-700 border border-theme-300 dark:border-theme-600 rounded-lg text-sm font-medium text-theme-700 dark:text-theme-200 hover:bg-theme-200 dark:hover:bg-theme-600 transition-colors"
+                  className="sd-btn sd-btn--ghost sd-btn--sm"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <img
+                    src="/images/sd/icon-clock.svg"
+                    width={16}
+                    height={16}
+                    className="sd-pixel"
+                    aria-hidden="true"
+                  />
                   <span>On This Day</span>
                 </button>
               )}
@@ -163,7 +168,7 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
                 <Link
                   id="link-dashboard"
                   href="/dashboard"
-                  className="inline-block px-4 py-2 bg-theme-100 dark:bg-theme-500 border border-theme-300 dark:border-theme-300 text-xs font-medium text-theme-500 dark:text-theme-50 uppercase tracking-wider hover:bg-theme-50 dark:hover:bg-theme-300 transition-colors"
+                  className="sd-btn sd-btn--ghost sd-btn--sm"
                 >
                   Dashboard
                 </Link>
@@ -172,14 +177,14 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
                   <Link
                     id="link-login"
                     href="/login"
-                    className="inline-block px-4 py-2 text-theme-500 dark:text-theme-50 hover:text-theme-900 dark:hover:text-white text-xs font-medium uppercase tracking-wider transition-colors border border-transparent hover:border-theme-300 dark:hover:border-zinc-600"
+                    className="sd-btn sd-btn--ghost sd-btn--sm"
                   >
                     Log in
                   </Link>
                   <Link
                     id="link-register"
                     href="/register"
-                    className="inline-block px-4 py-2 bg-theme-500 hover:bg-theme-300 text-white text-xs font-medium uppercase tracking-wider transition-colors border border-theme-500 hover:border-theme-300"
+                    className="sd-btn sd-btn--primary sd-btn--sm"
                   >
                     Register
                   </Link>
@@ -196,25 +201,80 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
         >
           <div className="w-full max-w-4xl mx-auto text-center">
             {/* Hero Section */}
-            <div id="hero-section" className="mb-12 pt-8">
-              <h1
-                id="main-heading"
-                className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-4 tracking-tight"
+            <div id="hero-section" className="mb-12 pt-6">
+              {/* Decorative scenery */}
+              <div
+                aria-hidden="true"
+                className="flex items-end justify-center gap-3 sm:gap-4 mb-1 select-none"
               >
-                <span className="text-theme-900 dark:text-theme-50">EPOCH</span>
-                <span className="text-theme-300">BRIDGE</span>
-              </h1>
+                <img
+                  src="/images/sd/sun.svg"
+                  width={32}
+                  height={32}
+                  className="sd-pixel"
+                />
+                <img
+                  src="/images/sd/grass-tuft.svg"
+                  width={16}
+                  height={16}
+                  className="sd-pixel"
+                />
+                <img
+                  src="/images/sd/flower-pink.svg"
+                  width={16}
+                  height={16}
+                  className="sd-pixel"
+                />
+                <img
+                  src="/images/sd/sprout.svg"
+                  width={16}
+                  height={16}
+                  className="sd-pixel"
+                />
+                <img
+                  src="/images/sd/flower-yellow.svg"
+                  width={16}
+                  height={16}
+                  className="sd-pixel"
+                />
+                <img
+                  src="/images/sd/sparkle.svg"
+                  width={16}
+                  height={16}
+                  className="sd-pixel"
+                />
+              </div>
+              <div aria-hidden="true" className="select-none opacity-90">
+                <img
+                  src="/images/sd/hills-strip.svg"
+                  className="sd-pixel w-full h-10 sm:h-12 object-cover dark:hidden"
+                />
+                <img
+                  src="/images/sd/hills-strip-night.svg"
+                  className="sd-pixel w-full h-10 sm:h-12 object-cover hidden dark:block"
+                />
+              </div>
+
+              {/* Title banner */}
+              <div className="sd-panel sd-pop inline-block px-8 sm:px-12 py-6 mt-6">
+                <h1 id="main-heading" className="sd-h1">
+                  <span className="text-[color:var(--sd-ink)]">EPOCH</span>
+                  <span className="text-[color:var(--sd-gold-text)]">
+                    BRIDGE
+                  </span>
+                </h1>
+              </div>
               <p
                 id="subtitle"
-                className="text-base sm:text-lg text-theme-500 dark:text-theme-100 mb-6 max-w-2xl mx-auto leading-normal"
+                className="sd-small text-[color:var(--sd-cream)] mt-4 mb-3 max-w-2xl mx-auto"
               >
                 Universal calendar conversion system.{' '}
-                <span className="text-theme-300 dark:text-theme-100 font-semibold">
+                <span className="text-[color:var(--sd-gold-light)] font-semibold">
                   19 calendar systems.
                 </span>{' '}
                 Astronomical precision.
               </p>
-              <div className="text-xs text-theme-300 dark:text-theme-300 uppercase tracking-widest">
+              <div className="sd-label text-[color:var(--sd-gold)]">
                 Gregorian · Jalali · Hebrew · Islamic · Chinese · Julian Day ·
                 Unix · ISO 8601
               </div>
@@ -241,30 +301,17 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
                   id="btn-convert-date"
                   onClick={handleConvert}
                   disabled={isConverting}
-                  className="btn-primary-technical w-full sm:w-auto relative flex items-center justify-center disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="sd-btn sd-btn--primary w-full disabled:cursor-not-allowed"
                 >
                   {isConverting ? (
                     <span className="flex items-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-4 w-4"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
+                      <img
+                        src="/images/sd/icon-clock.svg"
+                        width={16}
+                        height={16}
+                        className="sd-pixel animate-spin mr-2"
+                        aria-hidden="true"
+                      />
                       PROCESSING...
                     </span>
                   ) : (
@@ -311,10 +358,10 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
         {/* Footer */}
         <footer
           id="landing-footer"
-          className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 mt-16 border-t border-theme-300 dark:border-zinc-700"
+          className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-8"
         >
-          <div className="text-center text-theme-500 dark:text-theme-100 text-xs uppercase tracking-widest">
-            <p>
+          <div className="sd-panel sd-panel--thin px-4 py-4 text-center">
+            <p className="sd-label text-[color:var(--sd-ink-soft)]">
               &copy; {new Date().getFullYear()} EPOCHBRIDGE · REACT + INERTIA ·
               ASTRONOMICAL PRECISION
             </p>

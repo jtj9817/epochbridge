@@ -117,9 +117,12 @@ export function CalendarResultsGrid({
     return (
       <div
         id="conversion-error"
-        className="my-8 p-4 max-w-2xl mx-auto bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700"
+        className="sd-panel sd-panel--thin my-8 p-4 max-w-2xl mx-auto"
+        style={{
+          background: 'color-mix(in srgb, var(--sd-red) 14%, var(--sd-parch))',
+        }}
       >
-        <p className="text-red-800 dark:text-red-200 text-xs uppercase tracking-wider font-medium">
+        <p className="sd-label text-center text-[color:var(--sd-ink)]">
           {error}
         </p>
       </div>
@@ -135,28 +138,38 @@ export function CalendarResultsGrid({
 
   return (
     <div id="conversion-results-section" className="max-w-4xl mx-auto mt-12">
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-theme-300 dark:border-zinc-700">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h2
           id="conversion-results-heading"
-          className="text-sm font-bold text-theme-900 dark:text-theme-50 uppercase tracking-widest"
+          className="sd-h3 text-[color:var(--sd-cream)]"
         >
           Conversion Results
         </h2>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => copyToClipboard(copyAllText, 'all')}
-            className={`text-xs font-medium uppercase tracking-wider ${
-              copiedFeedback === 'all'
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white'
-            }`}
+            className="sd-btn sd-btn--ghost sd-btn--sm"
           >
+            <img
+              src="/images/sd/icon-copy.svg"
+              width={14}
+              height={14}
+              className="sd-pixel"
+              aria-hidden="true"
+            />
             {copiedFeedback === 'all' ? 'COPIED' : 'COPY ALL'}
           </button>
           <button
             onClick={handleSave}
-            className="text-xs font-medium text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white uppercase tracking-wider"
+            className="sd-btn sd-btn--primary sd-btn--sm"
           >
+            <img
+              src="/images/sd/icon-floppy.svg"
+              width={14}
+              height={14}
+              className="sd-pixel"
+              aria-hidden="true"
+            />
             SAVE
           </button>
         </div>
@@ -164,21 +177,21 @@ export function CalendarResultsGrid({
 
       <div
         id="results-grid"
-        className="grid-exposed border border-theme-300 dark:border-zinc-700"
+        className="grid gap-3 md:grid-cols-2 lg:grid-cols-3"
       >
-        <div className="grid md:grid-cols-2 lg:grid-cols-3">
-          {hasFilteredResults ? (
-            Object.entries(filteredResults).map(([key, data]) => (
-              <div key={key} className="grid-cell">
-                {renderCard(key, data)}
-              </div>
-            ))
-          ) : (
-            <div className="md:col-span-2 lg:col-span-3 text-center py-8 text-theme-500 dark:text-theme-100 text-xs uppercase tracking-wider">
-              No calendars match your search criteria.
+        {hasFilteredResults ? (
+          Object.entries(filteredResults).map(([key, data]) =>
+            renderCard(key, data)
+          )
+        ) : (
+          <div className="md:col-span-2 lg:col-span-3">
+            <div className="sd-panel sd-panel--thin px-4 py-6 text-center">
+              <p className="sd-label text-[color:var(--sd-ink-soft)]">
+                No calendars match your search criteria.
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

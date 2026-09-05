@@ -56,7 +56,7 @@ export function CalendarQuickActions({
         id="btn-today"
         onClick={() => handleQuickAction('today')}
         disabled={loadingAction !== null}
-        className="quick-action-btn font-medium text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white disabled:opacity-50"
+        className="sd-btn sd-btn--ghost sd-btn--sm"
       >
         {loadingAction === 'today' ? '...' : 'TODAY'}
       </button>
@@ -64,7 +64,7 @@ export function CalendarQuickActions({
         id="btn-yesterday"
         onClick={() => handleQuickAction('yesterday')}
         disabled={loadingAction !== null}
-        className="quick-action-btn font-medium text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white disabled:opacity-50"
+        className="sd-btn sd-btn--ghost sd-btn--sm"
       >
         {loadingAction === 'yesterday' ? '...' : 'YESTERDAY'}
       </button>
@@ -72,7 +72,7 @@ export function CalendarQuickActions({
         id="btn-tomorrow"
         onClick={() => handleQuickAction('tomorrow')}
         disabled={loadingAction !== null}
-        className="quick-action-btn font-medium text-theme-500 dark:text-theme-100 hover:text-theme-900 dark:hover:text-white disabled:opacity-50"
+        className="sd-btn sd-btn--ghost sd-btn--sm"
       >
         {loadingAction === 'tomorrow' ? '...' : 'TOMORROW'}
       </button>

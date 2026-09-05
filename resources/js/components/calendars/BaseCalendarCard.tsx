@@ -1,5 +1,50 @@
 import { ReactNode, useState } from 'react'
 
+/**
+ * Pixel-art icon source per calendar key (code keys use underscores).
+ */
+const CALENDAR_ICON_SRCS: Record<string, string> = {
+  gregorian: '/images/sd/sun.svg',
+  jalali: '/images/sd/icon-tilestar.svg',
+  hebrew: '/images/sd/icon-tome.svg',
+  islamic: '/images/sd/icon-moon.svg',
+  chinese: '/images/sd/icon-lantern.svg',
+  japanese: '/images/sd/icon-torii.svg',
+  coptic: '/images/sd/icon-cross-coptic.svg',
+  ethiopian: '/images/sd/sprout.svg',
+  egyptian: '/images/sd/icon-ankh.svg',
+  french_republican: '/images/sd/icon-banner.svg',
+  babylonian: '/images/sd/icon-ziggurat.svg',
+  assyrian: '/images/sd/icon-ziggurat.svg',
+  macedonian: '/images/sd/icon-pillar.svg',
+  mayan: '/images/sd/icon-tablet.svg',
+  julian: '/images/sd/icon-pillar.svg',
+  julian_day: '/images/sd/icon-star.svg',
+  jd: '/images/sd/icon-star.svg',
+  modified_julian_day: '/images/sd/icon-star.svg',
+  mjd: '/images/sd/icon-star.svg',
+  unix: '/images/sd/icon-clock.svg',
+  iso8601: '/images/sd/icon-calendar.svg',
+}
+
+interface CalendarIconProps {
+  calendarKey: string
+  size?: number
+}
+
+export function CalendarIcon({ calendarKey, size = 16 }: CalendarIconProps) {
+  const src = CALENDAR_ICON_SRCS[calendarKey] ?? '/images/sd/icon-calendar.svg'
+  return (
+    <img
+      src={src}
+      width={size}
+      height={size}
+      className="sd-pixel shrink-0"
+      aria-hidden="true"
+    />
+  )
+}
+
 interface BaseCalendarCardProps {
   title: string
   copyText?: string
@@ -33,21 +78,19 @@ export function BaseCalendarCard({
   }
 
   return (
-    <div
-      className={`calendar-card bg-white dark:bg-zinc-900 border border-theme-300 dark:border-zinc-700 flex flex-col ${className}`}
-    >
-      <div className="calendar-card-header border-b border-theme-300 dark:border-zinc-700 flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 uppercase tracking-wider">
+    <div className={`sd-card p-2 flex flex-col ${className}`}>
+      <div className="sd-card__title">
+        <h3 className="sd-label flex items-center gap-2 flex-1 min-w-0 text-[color:var(--sd-ink)]">
           {icon}
           {title}
         </h3>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 shrink-0">
           {disclaimer && (
             <div className="relative">
               <button
                 onMouseEnter={() => setShowDisclaimer(true)}
                 onMouseLeave={() => setShowDisclaimer(false)}
-                className="text-zinc-500 dark:text-zinc-400"
+                className="text-[color:var(--sd-ink-soft)] hover:text-[color:var(--sd-ink)]"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -65,8 +108,10 @@ export function BaseCalendarCard({
                 </svg>
               </button>
               {showDisclaimer && (
-                <div className="absolute bottom-full right-0 mb-2 w-64 p-2 text-xs bg-zinc-900 dark:bg-zinc-800 text-white border border-zinc-700 z-10">
-                  {disclaimer}
+                <div className="sd-slot absolute bottom-full right-0 mb-2 w-64 p-2 z-10">
+                  <p className="sd-small text-[color:var(--sd-cream)]">
+                    {disclaimer}
+                  </p>
                 </div>
               )}
             </div>
@@ -75,33 +120,26 @@ export function BaseCalendarCard({
             <button
               onClick={() => copyToClipboard(copyText, copyType)}
               title="Copy"
-              className="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+              className="text-[color:var(--sd-ink-soft)] hover:text-[color:var(--sd-ink)] transition-colors"
             >
               {copiedFeedback === copyType ? (
-                <span className="text-green-500 text-xs uppercase tracking-wider">
+                <span className="sd-label text-[color:var(--sd-green)]">
                   OK
                 </span>
               ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
-                </svg>
+                <img
+                  src="/images/sd/icon-copy.svg"
+                  width={16}
+                  height={16}
+                  className="sd-pixel"
+                  aria-hidden="true"
+                />
               )}
             </button>
           )}
         </div>
       </div>
-      <div className="calendar-card-content flex-grow flex flex-col items-center justify-center text-center">
+      <div className="flex-grow flex flex-col items-center justify-center text-center px-2 pt-1 pb-2 text-[color:var(--sd-ink)]">
         {children}
       </div>
     </div>

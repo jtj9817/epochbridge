@@ -68,3 +68,6 @@ opencode.json
 
 # Visual QA evidence screenshots
 gui-test-screenshots/
+
+# ZCode session artifacts
+.zcode/
