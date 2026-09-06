@@ -162,6 +162,7 @@ export function CalendarResultsGrid({
           <button
             onClick={handleSave}
             className="sd-btn sd-btn--primary sd-btn--sm"
+            data-test="results-save-button"
           >
             <img
               src="/images/sd/icon-floppy.svg"

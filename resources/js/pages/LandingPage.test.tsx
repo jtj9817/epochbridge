@@ -261,6 +261,39 @@ describe('LandingPage', () => {
         )
       })
     })
+
+    it('opens the save modal via the results save button', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            results: {
+              gregorian: { name: 'Gregorian', full_date: '2024-01-15' },
+            },
+          }),
+      })
+
+      render(<LandingPage todayDate="2024-01-15" />)
+
+      fireEvent.click(screen.getByText('CONVERT DATE'))
+
+      const resultsSaveBtn = await waitFor(() => {
+        const button = document.querySelector(
+          '[data-test="results-save-button"]'
+        ) as HTMLElement
+        expect(button).toBeTruthy()
+        return button
+      })
+
+      fireEvent.click(resultsSaveBtn)
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument()
+      })
+      expect(
+        screen.getByRole('heading', { name: 'Save Conversion' })
+      ).toBeInTheDocument()
+    })
   })
 
   describe('Search and Filter (after results)', () => {

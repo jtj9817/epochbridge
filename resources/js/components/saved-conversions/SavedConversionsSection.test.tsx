@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState, type ComponentProps } from 'react'
 import { render } from '@/test/utils'
 import { SavedConversionsSection } from './SavedConversionsSection'
 import { mockConversionResult, mockSavedConversion } from '@/test/utils'
@@ -12,6 +13,25 @@ vi.mock('@/lib/api', () => ({
 }))
 
 const GUEST_STORAGE_KEY = 'savedConversions'
+
+// Mimics LandingPage, which owns the save-modal open state and passes it down.
+function Harness(
+  props: Omit<
+    ComponentProps<typeof SavedConversionsSection>,
+    'saveModalOpen' | 'onOpenSaveModal' | 'onCloseSaveModal'
+  >
+) {
+  const [saveModalOpen, setSaveModalOpen] = useState(false)
+
+  return (
+    <SavedConversionsSection
+      {...props}
+      saveModalOpen={saveModalOpen}
+      onOpenSaveModal={() => setSaveModalOpen(true)}
+      onCloseSaveModal={() => setSaveModalOpen(false)}
+    />
+  )
+}
 
 const authItem: SavedConversion = {
   id: 1,
@@ -51,7 +71,7 @@ describe('SavedConversionsSection', () => {
     withCurrentConversion = false,
   } = {}) => {
     const utils = render(
-      <SavedConversionsSection
+      <Harness
         isAuthenticated={isAuthenticated}
         authItems={authItems}
         authLoading={authLoading}
@@ -373,7 +393,7 @@ describe('SavedConversionsSection', () => {
       const { user, rerender } = setup({ isAuthenticated: false, authItems: [] })
 
       rerender(
-        <SavedConversionsSection
+        <Harness
           isAuthenticated={true}
           authItems={[]}
           authLoading={false}
@@ -402,7 +422,7 @@ describe('SavedConversionsSection', () => {
       const { user, rerender } = setup({ isAuthenticated: false, authItems: [] })
 
       rerender(
-        <SavedConversionsSection
+        <Harness
           isAuthenticated={true}
           authItems={[]}
           authLoading={false}

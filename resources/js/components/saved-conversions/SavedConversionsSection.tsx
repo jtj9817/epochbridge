@@ -21,6 +21,9 @@ interface SavedConversionsSectionProps {
     originalInput: string
     conversionData: Record<string, unknown>
   } | null
+  saveModalOpen: boolean
+  onOpenSaveModal: () => void
+  onCloseSaveModal: () => void
 }
 
 export function SavedConversionsSection({
@@ -31,10 +34,12 @@ export function SavedConversionsSection({
   onAuthDelete,
   onAuthUpdateNote,
   currentConversion,
+  saveModalOpen,
+  onOpenSaveModal,
+  onCloseSaveModal,
 }: SavedConversionsSectionProps) {
   const guest = useGuestSavedConversions(!isAuthenticated)
   const { addToast } = useToast()
-  const [saveModalOpen, setSaveModalOpen] = useState(false)
   const [migrationStatus, setMigrationStatus] = useState<
     'idle' | 'migrating' | 'done' | 'error'
   >('idle')
@@ -69,9 +74,9 @@ export function SavedConversionsSection({
         }
       }
 
-      setSaveModalOpen(false)
+      onCloseSaveModal()
     },
-    [isAuthenticated, currentConversion, onAuthSave, guest, addToast]
+    [isAuthenticated, currentConversion, onAuthSave, guest, addToast, onCloseSaveModal]
   )
 
   const handleDelete = useCallback(
@@ -154,7 +159,7 @@ export function SavedConversionsSection({
           </h2>
           {currentConversion && (
             <button
-              onClick={() => setSaveModalOpen(true)}
+              onClick={onOpenSaveModal}
               className="sd-btn sd-btn--primary sd-btn--sm"
               data-test="save-current-button"
             >
@@ -255,7 +260,7 @@ export function SavedConversionsSection({
 
       <SaveConversionModal
         open={saveModalOpen}
-        onClose={() => setSaveModalOpen(false)}
+        onClose={onCloseSaveModal}
         onSave={handleSaveFromModal}
         isGuest={!isAuthenticated}
         guestLimitReached={!isAuthenticated && guest.saveLimitReached}

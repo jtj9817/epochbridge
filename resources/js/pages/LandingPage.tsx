@@ -45,6 +45,10 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
   // Calendars Info modal
   const [calendarsInfoOpen, setCalendarsInfoOpen] = useState(false)
 
+  // Save Conversion modal, shared by the results grid and the saved
+  // conversions section
+  const [saveModalOpen, setSaveModalOpen] = useState(false)
+
   const currentConversionForSave = useMemo(
     () =>
       results && Object.keys(results).length > 0
@@ -337,9 +341,7 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
               error={error}
               searchTerm={searchTerm}
               selectedTypes={selectedTypes}
-              onSave={() => {
-                // Save is now handled by SavedConversionsSection's "Save Current" button
-              }}
+              onSave={() => setSaveModalOpen(true)}
             />
 
             {/* Saved Conversions Section */}
@@ -351,6 +353,9 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
               onAuthDelete={savedConversions.remove}
               onAuthUpdateNote={savedConversions.updateNote}
               currentConversion={currentConversionForSave}
+              saveModalOpen={saveModalOpen}
+              onOpenSaveModal={() => setSaveModalOpen(true)}
+              onCloseSaveModal={() => setSaveModalOpen(false)}
             />
           </div>
         </main>
