@@ -156,6 +156,7 @@ export function SavedConversionsSection({
             <button
               onClick={() => setSaveModalOpen(true)}
               className="sd-btn sd-btn--primary sd-btn--sm"
+              data-test="save-current-button"
             >
               <img
                 src="/images/sd/icon-floppy.svg"

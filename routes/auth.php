@@ -8,7 +8,6 @@ use App\Http\Controllers\React\Auth\ForgotPasswordPageController;
 use App\Http\Controllers\React\Auth\LoginPageController;
 use App\Http\Controllers\React\Auth\RegisterPageController;
 use App\Http\Controllers\React\Auth\ResetPasswordPageController;
-use App\Http\Controllers\React\Auth\TwoFactorChallengePageController;
 use App\Http\Controllers\React\Auth\VerifyEmailPageController;
 use Illuminate\Support\Facades\Route;
 

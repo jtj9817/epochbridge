@@ -160,7 +160,11 @@ export function SaveConversionModal({
             <button onClick={onClose} className="sd-btn sd-btn--ghost">
               Cancel
             </button>
-            <button onClick={handleSubmit} className="sd-btn sd-btn--primary">
+            <button
+              onClick={handleSubmit}
+              className="sd-btn sd-btn--primary"
+              data-test="modal-save-button"
+            >
               Save
             </button>
           </div>
