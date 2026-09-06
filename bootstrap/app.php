@@ -13,9 +13,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             Route::middleware('web')
-                ->group(base_path('routes/auth.php'));
-
-            Route::middleware('web')
                 ->group(base_path('routes/frontend.php'));
         },
     )
