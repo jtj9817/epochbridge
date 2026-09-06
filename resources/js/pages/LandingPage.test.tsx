@@ -358,15 +358,6 @@ describe('LandingPage', () => {
       })
     })
   })
-
-  describe('Footer', () => {
-    it('renders copyright and tech info in footer', () => {
-      render(<LandingPage todayDate="2024-01-15" />)
-
-      expect(screen.getByText(/EPOCHBRIDGE/i)).toBeInTheDocument()
-      expect(screen.getByText(/REACT \+ INERTIA/i)).toBeInTheDocument()
-    })
-  })
 })
 
 // Note: Authenticated state rendering (Dashboard link) is tested at the

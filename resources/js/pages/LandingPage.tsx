@@ -359,19 +359,6 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
             />
           </div>
         </main>
-
-        {/* Footer */}
-        <footer
-          id="landing-footer"
-          className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-8"
-        >
-          <div className="sd-panel sd-panel--thin px-4 py-4 text-center">
-            <p className="sd-label text-[color:var(--sd-ink-soft)]">
-              &copy; {new Date().getFullYear()} EPOCHBRIDGE · REACT + INERTIA ·
-              ASTRONOMICAL PRECISION
-            </p>
-          </div>
-        </footer>
       </div>
 
       {/* Modals */}
