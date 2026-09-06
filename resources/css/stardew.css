@@ -39,6 +39,13 @@
     font-display: swap;
     unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
+@font-face {
+    font-family: 'Roboto';
+    src: url('/fonts/Roboto-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
 
 /* ---------------- Tokens ---------------- */
 :root {
@@ -346,6 +353,16 @@
 }
 @media (max-width: 640px) {
     .sd-h1 { font-size: 36px; }
+}
+.sd-wordmark {
+    font-family: Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    text-transform: none;
+    text-shadow:
+        2px 2px 0 var(--sd-parch-shadow),
+        4px 4px 0 rgba(74, 46, 25, 0.14);
 }
 .sd-h2 {
     font-family: 'Pixelify Sans', monospace;

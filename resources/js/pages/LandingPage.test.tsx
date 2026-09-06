@@ -76,8 +76,8 @@ describe('LandingPage', () => {
       // Check that the heading exists with the brand name
       const heading = container.querySelector('#main-heading')
       expect(heading).toBeInTheDocument()
-      expect(heading).toHaveTextContent('EPOCH')
-      expect(heading).toHaveTextContent('BRIDGE')
+      expect(heading).toHaveClass('sd-wordmark')
+      expect(heading).toHaveTextContent('EpochBridge')
       expect(screen.getByText(/Universal calendar conversion system/)).toBeInTheDocument()
     })
 

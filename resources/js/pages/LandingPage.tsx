@@ -261,10 +261,10 @@ export default function LandingPage({ todayDate }: LandingPageProps) {
 
               {/* Title banner */}
               <div className="sd-panel sd-pop inline-block px-8 sm:px-12 py-6 mt-6">
-                <h1 id="main-heading" className="sd-h1">
-                  <span className="text-[color:var(--sd-ink)]">EPOCH</span>
+                <h1 id="main-heading" className="sd-h1 sd-wordmark">
+                  <span className="text-[color:var(--sd-ink)]">Epoch</span>
                   <span className="text-[color:var(--sd-gold-text)]">
-                    BRIDGE
+                    Bridge
                   </span>
                 </h1>
               </div>
