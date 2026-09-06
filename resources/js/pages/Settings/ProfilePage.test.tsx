@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 
-const mockPatch = vi.fn()
+const mockPut = vi.fn()
 
 const formState = {
   data: {} as Record<string, string>,
@@ -19,7 +19,8 @@ function useMockForm(initial: Record<string, string>) {
     data,
     setData: (key: string, value: string) =>
       setData((prev) => ({ ...prev, [key]: value })),
-    patch: mockPatch,
+    patch: vi.fn(),
+    put: mockPut,
     processing: formState.processing,
     errors: formState.errors,
     recentlySuccessful: formState.recentlySuccessful,
@@ -125,14 +126,14 @@ describe('ProfilePage', () => {
     expect(screen.getByLabelText('Name')).toHaveValue('New Name')
   })
 
-  it('patches the profile to the user-profile-information.update route', async () => {
+  it('puts the profile to the user-profile-information.update route', async () => {
     const user = userEvent.setup()
     render(<ProfilePage user={userProps} status={null} />)
 
     await user.click(dataTest('update-profile-button'))
 
-    expect(mockPatch).toHaveBeenCalledTimes(1)
-    expect(mockPatch).toHaveBeenCalledWith('/user/profile-information', {
+    expect(mockPut).toHaveBeenCalledTimes(1)
+    expect(mockPut).toHaveBeenCalledWith('/user/profile-information', {
       preserveScroll: true,
     })
   })
@@ -152,7 +153,7 @@ describe('ProfilePage', () => {
     ).toBeInTheDocument()
   })
 
-  it('shows the saved confirmation after a successful patch', () => {
+  it('shows the saved confirmation after a successful update', () => {
     const { rerender } = render(<ProfilePage user={userProps} status={null} />)
 
     expect(screen.queryByText('Saved.')).not.toBeInTheDocument()

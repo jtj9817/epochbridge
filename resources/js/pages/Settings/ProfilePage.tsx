@@ -13,7 +13,7 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({ user, status }: ProfilePageProps) {
-  const { data, setData, patch, processing, errors, recentlySuccessful } = useForm({
+  const { data, setData, put, processing, errors, recentlySuccessful } = useForm({
     name: user.name,
     email: user.email,
   })
@@ -24,7 +24,7 @@ export default function ProfilePage({ user, status }: ProfilePageProps) {
 
   function submitProfile(e: FormEvent) {
     e.preventDefault()
-    patch(route('user-profile-information.update'), {
+    put(route('user-profile-information.update'), {
       preserveScroll: true,
     })
   }

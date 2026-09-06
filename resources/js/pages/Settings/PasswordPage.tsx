@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/AppLayout'
 import SettingsLayout from '@/layouts/SettingsLayout'
 
 export default function PasswordPage() {
-  const { data, setData, patch, processing, errors, recentlySuccessful, reset } = useForm({
+  const { data, setData, put, processing, errors, recentlySuccessful, reset } = useForm({
     current_password: '',
     password: '',
     password_confirmation: '',
@@ -15,7 +15,7 @@ export default function PasswordPage() {
 
   function submit(e: FormEvent) {
     e.preventDefault()
-    patch(route('user-password.update'), {
+    put(route('user-password.update'), {
       preserveScroll: true,
       onSuccess: () => {
         reset('current_password', 'password', 'password_confirmation')

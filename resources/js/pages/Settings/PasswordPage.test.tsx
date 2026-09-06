@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 
-const mockPatch = vi.fn()
+const mockPut = vi.fn()
 const mockReset = vi.fn()
 
 const formState = {
@@ -19,7 +19,8 @@ function useMockForm(initial: Record<string, string>) {
     data,
     setData: (key: string, value: string) =>
       setData((prev) => ({ ...prev, [key]: value })),
-    patch: mockPatch,
+    patch: vi.fn(),
+    put: mockPut,
     processing: formState.processing,
     errors: formState.errors,
     recentlySuccessful: formState.recentlySuccessful,
@@ -115,7 +116,7 @@ describe('PasswordPage', () => {
     expect(confirmation).toHaveValue('new-secret-1')
   })
 
-  it('patches the password to the user-password.update route on submit', async () => {
+  it('puts the password to the user-password.update route on submit', async () => {
     const user = userEvent.setup()
     render(<PasswordPage />)
 
@@ -126,13 +127,13 @@ describe('PasswordPage', () => {
 
     await user.click(dataTest('update-password-button'))
 
-    expect(mockPatch).toHaveBeenCalledTimes(1)
-    expect(mockPatch).toHaveBeenCalledWith('/user/password', {
+    expect(mockPut).toHaveBeenCalledTimes(1)
+    expect(mockPut).toHaveBeenCalledWith('/user/password', {
       preserveScroll: true,
       onSuccess: expect.any(Function),
     })
 
-    const { onSuccess } = mockPatch.mock.calls[0][1] as {
+    const { onSuccess } = mockPut.mock.calls[0][1] as {
       onSuccess: () => void
     }
     onSuccess()
@@ -183,7 +184,7 @@ describe('PasswordPage', () => {
     expect(next).toHaveAttribute('type', 'text')
   })
 
-  it('shows the saved confirmation after a successful patch', () => {
+  it('shows the saved confirmation after a successful update', () => {
     const { rerender } = render(<PasswordPage />)
 
     formState.recentlySuccessful = true
