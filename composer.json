@@ -18,7 +18,6 @@
         "laravel/socialite": "^5.23",
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.1.1",
-        "livewire/volt": "^1.7.0",
         "morilog/jalali": "3.*",
         "tightenco/ziggy": "^2.6"
     },
