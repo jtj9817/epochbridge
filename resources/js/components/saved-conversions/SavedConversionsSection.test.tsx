@@ -107,6 +107,33 @@ describe('SavedConversionsSection', () => {
     expect(within(item).getByText('Gregorian')).toBeInTheDocument()
   })
 
+  it('hides calendar entries that contain errors when expanded', async () => {
+    const { user } = setup({
+      authItems: [
+        {
+          ...authItem,
+          conversion_data: {
+            gregorian: { name: 'Gregorian', full_date: '2024-01-15' },
+            jalali: { name: 'Jalali', full_date: '1402/10/25' },
+            mayan: { error: 'Mayan calendar conversion failed' },
+          },
+        },
+      ],
+    })
+    const item = screen.getByTestId('saved-conversion-1')
+
+    await user.click(
+      within(item).getByRole('button', { name: 'Toggle conversion details' })
+    )
+
+    expect(within(item).getByText('Gregorian')).toBeInTheDocument()
+    expect(within(item).getByText('Jalali')).toBeInTheDocument()
+    expect(within(item).queryByText('Mayan')).not.toBeInTheDocument()
+    expect(
+      within(item).queryByText('Mayan calendar conversion failed')
+    ).not.toBeInTheDocument()
+  })
+
   it('shows the legacy indicator for legacy conversions', () => {
     setup({
       authItems: [{ ...authItem, uses_legacy_fallback: true }],
@@ -224,6 +251,21 @@ describe('SavedConversionsSection', () => {
       expect(
         within(dialog).getByRole('heading', { name: 'Add Note' })
       ).toBeInTheDocument()
+    })
+
+    it('shows an error toast when the note update fails', async () => {
+      onAuthUpdateNote.mockRejectedValueOnce(new Error('boom'))
+      const { user } = setup()
+      const item = screen.getByTestId('saved-conversion-1')
+
+      await user.click(
+        within(item).getByRole('button', { name: 'Edit conversion note' })
+      )
+      await user.click(
+        within(screen.getByRole('dialog')).getByRole('button', { name: 'Save' })
+      )
+
+      expect(await screen.findByText('Failed to update note.')).toBeInTheDocument()
     })
   })
 
