@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\DeleteAccountController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Auth\VerifyEmailController;
@@ -34,6 +35,9 @@ Route::middleware('auth')->group(function () {
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
+
+    Route::delete('user', DeleteAccountController::class)
+        ->name('current-user.destroy');
 });
 
 Route::post('logout', LogoutController::class)
