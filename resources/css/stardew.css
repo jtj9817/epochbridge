@@ -42,6 +42,7 @@
 
 /* ---------------- Tokens ---------------- */
 :root {
+    --sd-season-background: none;
     --sd-parch-light: #FCF3D8;
     --sd-parch: #F4E3B2;
     --sd-parch-dark: #E5C988;
@@ -115,15 +116,23 @@
 /* Page wood-plank background (body class in the Inertia root) */
 .sd-bg {
     background-color: #B0854E;
-    background-image: url('/images/sd/wood-tile-day.svg');
-    background-size: 128px 128px;
+    background-image:
+        linear-gradient(rgba(53, 35, 20, 0.62), rgba(53, 35, 20, 0.74)),
+        var(--sd-season-background),
+        url('/images/sd/wood-tile-day.svg');
+    background-position: center, center top, center;
+    background-repeat: no-repeat, no-repeat, repeat;
+    background-size: cover, cover, 128px 128px;
     image-rendering: pixelated;
     background-attachment: fixed;
 }
 .dark .sd-bg,
 .sd-bg.dark {
     background-color: #3E2C1E;
-    background-image: url('/images/sd/wood-tile-night.svg');
+    background-image:
+        linear-gradient(rgba(17, 12, 9, 0.66), rgba(17, 12, 9, 0.8)),
+        var(--sd-season-background),
+        url('/images/sd/wood-tile-night.svg');
 }
 
 /* ---------------- Panels (dialogue boxes) ---------------- */

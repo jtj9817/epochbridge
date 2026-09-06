@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { applyTheme } from '@/lib/theme'
+import { applySeasonalBackground } from '@/lib/seasonal-background'
 
 declare global {
   interface Window {
@@ -11,6 +12,7 @@ window.axios = axios
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 
 applyTheme()
+applySeasonalBackground()
 
 document.addEventListener('inertia:navigate', (event) => {
   const customEvent = event as CustomEvent<{ page?: { url?: string } }>
