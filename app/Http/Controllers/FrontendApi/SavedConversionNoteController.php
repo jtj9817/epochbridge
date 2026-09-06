@@ -17,7 +17,7 @@ class SavedConversionNoteController extends Controller
         }
 
         $validated = $request->validate([
-            'note' => ['nullable', 'string', 'max:1000'],
+            'note' => ['nullable', 'string', 'max:2048'],
         ]);
 
         $savedConversion->update([

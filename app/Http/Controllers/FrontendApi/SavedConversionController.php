@@ -28,7 +28,7 @@ class SavedConversionController extends Controller
         $validated = $request->validate([
             'original_input' => ['required', 'string', 'max:255'],
             'conversion_data' => ['required', 'array'],
-            'note' => ['nullable', 'string', 'max:1000'],
+            'note' => ['nullable', 'string', 'max:2048'],
         ]);
 
         $conversion = SavedConversion::create([

@@ -304,15 +304,50 @@ it('preserves created_at from guest data during migration', function () {
     expect($conversion->created_at->toIso8601String())->not->toBeNull();
 });
 
+it('accepts a note of exactly 2048 characters on store', function () {
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.store'), [
+            'original_input' => '2024-01-15',
+            'conversion_data' => ['gregorian' => ['full_date' => '2024-01-15']],
+            'note' => str_repeat('a', 2048),
+        ]);
+
+    $response->assertCreated();
+
+    $this->assertDatabaseHas('saved_conversions', [
+        'user_id' => $this->user->id,
+        'note' => str_repeat('a', 2048),
+    ]);
+});
+
 it('validates note max length on store', function () {
     $response = $this->actingAs($this->user)
         ->postJson(route('frontend.saved-conversions.store'), [
             'original_input' => '2024-01-15',
             'conversion_data' => ['gregorian' => ['full_date' => '2024-01-15']],
-            'note' => str_repeat('a', 1001),
+            'note' => str_repeat('a', 2049),
         ]);
 
-    $response->assertUnprocessable();
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['note']);
+});
+
+it('accepts a note of exactly 2048 characters on note update', function () {
+    $conversion = SavedConversion::factory()->create([
+        'user_id' => $this->user->id,
+    ]);
+
+    $response = $this->actingAs($this->user)
+        ->patchJson(route('frontend.saved-conversions.note.update', $conversion), [
+            'note' => str_repeat('a', 2048),
+        ]);
+
+    $response->assertSuccessful();
+
+    $this->assertDatabaseHas('saved_conversions', [
+        'id' => $conversion->id,
+        'note' => str_repeat('a', 2048),
+    ]);
 });
 
 it('validates note max length on note update', function () {
@@ -322,8 +357,9 @@ it('validates note max length on note update', function () {
 
     $response = $this->actingAs($this->user)
         ->patchJson(route('frontend.saved-conversions.note.update', $conversion), [
-            'note' => str_repeat('a', 1001),
+            'note' => str_repeat('a', 2049),
         ]);
 
-    $response->assertUnprocessable();
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['note']);
 });
