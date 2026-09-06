@@ -4,7 +4,11 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+    // Root-relative url()s in CSS (e.g. /images/sd/...) resolve against the
+    // dev-server origin in development, so serve Laravel's public directory
+    // there; keep it off for builds to avoid copying public/ into build output.
+    publicDir: command === 'serve' ? 'public' : false,
     plugins: [
         laravel({
             input: [
@@ -24,4 +28,4 @@ export default defineConfig({
     server: {
         cors: true,
     },
-})
+}))
