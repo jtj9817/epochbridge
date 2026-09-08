@@ -239,10 +239,12 @@ User visits site → Clicks "Sign in with Google" → Authorizes
 
 #### Scenario 2: Existing User + New OAuth Provider
 ```
-Existing user (email: john@example.com) → Clicks "Sign in with Google"
+Existing verified user (email: john@example.com) → Clicks "Sign in with Google"
 → OAuth returns email: john@example.com → User found by email
 → Link new social_account to existing user → Login user
 ```
+
+> **Guard**: if the existing account's email is **unverified**, linking is refused with an `OAuthAccountLinkException` (see `SocialAuthController::findOrCreateUser()`) — a password-created account that never verified its address may belong to someone who merely typed in that email. Only accounts that have proven control of the mailbox can be linked.
 
 #### Scenario 3: Returning OAuth User
 ```
@@ -255,32 +257,13 @@ User with linked Google account → Clicks "Sign in with Google"
 
 ### Login Page Component
 
-The login page includes a Google Sign-In button:
+The login page includes a Google Sign-In button linking to the `social.redirect` route:
 
-```blade
-<!-- resources/views/livewire/auth/login.blade.php -->
-<div class="mt-6">
-    <div class="relative">
-        <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-300"></div>
-        </div>
-        <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-white text-gray-500">Or continue with</span>
-        </div>
-    </div>
-
-    <div class="mt-6">
-        <a href="{{ route('social.redirect', 'google') }}" 
-           class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 
-                  rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 
-                  hover:bg-gray-50 transition-colors">
-            <svg class="h-5 w-5 mr-2" viewBox="0 0 24 24">
-                <!-- Google logo SVG -->
-            </svg>
-            Sign in with Google
-        </a>
-    </div>
-</div>
+```tsx
+// resources/js/pages/Auth/LoginPage.tsx (excerpt)
+<a href={route('social.redirect', { provider: 'google' })}>
+    Sign in with Google
+</a>
 ```
 
 ### Route Configuration

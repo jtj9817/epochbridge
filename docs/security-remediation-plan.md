@@ -160,3 +160,18 @@ Status: COMPLETED
 - Engineering: Implementation
 - Security reviewer: Validation checklist + sign‑off
 - Release manager: Ensure env/config verified before deploy
+
+---
+
+## Post-plan update — September 2026
+
+The following hardening landed after this plan was closed, largely from the 2026-09-08 security review:
+
+- **Email verification enabled + OAuth linking gated** (`f042e3c`, `7db229a`): Fortify email verification is on; existing users were grandfathered as verified (migration `2026_09_08_052734_grandfather_existing_users_as_email_verified`). `SocialAuthController` now refuses to link a Google identity into an existing account whose email is unverified (`OAuthAccountLinkException`), closing the account pre-hijacking vector.
+- **Security headers middleware** (`479f965`): `SetSecurityHeaders` on the web group sends `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, a locked-down CSP (same-origin with dev-only Vite origins), and HSTS on TLS connections.
+- **Rate limiting** (`eacf085`, `c1d6768`): registration (10/hour/IP), password reset links (5/min/IP), and the public frontend API (60/min/IP) are throttled; the login limiter is 5/day per email+IP.
+- **OAuth error handling** (`f02ebff`): provider `error_description` values are never reflected to the login page — fixed messages only.
+- **Serialization** (`831cc88`): two-factor attributes are hidden from user serialization.
+- **Input bounds** (`c5ce1bc`, `39a3c45`): saved-conversion payloads capped at 128 keys / 64 KiB per item (`MaxPayloadBytes` rule); note length aligned at 2048 characters.
+
+Open items from the 2026-09-08 review should be tracked separately; this document records what is implemented as of the above commits.

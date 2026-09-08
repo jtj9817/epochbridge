@@ -1,5 +1,7 @@
 # API Endpoint Evaluation & Implementation Guide
 
+> **Outcome note (September 2026):** this evaluation predates the React/Inertia migration. Its "Livewire-first, no API" analysis described the app as of October 2025. The question was resolved in April 2026 with a middle path: a **session-backed JSON API for the first-party React frontend** now lives in `routes/frontend.php` under `/frontend/*` (conversions, saved conversions, quick actions, on-this-day) — see [architecture-overview.md](architecture-overview.md#frontend-json-api). A public/token-based API for external consumers, as evaluated below, has **not** been built. The analysis below is kept as a historical record.
+
 ## Executive Summary
 
 This document evaluates the necessity of REST API endpoints for EpochBridge's calendar conversion system and provides implementation guidance for future API development when external access becomes required.
