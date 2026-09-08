@@ -1,5 +1,7 @@
 # Architectural Decisions Summary
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026). File paths, components, and UI details refer to that retired implementation and are kept as a record. Current architecture: [`architecture-overview.md`](architecture-overview.md); the UI lives in `resources/js/`.
+
 ## Document Overview
 
 This document summarizes the key architectural decisions made during the EpochBridge calendar conversion system implementation, including deviations from the original plan and their rationale.

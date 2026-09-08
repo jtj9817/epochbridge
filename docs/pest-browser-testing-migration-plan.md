@@ -1,5 +1,7 @@
 # Pest Browser Testing Migration Plan
 
+> **⚠️ Historical document.** This migration was **not executed** — Laravel Dusk remains the browser test driver (`tests/Browser/`), although `pestphp/pest-plugin-browser` is installed. The Livewire/Alpine context below was also retired in favor of the React frontend (April–September 2026). Kept as a record.
+
 ## GOAL
 
 Migrate all browser tests from Laravel Dusk to Pest 4's native browser testing using Playwright, eliminating the need for Selenium/ChromeDriver infrastructure while maintaining comprehensive test coverage for Alpine.js and Livewire interactions.

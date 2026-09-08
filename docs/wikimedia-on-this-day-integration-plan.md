@@ -1,5 +1,7 @@
 # Wikimedia "On This Day" Integration Plan
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026). File paths, components, and UI details refer to that retired implementation and are kept as a record. Current architecture: [`architecture-overview.md`](architecture-overview.md); the UI lives in `resources/js/`.
+
 ## Overview
 Integrate the Wikimedia Feed API "On this day" endpoint to display English Wikipedia historical highlights in a pop-up after a successful date conversion. The system must read from a local cache table first and only call the API when no cached entry exists for the converted date.
 

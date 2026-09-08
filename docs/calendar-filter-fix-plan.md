@@ -1,5 +1,7 @@
 # Calendar Filter Feature Fix Plan
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026). File paths, components, and UI details refer to that retired implementation and are kept as a record. Current architecture: [`architecture-overview.md`](architecture-overview.md); the UI lives in `resources/js/`.
+
 ## Problem Statement
 
 The calendar filter feature is not working properly. While the search functionality works correctly, clicking filter checkboxes (Modern, Historical, Ancient, etc.) does not filter the displayed calendar results. The event is dispatching correctly, but filtered results are not being displayed.

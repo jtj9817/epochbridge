@@ -1,5 +1,7 @@
 # Integrating Alpine.js v3.x into TALL-Stack Applications
 
+> **⚠️ Historical reference.** Alpine.js is no longer used in this project — it was removed along with Livewire in September 2026. The frontend is React 19 + Inertia (`resources/js/`). This article is kept as TALL-stack era reference material.
+
 ## Introduction to Alpine.js in the TALL Stack
 
 The TALL stack (Tailwind CSS, Alpine.js, Laravel, Livewire) combines a modern CSS framework, a lightweight JavaScript library, and a powerful PHP framework with server-driven UI components. Alpine.js (version 3.x) is a lightweight JavaScript framework for adding interactivity directly in your HTML markup. It offers a collection of intuitive directives (attributes prefixed with x-) to manage state, bind data, and handle events in the browser.

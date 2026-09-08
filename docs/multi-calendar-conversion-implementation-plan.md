@@ -1,5 +1,7 @@
 # Multi-Calendar Conversion System Implementation Plan
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026); UI references are historical. The backend/service content remains accurate — current architecture: [`architecture-overview.md`](architecture-overview.md).
+
 ## 📋 Overview
 
 This plan implements a comprehensive calendar conversion system for EpochBridge, extending beyond the existing Jalali calendar support to include **14 additional calendar systems**. 

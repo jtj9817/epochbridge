@@ -1,5 +1,7 @@
 # Date-Time Conversion API Implementation Plan
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026). File paths, components, and UI details refer to that retired implementation and are kept as a record. Current architecture: [`architecture-overview.md`](architecture-overview.md); the UI lives in `resources/js/`.
+
 ## ✅ IMPLEMENTATION COMPLETED - October 2025
 
 This document outlined the phased implementation plan for the date-time conversion feature on the EpochBridge landing page. **All phases have been successfully implemented** as of October 7, 2025.

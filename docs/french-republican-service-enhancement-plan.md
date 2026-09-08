@@ -1,5 +1,7 @@
 # French Republican Service Enhancement Plan
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026); UI references are historical. The backend/service content remains accurate — current architecture: [`architecture-overview.md`](architecture-overview.md).
+
 ## Status: ✅ COMPLETED (October 14, 2025)
 
 All planned enhancements have been successfully implemented and tested.

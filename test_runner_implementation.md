@@ -1,5 +1,7 @@
 # Test Runner Implementation Tasks
 
+> **Note (September 2026):** the Livewire test category described here was removed from the runner in September 2026 (`19780dd`); discovery now covers Unit, Feature, and Browser suites only. This document is also duplicated in shorter, current form at `docs/test-runner-implementation-plan.md` and the README's Interactive Test Runner section.
+
 ## Phase 4: Real-time Markdown Reporting System
 
 ### GOAL

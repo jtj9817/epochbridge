@@ -1,5 +1,7 @@
 # Saved Conversions Enhancement Plan
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026). File paths, components, and UI details refer to that retired implementation and are kept as a record. Current architecture: [`architecture-overview.md`](architecture-overview.md); the UI lives in `resources/js/`.
+
 ## Overview
 
 This document outlines a comprehensive plan to resolve the issue where saved conversions only store data for Gregorian, Jalali, and Unix calendar systems, missing the converted date values for the other 12+ calendar systems supported by EpochBridge.

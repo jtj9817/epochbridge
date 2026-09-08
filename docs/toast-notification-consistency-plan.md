@@ -1,5 +1,7 @@
 # Toast Notification Consistency Implementation Plan
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026). File paths, components, and UI details refer to that retired implementation and are kept as a record. Current architecture: [`architecture-overview.md`](architecture-overview.md); the UI lives in `resources/js/`.
+
 ## Executive Summary
 
 The current toast notification system in EpochBridge is inconsistent. It only appears when users copy values but fails to provide feedback for save and delete operations. This plan addresses these gaps by implementing a comprehensive, consistent toast notification system across all user interactions.

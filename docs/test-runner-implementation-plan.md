@@ -1,5 +1,7 @@
 # Test Runner Implementation Plan
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026); UI references are historical. The backend/service content remains accurate — current architecture: [`architecture-overview.md`](architecture-overview.md).
+
 ## Implementation Status
 
 🎉 **IMPLEMENTATION COMPLETE** - All phases have been successfully implemented as of October 2025.

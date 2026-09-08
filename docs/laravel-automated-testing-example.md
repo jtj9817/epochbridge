@@ -1,5 +1,7 @@
 # Automating Laravel Testing with Jobs and Commands
 
+> **Note (September 2026):** the `Livewire` test suite/category referenced in these examples was removed with the Livewire runtime (`19780dd`, September 2026). The test runner now discovers Unit, Feature, and Browser suites only, and React component tests run under Vitest (`npm run test:run`) rather than Pest. The job/command patterns below remain valid.
+
 ## Documentation References
 - [Testing](https://laravel.com/docs/12.x/testing)
 - [Artisan Console](https://laravel.com/docs/12.x/artisan)

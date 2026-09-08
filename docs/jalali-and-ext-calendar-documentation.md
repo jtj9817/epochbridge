@@ -1,5 +1,7 @@
 # PHP Jalali Calendar Packages: Complete Technical Documentation
 
+> **Note (September 2026):** this is library reference documentation for `morilog/jalali` and `fisharebest/ext-calendar`, both of which EpochBridge uses. It was written in October 2025 when the UI was Blade/Livewire — the Blade-directive and Blade-view examples are illustrative library integration patterns, not descriptions of this app's code. EpochBridge's actual usage lives in `app/Services/` (see `JalaliCalendarService` usage inside `DateTimeConverterService`); the UI is React (`resources/js/`).
+
 **For Laravel applications requiring Persian calendar support**, two packages provide robust solutions: **morilog/jalali** offers a feature-rich, Laravel-integrated Jalalian date library with extensive formatting and Carbon interoperability, while **fisharebest/ext-calendar** delivers a lightweight, framework-agnostic multi-calendar system library. Both use the high-accuracy Borkowski algorithm for date conversions valid from 1799-2256 CE.
 
 This documentation covers complete API references, real-world implementation patterns, Laravel integration strategies, performance optimization, common pitfalls with solutions, and comprehensive troubleshooting guidance for building production-ready Persian calendar applications.

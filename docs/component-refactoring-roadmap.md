@@ -1,5 +1,7 @@
 # Component Refactoring Roadmap
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026). File paths, components, and UI details refer to that retired implementation and are kept as a record. Current architecture: [`architecture-overview.md`](architecture-overview.md); the UI lives in `resources/js/`.
+
 ## Overview
 
 This roadmap provides a phased approach to refactoring the unified `landing.blade.php` component into a more maintainable structure while preserving the excellent user experience and TALL Stack architectural benefits.

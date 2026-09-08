@@ -1,5 +1,7 @@
 # Implementation Plan: Clipboard and Saved Conversions
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026). File paths, components, and UI details refer to that retired implementation and are kept as a record. Current architecture: [`architecture-overview.md`](architecture-overview.md); the UI lives in `resources/js/`.
+
 **🎉 STATUS: IMPLEMENTATION COMPLETE** - All clipboard and save functionality has been successfully implemented as of October 2025.
 
 This document outlines the plan to implement clipboard functionality and a feature to save date-time conversions for both guest and authenticated users. The implementation was divided into three phases.

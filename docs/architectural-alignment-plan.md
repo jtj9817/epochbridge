@@ -1,5 +1,7 @@
 # EpochBridge Architectural Alignment Plan
 
+> **⚠️ Historical document.** This was written against the Blade/Livewire UI that was replaced by the React/Inertia frontend in April 2026 (Livewire runtime removed September 2026). File paths, components, and UI details refer to that retired implementation and are kept as a record. Current architecture: [`architecture-overview.md`](architecture-overview.md); the UI lives in `resources/js/`.
+
 ## Executive Summary
 
 This plan addresses the architectural deviations between the documented multi-calendar conversion implementation plan and the current working implementation. The analysis reveals that EpochBridge has successfully implemented a comprehensive calendar conversion system but with a different architectural approach than originally planned.
