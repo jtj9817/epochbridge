@@ -13,7 +13,7 @@ Maintaining accuracy and sensitivity is paramount for a tool like EpochBridge. T
 Many ancient and historical calendars are not perfectly understood, and scholarly consensus can vary. It's crucial to be transparent about this.
 
 -   **Approximations**: For calendars like Babylonian or Mayan, where conversions rely on approximations or correlation constants, this must be clearly stated.
--   **Use Disclaimers**: The `base-calendar-card.blade.php` component has a `disclaimer` slot. Use it to provide brief context or acknowledge scholarly uncertainty.
+-   **Use Disclaimers**: The React `BaseCalendarCard` component accepts a `disclaimer` prop (populated automatically by `GenericCalendarCard` when the calendar data includes one). Use it to provide brief context or acknowledge scholarly uncertainty.
     -   *Example (Babylonian)*: "This is a scholarly approximation. Exact dates are subject to interpretation of cuneiform tablets."
 -   **Cite Sources**: In the service class comments for complex historical calendars, cite the primary algorithms, constants, or scholarly sources used for the implementation.
 

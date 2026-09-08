@@ -1,71 +1,95 @@
 # Component Testing Guide
 
-This guide outlines our strategy for testing the refactored Livewire components.
+This guide covers how EpochBridge tests its React components and the HTTP surface they talk to. It was rewritten for the React/Inertia frontend (the previous Livewire/Volt component-testing approach was retired with Livewire in September 2026).
 
 ## Testing Philosophy
 
-We use a combination of **Feature** and **Browser** tests to cover our TALL stack components.
+Testing is split by layer, each with the tool that fits it:
 
--   **Feature Tests (Pest/PHPUnit)**: Ideal for testing the server-side logic of Livewire components. We use these to test actions, state changes, event emissions, and validation logic.
--   **Browser Tests (Dusk)**: Essential for testing the full user experience, including JavaScript-driven interactions (Alpine.js) and client-side events.
+| Layer | Tool | Location | What it covers |
+| --- | --- | --- | --- |
+| React components | Vitest + React Testing Library | `resources/js/**/*.test.tsx` | rendering, user interaction, callbacks |
+| PHP services & models | Pest unit tests | `tests/Unit/` | calendar math, caching, model behavior |
+| HTTP pages & JSON API | Pest feature tests | `tests/Feature/React/`, `tests/Feature/FrontendApi/`, `tests/Feature/Auth/` | Inertia pages, endpoint contracts, auth flows |
+| End-to-end UX | Laravel Dusk | `tests/Browser/` | full flows in a real browser (saves, notes, toasts) |
 
-Unit tests are reserved for complex, isolated PHP classes like our calendar services.
+## React Component Tests (Vitest + RTL)
 
-## Feature Testing Livewire Components
+Component tests live **colocated** with the component (e.g. `CalendarResultsGrid.tsx` and `CalendarResultsGrid.test.tsx`). They render the component with realistic props and assert on what the user sees — not implementation details.
 
-All component feature tests are located in `tests/Feature/Livewire/Components/`.
+Run them with:
+
+```bash
+npm run test:run        # vitest run (CI mode)
+npm run test            # vitest watch mode
+```
 
 ### Key Principles
 
-1.  **Test Component Boundaries**: For child components, focus on testing that they correctly dispatch events in response to user actions.
-2.  **Test Parent Listeners**: For the parent component (`landing`), test that it correctly responds to events from children and updates its state.
-3.  **Simulate Actions**: Use `->call('actionName', ...)` to trigger methods on the component.
-4.  **Assert State**: Use `->assertSet('propertyName', $expectedValue)` to check component state.
-5.  **Assert Events**: Use `->assertDispatched('event-name', ...)` to verify that events are emitted correctly.
+1. **Query like a user**: select by accessible role/label/text (`getByRole`, `getByText`) rather than CSS classes.
+2. **Test props-in, behavior-out**: pass props, fire events (`userEvent`), assert rendered output and that callbacks fired with the right arguments.
+3. **Mock the network at the module boundary**: components receive data via props; hooks call `lib/api.ts` — mock what the test shouldn't really do, keep the component's own logic real.
+4. **One concern per test**: name tests after the behavior ("renders every calendar key", "calls onSave with the note text").
 
-### Example: Testing `CalendarQuickActions`
+### Example
+
+```tsx
+// resources/js/components/modals/EditNoteModal.test.tsx (illustrative shape)
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { EditNoteModal } from './EditNoteModal'
+
+it('calls onSave with the trimmed note', async () => {
+  const onSave = vi.fn()
+  render(<EditNoteModal open onSave={onSave} />)
+
+  await userEvent.type(screen.getByRole('textbox'), '  my note  ')
+  await userEvent.click(screen.getByRole('button', { name: /save/i }))
+
+  expect(onSave).toHaveBeenCalledWith('my note')
+})
+```
+
+Existing examples to copy from: `CalendarResultsGrid.test.tsx`, `CalendarQuickActions.test.tsx`, `CalendarSearchFilter.test.tsx`, `SaveConversionModal.test.tsx`, `OnThisDayModal.test.tsx`, `SavedConversionsSection.test.tsx`, `lib/guest-storage.test.ts`.
+
+## Feature Tests (Pest)
+
+Inertia pages are tested like any Laravel feature: make the request, assert the Inertia page + props. The JSON API is tested with `postJson`/`getJson` against the `/frontend/*` routes, including validation edges (payload bounds, note length, ownership).
 
 ```php
-// tests/Feature/Livewire/Components/CalendarQuickActionsTest.php
-
-it('dispatches date-selected event for today', function () {
-    $today = now()->format('Y-m-d');
-    Volt::test('components.calendar-quick-actions', ['inputType' => 'gregorian'])
-        ->call('setToday')
-        ->assertDispatched('date-selected', date: $today);
+// tests/Feature/FrontendApi/ConversionControllerTest.php (illustrative shape)
+it('converts a gregorian date', function () {
+    $this->postJson('/frontend/conversions', [
+        'date' => '2024-01-15',
+        'input_type' => 'gregorian',
+    ])->assertSuccessful();
 });
 ```
 
-## Browser Testing with Dusk
+Auth flows (login, registration, password reset, email verification, 2FA, rate limiting, Google OAuth) live under `tests/Feature/Auth/`; Inertia page render tests under `tests/Feature/React/` mirror the controller layout (`React/Auth/`, `React/Settings/`, `React/Dashboard/`, `React/LandingPageTest.php`).
 
-Dusk tests are in `tests/Browser/` and cover end-to-end user flows.
+## Browser Tests (Dusk)
 
-### Key Principles
-
-1.  **Simulate Real User Behavior**: Interact with the page as a user would (clicking, typing, etc.).
-2.  **Test Alpine.js Interactions**: Verify client-side functionality like search filtering, guest saves (localStorage), and copy-to-clipboard feedback.
-3.  **Use Selectors**: Use stable selectors like IDs, names, or `dusk` attributes for reliable tests.
-4.  **Wait for Elements**: Use `waitForText`, `waitUntilMissing`, etc., to handle the asynchronous nature of Livewire and JavaScript.
-
-### Example: Testing Guest Saves
+Dusk covers flows that only make sense end-to-end: guest saves persisting across reloads, note management, toast feedback. Tests live in `tests/Browser/` with page objects under `tests/Browser/Pages/`.
 
 ```php
-// tests/Browser/LandingPageTest.php
-
-public function test_guest_can_save_and_delete_conversions(): void
+// tests/Browser/SavedConversionsTest.php (illustrative shape)
+public function test_guest_save_and_delete(): void
 {
     $this->browse(function (Browser $browser) {
         $browser->visit('/')
-            ->type('date-input-gregorian', '2024-01-01')
-            ->press('Convert Date')
-            ->waitForText('Conversion Results')
-            ->press('Save') // Triggers Alpine.js function
-            ->waitForText('Your Saved Conversions')
-            ->assertSeeIn('#saved-conversions-guest', '2024-01-01')
-            ->with('#saved-conversions-guest', function ($guestConversions) {
-                $guestConversions->press('Delete');
-            })
-            ->waitUntilMissingText('2024-01-01');
+            ->type('date-input', '2024-01-15')
+            ->press('Convert')
+            ->waitForText('Gregorian')
+            ->press('Save');
     });
 }
 ```
+
+Run them with `php artisan dusk` once Sail is up. Prefer stable selectors (IDs, names, `dusk:` attributes); the React UI re-renders asynchronously, so pair assertions with `waitForText` / `waitUntilMissing`.
+
+## What goes where — decision rules
+
+- Pure rendering or callback logic → **Vitest component test** (fast, no Laravel boot).
+- Validation, authorization, throttling, Eloquent behavior → **Pest feature/unit test**.
+- Anything where the browser itself is part of the contract (localStorage, toasts, focus) → **Dusk browser test**.

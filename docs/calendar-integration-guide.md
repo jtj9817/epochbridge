@@ -25,45 +25,27 @@ In `app/Services/DateTimeConverterService.php`, add your new service to the cons
 public function __construct()
 {
     $this->calendarServices = [
-        // ... existing services
-        'new-calendar' => new NewCalendarService(),
+        // ... existing services (resolved with app(...))
+        'new-calendar' => app(NewCalendarService::class),
     ];
 }
 ```
-If it's a fast-loading calendar, add its key to the `$fastCalendars` array. Otherwise, it will be lazy-loaded.
+If it's a fast-loading calendar, add its key to the `$fastCalendars` array. Otherwise, it will be computed in the additional tier.
 
-## 3. Create a Calendar Card Component
+## 3. Frontend Card (React)
 
-Create a new Blade component to display the results for your calendar.
+The React results grid renders one card per calendar key (`resources/js/components/calendars/CalendarResultsGrid.tsx`):
 
--   Create `resources/views/components/calendars/new-calendar-card.blade.php`.
--   Use the `base-calendar-card` component and pass in props.
--   Design the card to display the data returned by your service's `fromGregorian` method.
-
-```blade
-@props(['data'])
-
-<x-calendars.base-calendar-card
-    title="New Calendar"
-    :copyText="$data['full_date'] ?? ''"
-    copyType="new_calendar"
-    class="bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-800"
->
-    {{-- Your custom display logic here --}}
-    <div class="text-6xl font-bold">{{ $data['day'] ?? 'N/A' }}</div>
-    <div>{{ $data['month_name'] ?? 'N/A' }} {{ $data['year'] ?? 'N/A' }}</div>
-</x-calendars.base-calendar-card>
-```
-
-The `calendar-results-grid.blade.php` component will automatically pick up and render this new card using `<x-dynamic-component>` as long as the filename matches the service key.
+- By default, your calendar renders through `GenericCalendarCard`, which displays the standard fields (`full_date`, `year`, `month_name`, `day`, …) and a `disclaimer` if the data contains one — **no frontend work required** for standard output.
+- Only if your calendar needs bespoke rendering: create `resources/js/components/calendars/NewCalendarCard.tsx` using `BaseCalendarCard` for the shared frame (title, copy button, `.sd-*` styling), add a mapping from your service key to the card in `CalendarResultsGrid`, and export it from `resources/js/components/calendars/index.ts`.
 
 ## 4. Add Input Type (Optional)
 
 If you want to allow direct input in your new calendar's format:
 
-1.  Add it to the `$inputTypes` array in `resources/views/livewire/landing.blade.php`.
+1.  Add the key to `INPUT_TYPES` (and its `INPUT_TYPE_LABELS` entry) in `resources/js/types/calendar.ts`.
 2.  Add a case for it in `parseInputDate` in `app/Services/DateTimeConverterService.php`.
-3.  Add validation rules and an input field in `resources/views/livewire/components/calendar-input-section.blade.php`.
+3.  The input-type selector in `resources/js/components/forms/CalendarInputSection.tsx` picks the new option up from the shared type definitions.
 
 ## 5. Add Tests
 
