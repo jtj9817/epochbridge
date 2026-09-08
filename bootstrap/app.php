@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\ForceHttps::class,
+            \App\Http\Middleware\SetSecurityHeaders::class,
         ]);
 
         $middleware->web(append: [
