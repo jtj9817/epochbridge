@@ -44,11 +44,11 @@ test('user can authenticate with google', function () {
 
 test('existing user can link google account', function () {
     $user = User::factory()->create([
-        'email' => '[email protected]',
+        'email' => 'test@example.com',
         'password' => 'password',
     ]);
 
-    mockSocialite('[email protected]', 'new_123', 'Test User');
+    mockSocialite('test@example.com', 'new_123', 'Test User');
 
     $response = $this->get(route('social.callback', 'google'));
 
@@ -61,6 +61,24 @@ test('existing user can link google account', function () {
     ]);
 
     expect($user->fresh()->socialAccounts()->count())->toBe(1);
+});
+
+test('google login is refused for an existing unverified account', function () {
+    $user = User::factory()->unverified()->create([
+        'email' => 'previously_registered@example.com',
+        'password' => 'password',
+    ]);
+
+    mockSocialite('previously_registered@example.com', 'new_123', 'Test User');
+
+    $this->get(route('social.callback', 'google'))
+        ->assertRedirect('/login')
+        ->assertSessionHasErrors(['oauth']);
+
+    $this->assertGuest();
+
+    expect(SocialAccount::count())->toBe(0)
+        ->and($user->fresh()->socialAccounts()->count())->toBe(0);
 });
 
 test('oauth error is handled gracefully', function () {

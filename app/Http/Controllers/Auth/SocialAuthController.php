@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Exceptions\OAuthAccountLinkException;
 use App\Http\Controllers\Controller;
 use App\Models\SocialAccount;
 use App\Models\User;
@@ -68,6 +69,11 @@ class SocialAuthController extends Controller
 
             return redirect()->intended(config('fortify.home', '/dashboard'));
 
+        } catch (OAuthAccountLinkException $e) {
+            DB::rollBack();
+
+            return redirect()->route('login')
+                ->withErrors(['oauth' => $e->getMessage()]);
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -98,6 +104,12 @@ class SocialAuthController extends Controller
 
         if (! $user) {
             $user = $this->createUser($socialUser);
+        } elseif (! $user->hasVerifiedEmail()) {
+            // A password-created account that never verified its address may
+            // belong to someone who merely typed in this email (account
+            // pre-hijacking). Only link into accounts that have proven
+            // control of the mailbox.
+            throw OAuthAccountLinkException::unverifiedEmail($provider);
         }
 
         $this->createSocialAccount($user, $provider, $socialUser);

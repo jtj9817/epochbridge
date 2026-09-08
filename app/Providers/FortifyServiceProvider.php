@@ -30,6 +30,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         $this->registerTwoFactorChallengeView();
         $this->registerConfirmPasswordView();
+        $this->registerEmailVerificationPromptView();
         $this->registerUserActions();
 
         RateLimiter::for('two-factor', function (Request $request) {
@@ -61,6 +62,17 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::confirmPasswordView(function () {
             return Inertia::render('Auth/ConfirmPasswordPage');
+        });
+    }
+
+    protected function registerEmailVerificationPromptView(): void
+    {
+        // Keep Fortify's /email/verify route consistent with the custom
+        // /verify-email page when it is requested directly.
+        Fortify::verifyEmailView(function () {
+            return Inertia::render('Auth/VerifyEmailPage', [
+                'status' => session('status'),
+            ]);
         });
     }
 }
