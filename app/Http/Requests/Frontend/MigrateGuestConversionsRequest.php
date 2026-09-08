@@ -2,10 +2,17 @@
 
 namespace App\Http\Requests\Frontend;
 
+use App\Rules\MaxPayloadBytes;
 use Illuminate\Foundation\Http\FormRequest;
 
 class MigrateGuestConversionsRequest extends FormRequest
 {
+    /**
+     * Upper bound for each client-supplied conversion payload; see
+     * StoreSavedConversionRequest.
+     */
+    private const MAX_CONVERSION_DATA_BYTES = 65536;
+
     public function authorize(): bool
     {
         return true;
@@ -19,7 +26,7 @@ class MigrateGuestConversionsRequest extends FormRequest
         return [
             'items' => ['required', 'array', 'max:3'],
             'items.*.original_input' => ['required', 'string', 'max:255'],
-            'items.*.conversion_data' => ['required', 'array'],
+            'items.*.conversion_data' => ['required', 'array', 'max:128', new MaxPayloadBytes(self::MAX_CONVERSION_DATA_BYTES)],
             'items.*.note' => ['nullable', 'string', 'max:2048'],
             'items.*.created_at' => ['nullable', 'string'],
         ];

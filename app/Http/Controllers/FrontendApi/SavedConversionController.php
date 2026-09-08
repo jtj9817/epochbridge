@@ -4,6 +4,7 @@ namespace App\Http\Controllers\FrontendApi;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Frontend\MigrateGuestConversionsRequest;
+use App\Http\Requests\Frontend\StoreSavedConversionRequest;
 use App\Http\Resources\Frontend\SavedConversionResource;
 use App\Models\SavedConversion;
 use Illuminate\Http\JsonResponse;
@@ -23,13 +24,9 @@ class SavedConversionController extends Controller
         return SavedConversionResource::collection($conversions);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreSavedConversionRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'original_input' => ['required', 'string', 'max:255'],
-            'conversion_data' => ['required', 'array'],
-            'note' => ['nullable', 'string', 'max:2048'],
-        ]);
+        $validated = $request->validated();
 
         $conversion = SavedConversion::create([
             'user_id' => $request->user()->id,

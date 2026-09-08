@@ -363,3 +363,56 @@ it('validates note max length on note update', function () {
     $response->assertUnprocessable()
         ->assertJsonValidationErrors(['note']);
 });
+
+it('rejects oversized conversion data on store', function () {
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.store'), [
+            'original_input' => '2024-01-15',
+            'conversion_data' => ['blob' => str_repeat('a', 70 * 1024)],
+        ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['conversion_data']);
+});
+
+it('rejects conversion data with too many top-level keys on store', function () {
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.store'), [
+            'original_input' => '2024-01-15',
+            'conversion_data' => array_fill_keys(range(1, 129), 'x'),
+        ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['conversion_data']);
+});
+
+it('rejects deeply nested conversion data on store', function () {
+    $nested = 'leaf';
+    foreach (range(1, 600) as $i) {
+        $nested = ['layer' => $nested];
+    }
+
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.store'), [
+            'original_input' => '2024-01-15',
+            'conversion_data' => ['nested' => $nested],
+        ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['conversion_data']);
+});
+
+it('rejects oversized conversion data on migrate', function () {
+    $response = $this->actingAs($this->user)
+        ->postJson(route('frontend.saved-conversions.migrate'), [
+            'items' => [
+                [
+                    'original_input' => '2024-01-15',
+                    'conversion_data' => ['blob' => str_repeat('a', 70 * 1024)],
+                ],
+            ],
+        ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['items.0.conversion_data']);
+});
