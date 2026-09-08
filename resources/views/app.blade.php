@@ -15,7 +15,7 @@
                 || path === '/forgot-password'
                 || path.startsWith('/reset-password/')
                 || path === '/two-factor-challenge'
-                || path === '/verify-email'
+                || path === '/email/verify'
                 || path === '/confirm-password';
 
             if (isPublicDarkRoute) {

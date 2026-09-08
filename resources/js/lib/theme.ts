@@ -8,7 +8,7 @@ function isPublicDarkRoute(pathname: string): boolean {
     pathname === '/forgot-password' ||
     pathname.startsWith('/reset-password/') ||
     pathname === '/two-factor-challenge' ||
-    pathname === '/verify-email' ||
+    pathname === '/email/verify' ||
     pathname === '/confirm-password'
   )
 }

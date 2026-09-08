@@ -22,10 +22,10 @@ it('redirects unauthenticated users to login from dashboard', function () {
     $response->assertRedirect(route('login'));
 });
 
-it('allows access when user model does not enforce email verification', function () {
+it('redirects unverified users to the verification notice from dashboard', function () {
     $user = User::factory()->create(['email_verified_at' => null]);
 
     $response = $this->actingAs($user)->get(route('dashboard'));
 
-    $response->assertSuccessful();
+    $response->assertRedirect(route('verification.notice'));
 });

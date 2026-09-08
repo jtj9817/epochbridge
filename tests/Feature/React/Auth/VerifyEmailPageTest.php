@@ -24,7 +24,7 @@ it('redirects verified user to dashboard from verify email page', function () {
 
     $response = $this->actingAs($user)->get(route('verification.notice'));
 
-    $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+    $response->assertRedirect(route('dashboard', absolute: false));
 });
 
 it('requires authentication to access verify email page', function () {

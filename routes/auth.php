@@ -3,12 +3,10 @@
 use App\Http\Controllers\Auth\DeleteAccountController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\SocialAuthController;
-use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\React\Auth\ForgotPasswordPageController;
 use App\Http\Controllers\React\Auth\LoginPageController;
 use App\Http\Controllers\React\Auth\RegisterPageController;
 use App\Http\Controllers\React\Auth\ResetPasswordPageController;
-use App\Http\Controllers\React\Auth\VerifyEmailPageController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
 use Laravel\Fortify\Http\Controllers\RegisteredUserController;
@@ -41,12 +39,6 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('verify-email', VerifyEmailPageController::class)->name('verification.notice');
-
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
-
     Route::delete('user', DeleteAccountController::class)
         ->name('current-user.destroy');
 });

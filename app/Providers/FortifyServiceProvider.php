@@ -75,8 +75,8 @@ class FortifyServiceProvider extends ServiceProvider
 
     protected function registerEmailVerificationPromptView(): void
     {
-        // Keep Fortify's /email/verify route consistent with the custom
-        // /verify-email page when it is requested directly.
+        // Fortify owns the verification routes; render the React page from
+        // its prompt controller.
         Fortify::verifyEmailView(function () {
             return Inertia::render('Auth/VerifyEmailPage', [
                 'status' => session('status'),
