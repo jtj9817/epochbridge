@@ -1,7 +1,9 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-EpochBridge runs on Laravel 12 with the TALL stack. Domain logic stays in `app/`—calendar conversions under `app/Services/*CalendarService.php` and interactive flows under `app/Livewire`. Views, Tailwind assets, and Vite entry points live in `resources/views`, `resources/css`, and `resources/js`. Routes are declared in `routes/web.php` (HTTP) and `routes/api.php` (API); database setup is in `database/migrations` and `database/seeders`. Tests live in `tests/` with Pest suites split into `Feature`/`Unit` and Dusk browser specs in `tests/Browser`. Reference deep dives in `docs/`.
+EpochBridge runs on Laravel 12 with a React 19 + Inertia + TypeScript frontend (Tailwind CSS 4 via Vite). Domain logic stays in `app/`—calendar conversions under `app/Services/*CalendarService.php`, JSON endpoints for the React UI under `app/Http/Controllers/FrontendApi`, and Inertia page controllers under `app/Http/Controllers/React`. React pages, components, hooks, and the API client live in `resources/js`; Blade is reduced to the Inertia shell (`resources/views/app.blade.php`). Routes are declared in `routes/web.php` (Inertia pages), `routes/auth.php` (authentication), and `routes/frontend.php` (session-backed JSON API under `/frontend`); database setup is in `database/migrations` and `database/seeders`. Tests live in `tests/` with Pest suites split into `Feature`/`Unit`, Dusk browser specs in `tests/Browser`, and Vitest component tests colocated as `*.test.tsx` under `resources/js`. Reference deep dives in `docs/`.
+
+Note: Livewire, Volt, and Alpine.js were removed in September 2026 (commits `a144ac3`, `16c4d69`); the `livewire/flux` Composer dependency is an unused leftover. Do not add Livewire/Volt/Flux/Alpine code.
 
 ## Build, Test, and Development Commands
 - `composer install` / `npm install`: bootstrap PHP and JS dependencies.
@@ -11,7 +13,7 @@ EpochBridge runs on Laravel 12 with the TALL stack. Domain logic stays in `app/`
 - `php artisan migrate --graceful [--seed]` applies database changes.
 
 ## Coding Style & Naming Conventions
-Format PHP with `./vendor/bin/pint` (PSR-12, four-space indentation) before pushing. Service classes use descriptive calendar names, Livewire components stay in PascalCase, and Blade files use kebab-case. Tailwind utility classes live beside components in `resources/views/components`, and ES modules export camelCase symbols via Vite ESM imports.
+Format PHP with `./vendor/bin/pint` (PSR-12, four-space indentation) before pushing. Service classes use descriptive calendar names, React components are PascalCase `.tsx` files, and frontend modules export camelCase symbols via Vite ESM imports. The `.sd-*` Stardew pixel design-system classes live in `resources/css/stardew.css` and `resources/css/stardew-frames.css`—reuse them before writing new CSS.
 
 ## Testing Guidelines
 Run the main suite with `php artisan test`; target suites via `--testsuite=Feature|Unit`. Launch browser coverage with `php artisan dusk` after Sail is running. Heavy suites can use `./vendor/bin/paratest --runner pest` for parallel execution. Name tests with Pest's `it('describes behavior')` style and keep fixtures under the matching feature folder.

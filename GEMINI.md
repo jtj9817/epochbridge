@@ -1,6 +1,6 @@
 # EpochBridge Project Context
 
-EpochBridge is a comprehensive calendar conversion platform built with Laravel 12 and the TALL Stack (Tailwind CSS 4, Alpine.js, Livewire 3, Laravel 12). It supports 19 calendar systems across modern, historical, ancient, and technical formats.
+EpochBridge is a comprehensive calendar conversion platform built with Laravel 12 and a React 19 + Inertia + TypeScript frontend (Tailwind CSS 4). It supports 19 calendar systems across modern, historical, ancient, and technical formats. The frontend was migrated from Livewire/Volt in April 2026; the Livewire runtime was fully removed in September 2026.
 
 ## Project Overview
 
@@ -15,7 +15,7 @@ EpochBridge is a comprehensive calendar conversion platform built with Laravel 1
 ## Tech Stack
 
 - **Backend**: Laravel 12 (PHP 8.2+), Fortify, Socialite.
-- **Frontend**: Livewire 3 (Volt), Alpine.js, Tailwind CSS 4, Flux UI.
+- **Frontend**: React 19 + Inertia 2 + TypeScript, Tailwind CSS 4, Vite.
 - **Database**: MySQL 8.0.
 - **Testing**: PestPHP, Laravel Dusk, Pest Browser Plugin.
 - **Containerization**: Laravel Sail (Dev), Docker (Prod).
@@ -67,12 +67,12 @@ The project uses Pest for testing. Always run tests before committing.
 ### Architecture & Design
 - **Services**: Business logic belongs in `app/Services/`. `DateTimeConverterService` is the primary orchestrator.
 - **Calendar Adapters**: New complex calendar systems should implement `CalendarConversionService` and use the Adapter Pattern if they wrap external libraries.
-- **Livewire Volt**: Use Volt for frontend components. Components are located in `resources/views/livewire/`.
+- **React components**: Frontend components live in `resources/js/` (pages, components, hooks, layouts). Interactive data flows through the session-backed JSON API in `routes/frontend.php`; use the CSRF-aware client in `resources/js/lib/api.ts`.
 - **Cultural Accuracy**:
   - Use native/authentic names for months/days.
   - Provide English transliterations.
   - Use `ensureTimezone()` in calendar services for geographical accuracy.
-  - Add disclaimers for scholarly uncertainty in `disclaimer` slots of calendar cards.
+  - Add disclaimers for scholarly uncertainty via the `disclaimer` prop on calendar cards (`BaseCalendarCard`).
 
 ### Security
 - **ABSOLUTE RULE**: DO NOT READ the user's `.env` file. If you need to verify a configuration, ask for permission or look at `.env.example`.
@@ -85,7 +85,7 @@ The project uses Pest for testing. Always run tests before committing.
 - `app/Services/CalendarConversionService.php`: Base class for calendar implementations.
 - `config/calendars.php`: Configuration for specific calendar systems.
 - `app/Console/Commands/InteractiveTestRunnerCommand.php`: The custom test runner.
-- `resources/views/livewire/landing.blade.php`: Main application entry point.
+- `resources/js/pages/LandingPage.tsx`: Main application entry point (React/Inertia).
 - `docs/`: Extensive documentation on architecture, cultural accuracy, and more.
 
 ===

@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-EpochBridge is a Laravel 12 application built with the TALL Stack (Tailwind CSS, Alpine.js, Livewire, Laravel). It uses Livewire Volt for single-file components and Flux UI for the design system. The application features a complete authentication system using Laravel Fortify with two-factor authentication support.
+EpochBridge is a Laravel 12 application with a React 19 + Inertia + TypeScript frontend (Tailwind CSS 4). The frontend was migrated from Livewire/Volt/Alpine/Flux in April 2026 and the Livewire runtime was fully removed in September 2026 — do not add Livewire, Volt, Alpine, or Flux code (`livewire/flux` in Composer is an unused leftover). The application features a complete authentication system using Laravel Fortify (including email verification and two-factor authentication) with Google OAuth via Socialite.
 
-### TALL Stack Components
-- **Tailwind CSS 4**: Utility-first CSS framework with first-party Vite integration
-- **Alpine.js**: Lightweight JavaScript framework for client-side interactivity (auto-included with Livewire 3)
-- **Livewire 3**: Full-stack framework for building dynamic interfaces without leaving PHP
-- **Laravel 12**: The backend foundation with modern PHP 8.2+ features
+### Stack Components
+- **Laravel 12**: Backend, PHP 8.2+
+- **React 19 + Inertia 2**: Frontend pages and components in `resources/js/`
+- **Tailwind CSS 4**: Utility-first CSS with first-party Vite integration; custom `.sd-*` Stardew pixel design system
+- **Vite 7**: Frontend build tool (entry: `resources/js/app.tsx`)
 
 ### Additional Dependencies
 - **fisharebest/ext-calendar**: Extended calendar functionality
@@ -60,11 +60,14 @@ php artisan test tests/Feature/Auth/AuthenticationTest.php
 
 ### Frontend
 ```bash
-# Start Vite development server (uses port 5174)
+# Start Vite development server (VITE_PORT, default 5173)
 npm run dev
 
 # Build for production
 npm run build
+
+# Run React component tests (Vitest)
+npm run test:run
 ```
 
 ### Code Quality
@@ -84,35 +87,30 @@ php artisan pail
 - **Email Verification**: Required for new accounts
 - **Password Confirmation**: Required for sensitive operations
 
-### TALL Stack Architecture
-- **Livewire Volt**: Single-file components combining PHP logic and Blade templates in `resources/views/livewire/`
-- **Alpine.js**: Handles client-side interactivity (dropdowns, toggles, modals) without server roundtrips
-- **Flux UI**: Component library providing design system and pre-built components
+### React/Inertia Architecture
+- **React pages**: `resources/js/pages/` (landing, dashboard, `Auth/*`, `Settings/*`) rendered by Inertia controllers in `app/Http/Controllers/React/`
+- **Components**: `resources/js/components/` (`calendars/`, `forms/`, `modals/`, `saved-conversions/`)
+- **Data hooks**: `resources/js/hooks/` (`useSavedConversions`, `useGuestSavedConversions`, `useOnThisDay`); API client with CSRF header in `resources/js/lib/api.ts`
 - **TailwindCSS 4**: Utility-first CSS with `@source` directives in CSS for content scanning
 - **Vite**: Frontend build tool with hot module replacement and instant updates
 
-### Livewire Volt Structure
-Volt components are located in:
-- `resources/views/livewire/auth/` - Authentication forms (login, register, etc.)
-- `resources/views/livewire/settings/` - User settings pages
-- `resources/views/pages/` - Full-page components (configured in VoltServiceProvider)
-
-### Layout System
-- `components/layouts/app.blade.php` - Main application layout with sidebar
-- `components/layouts/auth.blade.php` - Authentication pages layout
-- Layout variants: card, simple, split for different auth page styles
+### Layout System (React)
+- `resources/js/layouts/AppLayout.tsx` - Authenticated application shell
+- `resources/js/layouts/AuthLayout.tsx` - Authentication pages
+- `resources/js/layouts/SettingsLayout.tsx` - Settings pages
 
 ### Routing
-- **Web routes**: Standard Laravel routes in `routes/web.php`
-- **Volt routes**: File-based routing for Livewire components
-- **Auth routes**: Fortify authentication routes in `routes/auth.php`
+- **Web routes**: Inertia pages in `routes/web.php`
+- **Frontend API**: Session-backed JSON endpoints in `routes/frontend.php` (under `/frontend/*`)
+- **Auth routes**: Fortify + OAuth routes in `routes/auth.php`
 
 ## Environment Configuration
 
 ### Docker Ports
 - **Laravel**: Port 8081 (APP_PORT)
 - **MySQL**: Port 3307 (FORWARD_DB_PORT)
-- **Vite**: Port 5174 (VITE_PORT)
+### Vite Port
+- **Vite**: `VITE_PORT` (default 5173 in `.env.example`)
 
 ### Database
 - **Driver**: MySQL 8.0 (via Docker)
@@ -123,8 +121,8 @@ Volt components are located in:
 
 ### Configuration
 - `config/fortify.php` - Authentication features and settings
-- `app/Providers/VoltServiceProvider.php` - Volt component mounting
-- `app/Providers/FortifyServiceProvider.php` - Fortify customization
+- `app/Providers/FortifyServiceProvider.php` - Fortify customization (Inertia views, rate limiters)
+- `app/Providers/AppServiceProvider.php` - Calendar adapter binding, HTTPS forcing, rate limiters
 - `vite.config.js` - Frontend build configuration
 
 ### Models
@@ -144,19 +142,16 @@ php artisan migrate --env=testing
 ```
 
 ### Debugging Tools
-- **Ray**: `ray($this)` in component methods for real-time debugging
+- **Ray**: `ray($this)` for real-time debugging
 - **Laravel Debugbar**: Monitor queries and performance
-- **WireSpy**: Livewire-specific debugging with CMD+L
-- **Alpine DevTools**: Browser extension for Alpine state inspection
+- **React DevTools**: Browser extension for component tree and state inspection
 
 ## EpochBridge-Specific Configuration
 
 ### Tailwind CSS 4 Setup
-The project uses Tailwind CSS 4 with Vite integration. Content paths are configured via `@source` directives in `resources/css/app.css`:
+The project uses Tailwind CSS 4 with Vite integration. Content paths are configured via `@source` directives in `resources/css/app.css`, scanning the React sources:
 ```css
-@source '../**/*.blade.php';
-@source '../../app/Livewire/**/*.php';
-@source '../../resources/views/**/*.blade.php';
+@source '../**/*.tsx';
 ```
 
 ### Calendar Integration
@@ -166,26 +161,15 @@ The project includes calendar functionality with Persian/Jalali support:
 
 When working with dates, consider both Gregorian and Jalali calendar systems.
 
-### Livewire Volt Configuration
-Volt components are mounted in `app/Providers/VoltServiceProvider.php`:
-```php
-Volt::mount([
-    config('livewire.view_path', resource_path('views/livewire')),
-    resource_path('views/pages'),
-]);
-```
-
-This allows both traditional Livewire components and page-level Volt components.
-
-### Authentication with Fortify + Livewire + Socialite
-All authentication flows use Livewire Volt components with OAuth integration:
-- Login: `resources/views/livewire/auth/login.blade.php` (includes Google Sign-In button)
-- Registration: `resources/views/livewire/auth/register.blade.php`
-- Two-Factor: `resources/views/livewire/auth/two-factor-challenge.blade.php`
-- Password Reset: `resources/views/livewire/auth/reset-password.blade.php`
+### Authentication with Fortify + Inertia + Socialite
+Authentication pages are React components rendered through Inertia:
+- Login: `resources/js/pages/Auth/LoginPage.tsx` (includes Google Sign-In button)
+- Registration: `resources/js/pages/Auth/RegisterPage.tsx`
+- Two-Factor: `resources/js/pages/Auth/TwoFactorChallengePage.tsx`
+- Password Reset: `resources/js/pages/Auth/ResetPasswordPage.tsx`
 - OAuth Controller: `app/Http/Controllers/Auth/SocialAuthController.php`
 
-When modifying authentication flows, maintain the existing Volt pattern with `#[Layout('components.layouts.auth')]` attribute.
+Fortify's view hooks (2FA challenge, confirm password, email verification prompt) are registered as Inertia renders in `app/Providers/FortifyServiceProvider.php`. When modifying authentication flows, keep pages under `resources/js/pages/Auth/` and their controllers under `app/Http/Controllers/React/Auth/`.
 
 #### OAuth Authentication Pattern
 The application uses Laravel Socialite for Google OAuth integration. Key patterns:
