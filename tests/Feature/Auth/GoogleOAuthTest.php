@@ -124,6 +124,17 @@ test('user cancelled oauth flow is handled', function () {
     $response->assertSessionHasErrors(['oauth']);
 });
 
+test('oauth error description is not reflected on the login page', function () {
+    $this->get(route('social.callback', 'google').'?error=unauthorized_client&error_description=<script>alert(1)</script>')
+        ->assertRedirect('/login')
+        ->assertSessionHasErrors(['oauth']);
+
+    expect(session('errors')->first('oauth'))
+        ->not->toContain('<script>')
+        ->not->toContain('alert')
+        ->toBe('Authentication failed. Please try again.');
+});
+
 test('returning user has tokens updated', function () {
     $user = User::factory()->create(['email' => '[email protected]']);
 

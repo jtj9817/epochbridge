@@ -156,18 +156,28 @@ class SocialAuthController extends Controller
         ]);
     }
 
+    /**
+     * Provider error codes mapped to fixed messages. The error_description
+     * query parameter is attacker-controllable text and is never reflected
+     * back onto the login page, only logged.
+     *
+     * @var array<string, string>
+     */
+    private const OAUTH_ERROR_MESSAGES = [
+        'access_denied' => 'Authentication was cancelled.',
+    ];
+
     protected function handleOAuthError(Request $request)
     {
         $error = $request->input('error');
-        $errorDescription = $request->input('error_description', 'Authentication cancelled');
 
         Log::warning('OAuth error from provider', [
             'error' => $error,
-            'description' => $errorDescription,
+            'description' => $request->input('error_description'),
         ]);
 
         return redirect()->route('login')
-            ->withErrors(['oauth' => $errorDescription]);
+            ->withErrors(['oauth' => self::OAUTH_ERROR_MESSAGES[$error] ?? 'Authentication failed. Please try again.']);
     }
 
     protected function validateProvider(string $provider): void
