@@ -5,6 +5,59 @@ All notable changes to EpochBridge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [September 5-8, 2026] - Security Hardening, Livewire Removal & API Robustness
+
+### Added
+- **Stardew pixel design system**: custom `.sd-*` design foundation with pixel fonts and original pixel-art assets, restyling the landing converter, modals, toasts, auth, settings, and dashboard.
+- **Seasonal city backdrops**: spring/summer/autumn/winter artwork rotating on the landing page.
+
+### Changed
+- **Email verification now required**: new users must verify their address (dashboard is gated on `verified`); existing users were grandfathered as verified.
+- **Public API throttling**: `/frontend/conversions`, `/frontend/on-this-day`, and `/frontend/quick-action` are limited to 60 requests/minute per IP.
+- **Auth throttling**: registration limited to 10/hour per IP; password-reset-link requests to 5/minute per IP.
+- **Guest migration hardening**: server-side validation (max 3 items, ≤128 keys and ≤64 KiB per payload) and dedupe by original input.
+- **Note length aligned** at 2048 characters across frontend and backend.
+- **Test suite ported** from Livewire component tests to HTTP feature tests plus React component tests (Vitest).
+
+### Fixed
+- **Security headers on all web responses**: Content-Security-Policy, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, and HSTS over TLS.
+- Google OAuth no longer reflects the provider's `error_description` on the login page (attacker-controllable text).
+- Two-factor attributes no longer appear in user serialization.
+- Conversion caching skipped for time-precise inputs (Unix, ISO 8601), which previously grew the cache-key space without bound.
+- React app fixes: functional logout and account deletion, Fortify profile/password endpoints, results-grid save button wiring, auth routes loaded once.
+
+### Removed
+- **Livewire and Volt runtime** removed in favor of the React frontend; the unused `livewire/volt` dependency was dropped (`livewire/flux` remains an unused leftover).
+
+### Security
+- **OAuth account-linking guard**: linking a Google identity into an existing account with an unverified email is refused (account pre-hijacking prevention); OAuth uses PKCE throughout.
+
+## [July 10, 2026] - Saved Conversions Display
+
+### Fixed
+- Saved conversions display romanized Jalali day names; calendar card rendering hardened.
+
+## [April 14-15, 2026] - React/Inertia Frontend Migration
+
+### Added
+- **React 19 + Inertia + TypeScript frontend** replacing Blade/Livewire/Volt/Flux/Alpine: landing converter, authentication pages, settings, dashboard, modals, toasts, saved conversions with notes, guest saves, and the On This Day UX.
+- **Session-backed JSON API** under `/frontend/*` for the React app: conversions, saved conversions (store/list/delete/notes/guest migration), quick actions, and On This Day.
+- **Vitest + Testing Library** infrastructure with component tests colocated in `resources/js/`.
+
+### Changed
+- Development port consolidated from 8080/8086 to **8081** (Google OAuth redirect URIs and Docker port mappings updated).
+
+## [January 13-29, 2026] - On This Day Enhancements & Security Remediation
+
+### Added
+- Wikimedia On This Day enhancements: granular per-section updates, section loading indicator, cache helper, performance timing and payload-size logging.
+
+### Fixed
+- **Security remediation plan implemented**: stateful OAuth with state validation (PKCE), HTTPS enforcement groundwork, secure cookies, input hardening.
+
+### Changed
+- Custom favicon with bridge design.
+
 ## [December 10, 2025] - Docker Containerization & UI Refinements
 
 ### Added
