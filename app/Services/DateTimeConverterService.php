@@ -67,87 +67,93 @@ class DateTimeConverterService
         ];
     }
 
+    /**
+     * Input types that carry time-of-day precision: every distinct value
+     * yields a distinct result, so a cached entry would never be reused
+     * while the cache-key space grows without bound.
+     */
+    private const TIME_PRECISE_INPUT_TYPES = ['unix', 'iso8601'];
+
     public function convert(string $dateString, string $inputType = 'gregorian'): array
     {
-        $cacheKey = 'conversion_fast_'.md5($dateString.$inputType);
-
-        return Cache::remember($cacheKey, 3600, function () use ($dateString, $inputType) {
-            if (empty(trim($dateString))) {
-                throw new InvalidArgumentException('Input date cannot be empty.');
-            }
-
-            $carbonDate = $this->parseInputDate($dateString, $inputType);
-
-            $jalaliDate = Jalalian::fromCarbon($carbonDate);
-            $julianDayNumber = gregoriantojd($carbonDate->month, $carbonDate->day, $carbonDate->year);
-            $julianDateTime = $julianDayNumber
-                 + ($carbonDate->hour / 24)
-                 + ($carbonDate->minute / 1440)
-                 + ($carbonDate->second / 86400);
-
-            $result = [
-                'gregorian' => [
-                    'year' => $carbonDate->year,
-                    'month_name' => $carbonDate->format('F'),
-                    'day' => $carbonDate->day,
-                    'day_of_week' => $carbonDate->format('l'),
-                    'full_date' => $carbonDate->format('Y-m-d'),
-                    'tags' => ['modern', 'solar'],
-                    'name' => 'Gregorian',
-                ],
-                'jalali' => [
-                    'year' => $jalaliDate->getYear(),
-                    'month_name' => $jalaliDate->format('%B'),
-                    'month_name_en' => self::JALALI_MONTHS_EN[$jalaliDate->getMonth()],
-                    'day' => $jalaliDate->getDay(),
-                    'day_of_week' => $jalaliDate->format('%A'),
-                    'day_of_week_en' => self::JALALI_DAYS_EN[$jalaliDate->getDayOfWeek()],
-                    'full_date' => $jalaliDate->format('Y/m/d'),
-                    'tags' => ['modern', 'solar'],
-                    'name' => 'Jalali',
-                ],
-                'unix' => $carbonDate->unix(),
-                'iso8601' => $carbonDate->clone()->utc()->toIso8601String(),
-                'julian-day' => $julianDayNumber,
-                'modified-julian-day' => $julianDateTime - 2400000.5,
-            ];
-
-            // Add fast calendar conversions
-            foreach ($this->fastCalendars as $key) {
-                if (isset($this->calendarServices[$key])) {
-                    $service = $this->calendarServices[$key];
-                    try {
-                        $result[$key] = $this->formatCalendarResult(
-                            $service,
-                            $service->fromGregorian($carbonDate)
-                        );
-                    } catch (\Throwable $e) {
-                        $result[$key] = $this->formatCalendarResult(
-                            $service,
-                            ['error' => $e->getMessage()]
-                        );
-                    }
-                }
-            }
-
-            return $result;
-        });
+        return $this->rememberConversion(
+            'conversion_fast_',
+            $dateString,
+            $inputType,
+            fn () => $this->computePrimaryConversion($dateString, $inputType),
+        );
     }
 
     public function convertAdditional(string $dateString, string $inputType = 'gregorian'): array
     {
-        $cacheKey = 'conversion_additional_'.md5($dateString.$inputType);
+        return $this->rememberConversion(
+            'conversion_additional_',
+            $dateString,
+            $inputType,
+            fn () => $this->computeAdditionalConversion($dateString, $inputType),
+        );
+    }
 
-        return Cache::remember($cacheKey, 3600, function () use ($dateString, $inputType) {
-            $carbonDate = $this->parseInputDate($dateString, $inputType);
-            $result = [];
+    /**
+     * Cache the result for an hour, except for time-precise inputs whose
+     * keys would have per-second cardinality and never hit.
+     *
+     * @param  callable(): array  $compute
+     */
+    private function rememberConversion(string $keyPrefix, string $dateString, string $inputType, callable $compute): array
+    {
+        if (in_array($inputType, self::TIME_PRECISE_INPUT_TYPES, true)) {
+            return $compute();
+        }
 
-            $additionalCalendars = array_diff(array_keys($this->calendarServices), $this->fastCalendars);
+        return Cache::remember($keyPrefix.md5($dateString.$inputType), 3600, $compute);
+    }
 
-            foreach ($additionalCalendars as $key) {
-                if ($key === 'julian_day') {
-                    continue;
-                }
+    private function computePrimaryConversion(string $dateString, string $inputType): array
+    {
+        if (empty(trim($dateString))) {
+            throw new InvalidArgumentException('Input date cannot be empty.');
+        }
+
+        $carbonDate = $this->parseInputDate($dateString, $inputType);
+
+        $jalaliDate = Jalalian::fromCarbon($carbonDate);
+        $julianDayNumber = gregoriantojd($carbonDate->month, $carbonDate->day, $carbonDate->year);
+        $julianDateTime = $julianDayNumber
+             + ($carbonDate->hour / 24)
+             + ($carbonDate->minute / 1440)
+             + ($carbonDate->second / 86400);
+
+        $result = [
+            'gregorian' => [
+                'year' => $carbonDate->year,
+                'month_name' => $carbonDate->format('F'),
+                'day' => $carbonDate->day,
+                'day_of_week' => $carbonDate->format('l'),
+                'full_date' => $carbonDate->format('Y-m-d'),
+                'tags' => ['modern', 'solar'],
+                'name' => 'Gregorian',
+            ],
+            'jalali' => [
+                'year' => $jalaliDate->getYear(),
+                'month_name' => $jalaliDate->format('%B'),
+                'month_name_en' => self::JALALI_MONTHS_EN[$jalaliDate->getMonth()],
+                'day' => $jalaliDate->getDay(),
+                'day_of_week' => $jalaliDate->format('%A'),
+                'day_of_week_en' => self::JALALI_DAYS_EN[$jalaliDate->getDayOfWeek()],
+                'full_date' => $jalaliDate->format('Y/m/d'),
+                'tags' => ['modern', 'solar'],
+                'name' => 'Jalali',
+            ],
+            'unix' => $carbonDate->unix(),
+            'iso8601' => $carbonDate->clone()->utc()->toIso8601String(),
+            'julian-day' => $julianDayNumber,
+            'modified-julian-day' => $julianDateTime - 2400000.5,
+        ];
+
+        // Add fast calendar conversions
+        foreach ($this->fastCalendars as $key) {
+            if (isset($this->calendarServices[$key])) {
                 $service = $this->calendarServices[$key];
                 try {
                     $result[$key] = $this->formatCalendarResult(
@@ -161,9 +167,37 @@ class DateTimeConverterService
                     );
                 }
             }
+        }
 
-            return $result;
-        });
+        return $result;
+    }
+
+    private function computeAdditionalConversion(string $dateString, string $inputType): array
+    {
+        $carbonDate = $this->parseInputDate($dateString, $inputType);
+        $result = [];
+
+        $additionalCalendars = array_diff(array_keys($this->calendarServices), $this->fastCalendars);
+
+        foreach ($additionalCalendars as $key) {
+            if ($key === 'julian_day') {
+                continue;
+            }
+            $service = $this->calendarServices[$key];
+            try {
+                $result[$key] = $this->formatCalendarResult(
+                    $service,
+                    $service->fromGregorian($carbonDate)
+                );
+            } catch (\Throwable $e) {
+                $result[$key] = $this->formatCalendarResult(
+                    $service,
+                    ['error' => $e->getMessage()]
+                );
+            }
+        }
+
+        return $result;
     }
 
     private function parseInputDate(string $dateString, string $inputType): Carbon
