@@ -26,6 +26,20 @@ it('converts a gregorian date successfully', function () {
         ->assertJsonPath('meta.on_this_day_date', '2024-01-15');
 });
 
+it('rate limits public conversion requests per ip', function () {
+    foreach (range(1, 60) as $i) {
+        $this->postJson(route('frontend.conversions.store'), [
+            'date' => '2024-01-15',
+            'input_type' => 'gregorian',
+        ]);
+    }
+
+    $this->postJson(route('frontend.conversions.store'), [
+        'date' => '2024-01-15',
+        'input_type' => 'gregorian',
+    ])->assertStatus(429);
+});
+
 it('converts a unix timestamp successfully', function () {
     $response = $this->postJson(route('frontend.conversions.store'), [
         'date' => '1705276800',

@@ -7,8 +7,8 @@ use App\Support\Calendars\FrenchRepublicanExtCalendarAdapter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,6 +33,10 @@ class AppServiceProvider extends ServiceProvider
             return [
                 Limit::perDay(5)->by(($request->input('email') ?? '').'|'.$request->ip()),
             ];
+        });
+
+        RateLimiter::for('frontend-public', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
         });
     }
 }

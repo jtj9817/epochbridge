@@ -20,9 +20,15 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('frontend')->group(function () {
     // Public endpoints
-    Route::post('conversions', [ConversionController::class, 'store'])->name('frontend.conversions.store');
-    Route::get('on-this-day', [OnThisDayController::class, 'show'])->name('frontend.on-this-day.show');
-    Route::get('quick-action', [QuickActionController::class, 'show'])->name('frontend.quick-action.show');
+    Route::post('conversions', [ConversionController::class, 'store'])
+        ->middleware('throttle:frontend-public')
+        ->name('frontend.conversions.store');
+    Route::get('on-this-day', [OnThisDayController::class, 'show'])
+        ->middleware('throttle:frontend-public')
+        ->name('frontend.on-this-day.show');
+    Route::get('quick-action', [QuickActionController::class, 'show'])
+        ->middleware('throttle:frontend-public')
+        ->name('frontend.quick-action.show');
 
     // Authenticated endpoints
     Route::middleware('auth')->group(function () {
