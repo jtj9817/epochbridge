@@ -88,6 +88,13 @@ RUN apk add --no-cache \
 # Configure PHP for production
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
+# Interim mitigation for the 2026-10-21 PHP security release.
+# session.upload_progress.enabled is INI_PERDIR, so ini_set() cannot change it;
+# it must ship as a conf.d drop-in. The zz- prefix loads it after php.ini and
+# after the docker-php-ext-*.ini files. Remove once the patched PHP 8.2 is
+# picked up via the floating 8.2-fpm-alpine tag and a rebuild.
+COPY docker/php/conf.d/zz-upload-progress.ini /usr/local/etc/php/conf.d/zz-upload-progress.ini
+
 # PHP-FPM configuration
 RUN sed -i 's/listen = 127.0.0.1:9000/listen = 9000/' /usr/local/etc/php-fpm.d/www.conf \
     && sed -i 's/;clear_env = no/clear_env = no/' /usr/local/etc/php-fpm.d/www.conf
