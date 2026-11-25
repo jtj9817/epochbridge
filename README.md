@@ -28,7 +28,7 @@ The frontend was migrated from Livewire/Volt to React/Inertia in April 2026, and
 - **On This Day**: Historical events for the converted date via the Wikimedia API (cached locally; see `docs/wikimedia-scraper-architecture.md`)
 
 ### Technical Stack
-- **Backend**: Laravel 12 (PHP 8.2+), Laravel Fortify (authentication), Laravel Socialite (Google OAuth)
+- **Backend**: Laravel 12, Laravel Fortify (authentication), Laravel Socialite (Google OAuth)
 - **Frontend**: React 19 + TypeScript, Inertia 2, Tailwind CSS 4, Vite
 - **Database**: MySQL 8.0
 - **Testing**: Pest 4 (Feature/Unit), Laravel Dusk (browser), Vitest + Testing Library (React components)
@@ -38,7 +38,7 @@ The frontend was migrated from Livewire/Volt to React/Inertia in April 2026, and
 
 ### Prerequisites
 
-- PHP 8.2+, Composer
+- PHP 8.4.1+ (for the locked Composer dependencies), Composer
 - Node.js & npm
 - Docker (for Sail)
 
@@ -234,7 +234,7 @@ docker run -d \
   epochbridge:latest
 ```
 
-**Docker architecture**: multi-stage build (Composer deps → Node/Vite assets → runtime), PHP 8.2-FPM + Nginx + Supervisord. Files: `Dockerfile`, `docker/nginx.conf`, `docker/supervisord.conf`, `docker/entrypoint.sh`, `.dockerignore`.
+**Docker architecture**: Composer and PHP-FPM share a PHP 8.4 Alpine base. Node/Vite builds the frontend assets; Nginx and Supervisord run alongside PHP-FPM. See [Production Docker](docs/architecture-overview.md#production-docker).
 
 ### Option 2: Traditional Deployment
 

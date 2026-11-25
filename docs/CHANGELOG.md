@@ -5,6 +5,11 @@ All notable changes to EpochBridge will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Production Docker builds use PHP 8.4 for both Composer and PHP-FPM, restoring Laravel package discovery and meeting the locked dependencies' PHP requirement.
+
 ## [September 5-8, 2026] - Security Hardening, Livewire Removal & API Robustness
 
 ### Added

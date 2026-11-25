@@ -39,7 +39,7 @@ EpochBridge is a calendar conversion platform built on Laravel 12 with a React 1
 ## Technology Stack
 
 ### Backend Technologies
-- **Framework**: Laravel 12 (PHP 8.2+)
+- **Framework**: Laravel 12 (PHP 8.4.1+ with the current Composer lockfile)
 - **Authentication**: Laravel Fortify 1.30+, Laravel Socialite 5 (Google OAuth)
 - **Frontend glue**: Inertia 2 (`inertiajs/inertia-laravel`), Tighten Ziggy 2 (named routes in JS)
 - **Database**: MySQL 8.0 (via Docker)
@@ -61,7 +61,7 @@ EpochBridge is a calendar conversion platform built on Laravel 12 with a React 1
 - **Browser Testing**: Laravel Dusk 8.2+ (Pest 4 browser plugin also installed)
 - **Code Quality**: Laravel Pint 1.18+
 - **Development Containerization**: Laravel Sail 1.41+ (Docker)
-- **Production Containerization**: Multi-stage Dockerfile with PHP 8.2-FPM, Nginx, Supervisord
+- **Production Containerization**: Multi-stage Dockerfile with PHP 8.4-FPM, Nginx, Supervisord
 - **Logging**: Laravel Pail 1.2+
 
 > Livewire, Volt, Alpine.js, and Flux UI were fully removed in September 2026 (`a144ac3`, `16c4d69`). The `livewire/flux` entry in `composer.json` is an unused leftover.
@@ -404,10 +404,11 @@ Laravel Sail (Docker) with MySQL; port mappings come from `.env` (`APP_PORT` def
 ```
 
 ### Production Docker
-Multi-stage `Dockerfile`:
+The multi-stage `Dockerfile` shares a PHP 8.4 Alpine base between dependency installation and production. This gives Laravel package discovery native `mbstring` support and keeps the runtime compatible with `composer.lock`.
+
 1. **Composer stage** — production dependencies, optimized autoloader
 2. **Node stage** — builds production Vite assets
-3. **Runtime stage** — PHP 8.2-FPM (Alpine) + Nginx + Supervisord, copying artifacts from the builder stages
+3. **Runtime stage** — PHP-FPM, Nginx, and Supervisord on the shared base, copying artifacts from the builder stages
 
 Supporting files: `docker/nginx.conf`, `docker/supervisord.conf`, `docker/entrypoint.sh`, `.dockerignore`.
 

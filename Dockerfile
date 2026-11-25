@@ -1,7 +1,30 @@
 # ============================================
+# Shared PHP Base
+# ============================================
+FROM php:8.4-fpm-alpine AS php-base
+
+RUN apk add --no-cache freetype icu-libs libjpeg-turbo libpng libzip \
+    && apk add --no-cache --virtual .php-extension-build-deps \
+        freetype-dev icu-dev libjpeg-turbo-dev libpng-dev libzip-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" \
+        bcmath \
+        calendar \
+        exif \
+        gd \
+        intl \
+        pcntl \
+        pdo_mysql \
+        zip \
+    && apk del .php-extension-build-deps
+
+# ============================================
 # Stage 1: Composer Dependencies
 # ============================================
-FROM composer:2 AS composer-builder
+FROM php-base AS composer-builder
+
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+RUN apk add --no-cache unzip
 
 WORKDIR /app
 
@@ -47,52 +70,16 @@ RUN npm run build
 # ============================================
 # Stage 3: Production Image
 # ============================================
-FROM php:8.2-fpm-alpine
+FROM php-base
 
-# Install system dependencies and PHP extensions
-RUN apk add --no-cache \
-    nginx \
-    supervisor \
-    curl \
-    libpng \
-    libpng-dev \
-    libjpeg-turbo \
-    libjpeg-turbo-dev \
-    freetype \
-    freetype-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    icu-dev \
-    oniguruma-dev \
-    libxml2-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        bcmath \
-        calendar \
-        exif \
-        gd \
-        intl \
-        mbstring \
-        opcache \
-        pcntl \
-        pdo_mysql \
-        xml \
-        zip \
-    && apk del \
-        libpng-dev \
-        libjpeg-turbo-dev \
-        freetype-dev \
-    && rm -rf /var/cache/apk/*
+RUN apk add --no-cache nginx supervisor curl zip unzip
 
 # Configure PHP for production
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 # Interim mitigation for the 2026-10-21 PHP security release.
 # session.upload_progress.enabled is INI_PERDIR, so ini_set() cannot change it;
-# it must ship as a conf.d drop-in. The zz- prefix loads it after php.ini and
-# after the docker-php-ext-*.ini files. Remove once the patched PHP 8.2 is
-# picked up via the floating 8.2-fpm-alpine tag and a rebuild.
+# it must ship as a conf.d drop-in loaded after php.ini.
 COPY docker/php/conf.d/zz-upload-progress.ini /usr/local/etc/php/conf.d/zz-upload-progress.ini
 
 # PHP-FPM configuration
