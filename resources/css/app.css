@@ -1,11 +1,8 @@
 @import 'tailwindcss';
-@import '../../vendor/livewire/flux/dist/flux.css';
 @import './stardew.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
-@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 
 /* Pixel fonts are registered in stardew.css (Pixelify Sans + VT323). */
 
@@ -62,50 +59,6 @@
     body {
         letter-spacing: -0.01em;
     }
-}
-
-/* ============================================
-   FLUX UI OVERRIDES - TECHNICAL AESTHETIC
-   Sharp corners, no shadows, functional states
-   ============================================ */
-
-[data-flux-field]:not(ui-radio, ui-checkbox) {
-    @apply grid gap-2;
-}
-
-[data-flux-label] {
-    @apply !mb-0 !leading-tight uppercase tracking-wider text-xs;
-}
-
-/* Sharp corners on all Flux components */
-[data-flux-input],
-[data-flux-textarea],
-[data-flux-select],
-[data-flux-button],
-[data-flux-checkbox],
-[data-flux-radio],
-[data-flux-card],
-[data-flux-modal],
-[data-flux-dropdown],
-[data-flux-menu] {
-    border-radius: 0 !important;
-}
-
-/* Remove shadows from Flux components */
-[data-flux-button],
-[data-flux-card],
-[data-flux-dropdown],
-[data-flux-modal] {
-    box-shadow: none !important;
-}
-
-/* Functional focus states - thick outline only */
-input:focus[data-flux-control],
-textarea:focus[data-flux-control],
-select:focus[data-flux-control] {
-    @apply outline-none ring-0;
-    outline: 2px solid var(--color-theme-500) !important;
-    outline-offset: 0 !important;
 }
 
 /* ============================================
