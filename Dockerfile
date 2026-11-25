@@ -61,8 +61,6 @@ RUN npm ci --include=optional
 # Copy source files needed for build
 COPY resources ./resources
 COPY vite.config.js ./
-COPY tailwind.config.js* ./
-COPY postcss.config.js* ./
 
 # Build frontend assets
 RUN npm run build
