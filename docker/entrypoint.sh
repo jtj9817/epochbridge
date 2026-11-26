@@ -3,6 +3,8 @@ set -e
 
 echo "Starting EpochBridge container..."
 
+printf 'listen %s;\n' "$PORT" > /etc/nginx/container-port.conf
+
 # Run Laravel optimizations at runtime (after env vars are available)
 echo "Caching Laravel configuration..."
 php artisan config:cache

@@ -225,7 +225,7 @@ Older plan documents in `docs/` are historical records of completed work and are
 docker build -t epochbridge:latest .
 docker run -d \
   --name epochbridge \
-  -p 80:80 \
+  -p 80:8081 \
   -e APP_KEY=your-app-key \
   -e DB_HOST=your-db-host \
   -e DB_DATABASE=epochbridge \

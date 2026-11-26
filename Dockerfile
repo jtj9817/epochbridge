@@ -153,12 +153,12 @@ RUN mkdir -p \
     && chmod -R 755 /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-# Expose port
-EXPOSE 8081
+ENV PORT=8081
+EXPOSE $PORT
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8081/health || exit 1
+    CMD curl -f "http://localhost:${PORT}/health" || exit 1
 
 # Use entrypoint for runtime initialization
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

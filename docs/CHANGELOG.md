@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Production Docker builds use PHP 8.4 for both Composer and PHP-FPM, restoring Laravel package discovery and meeting the locked dependencies' PHP requirement.
 - Production Docker builds compile the React assets without the removed Tailwind and PostCSS config files or the legacy Flux stylesheet.
+- The container listens on Cloud Run's assigned port and keeps port 8081 as its standalone Docker default.
 
 ## [September 5-8, 2026] - Security Hardening, Livewire Removal & API Robustness
 

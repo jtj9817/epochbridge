@@ -410,11 +410,13 @@ The multi-stage `Dockerfile` shares a PHP 8.4 Alpine base between dependency ins
 2. **Node stage** — builds production Vite assets
 3. **Runtime stage** — PHP-FPM, Nginx, and Supervisord on the shared base, copying artifacts from the builder stages
 
+Nginx listens on `PORT`, which Cloud Run injects. The image defaults to port `8081` for standalone Docker runs.
+
 Supporting files: `docker/nginx.conf`, `docker/supervisord.conf`, `docker/entrypoint.sh`, `.dockerignore`.
 
 ```bash
 docker build -t epochbridge:latest .
-docker run -d --name epochbridge -p 80:80 \
+docker run -d --name epochbridge -p 80:8081 \
   -e APP_KEY=... -e DB_HOST=... -e DB_DATABASE=... \
   -e DB_USERNAME=... -e DB_PASSWORD=... epochbridge:latest
 ```
