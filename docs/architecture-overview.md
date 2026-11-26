@@ -411,6 +411,7 @@ The multi-stage `Dockerfile` shares a PHP 8.4 Alpine base between dependency ins
 3. **Runtime stage** — PHP-FPM, Nginx, and Supervisord on the shared base, copying artifacts from the builder stages
 
 Nginx listens on `PORT`, which Cloud Run injects. The image defaults to port `8081` for standalone Docker runs.
+On Cloud Run, Nginx passes the ingress proxy's HTTPS scheme to PHP-FPM so Laravel doesn't redirect requests that are already HTTPS. Standalone containers use the connection's own scheme.
 
 Supporting files: `docker/nginx.conf`, `docker/supervisord.conf`, `docker/entrypoint.sh`, `.dockerignore`.
 
